@@ -8,7 +8,7 @@ export
     dim3, configure_call, launch,
     Stream, stream, null_stream, destroy, synchronize
 
-import Base: length, size, ndims, eltype, pointer, convert, copy!
+import Base: length, size, ndims, eltype, pointer, convert, copy!, get!, fill!
 
 # Prepare the CUDA runtime API bindings
 include("libcudart.jl")
