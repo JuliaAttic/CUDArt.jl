@@ -22,6 +22,7 @@ if isempty(libcuda)
 end
 
 include("version.jl")
+include("types.jl")
 include("device.jl")
 include("stream.jl")
 #include("event.jl")
