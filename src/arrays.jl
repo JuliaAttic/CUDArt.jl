@@ -94,11 +94,13 @@ function copy!{T}(dst::Union(Array{T},CudaArray{T}), src::Union(Array{T},CudaArr
     return dst
 end
 
-function fill!(X::CudaArray, val::Uint8)
-    rt.cudaMemset(pointer(X), val, length(X)*sizeof(eltype(X)))
+function fill!{T}(X::CudaArray{T}, val)
+    valT = convert(T, val)
+    func = ptxdict[("fill_contiguous", T)]
+    nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
+    launch(func, 32*nsm, 256, (rawpointer(X), length(X), valT))
     X
 end
-
 
 ############################################################################
 #
@@ -155,7 +157,6 @@ function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},
     if size(dst) != size(src)
         throw(DimensionMismatch("Size $size(dst) of dst is not equal to $size(src) of src"))
     end
-#     error("Doesn't work")
     copy!(dst, map(d->1:d, size(dst)), src, map(d->1:d, size(src)))
 end
 
@@ -196,8 +197,11 @@ function get!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},C
     dst
 end
 
-function fill!(X::CudaPitchedArray, val::Uint8)
-    ext = CudaExtent(X)
-    rt.cudaMemset3D(pitchedptr(X), val, ext)
+function fill!{T}(X::CudaPitchedArray{T}, val)
+    valT = convert(T, val)
+    func = ptxdict[("fill_pitched", T)]
+    nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
+    blockspergrid, threadsperblock = ndims(X) == 1 ? (32*nsm, 256) : (32*nsm, (16,16))
+    launch(func, blockspergrid, threadsperblock, (rawpointer(X), size(X,1), size(X,2), size(X,3), div(pitch(X), sizeof(T)), valT))
     X
 end
