@@ -159,23 +159,23 @@ const cudaMemcpyDeviceToHost = 2
 const cudaMemcpyDeviceToDevice = 3
 const cudaMemcpyDefault = 4
 # end enum cudaMemcpyKind
-type cudaPitchedPtr
+immutable cudaPitchedPtr
     ptr::Ptr{None}
     pitch::Csize_t
     xsize::Csize_t
     ysize::Csize_t
 end
-type cudaExtent
+immutable cudaExtent
     width::Csize_t
     height::Csize_t
     depth::Csize_t
 end
-type cudaPos
+immutable cudaPos
     x::Csize_t
     y::Csize_t
     z::Csize_t
 end
-type cudaMemcpy3DParms
+immutable cudaMemcpy3DParms
     srcArray::cudaArray_t
     srcPos::cudaPos
     srcPtr::cudaPitchedPtr
