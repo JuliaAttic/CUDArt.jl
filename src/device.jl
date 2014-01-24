@@ -38,7 +38,7 @@ function devices(f::Function, devlist::Union(Integer,AbstractVector))
             # allocate and destroy memory to force initialization
             free(malloc(Uint8, 1))
         end
-        ret = CuModule("../deps/utils.ptx") do mdutils
+        ret = CuModule(joinpath(Pkg.dir(), "CUDArt/deps/utils.ptx")) do mdutils
             funcnames = ["fill_contiguous", "fill_pitched"]
             funcexts  = ["double","float","int64","uint64","int32","uint32","int16","uint16","int8","uint8"]
             datatypes = [Float64,Float32,Int64,Uint64,Int32,Uint32,Int16,Uint16,Int8,Uint8]
