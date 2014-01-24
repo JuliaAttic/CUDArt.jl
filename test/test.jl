@@ -1,7 +1,7 @@
 import CUDArt
 using Base.Test
 
-result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, 1) do devlist
+result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     # Copying memory to and from device
     @test length(devlist) == 1
     CUDArt.device(devlist[1])

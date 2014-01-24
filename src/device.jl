@@ -14,16 +14,15 @@ capability(dev::Integer) = (attribute(dev,rt.cudaDevAttrComputeCapabilityMajor),
                             attribute(dev,rt.cudaDevAttrComputeCapabilityMinor))
 
 # criteria = dev -> Bool
-devices(criteria::Function) = find(map(criteria, 0:devcount()-1))-1
-function devices(criteria::Function, n)
-    devlist = devices(criteria)
-    devlist[1:min(n, length(devlist))]
-end
-    
-# do syntax, f(devlist)
-function devices(f::Function, criteria::Function, n = typemax(Int))
-    devlist = devices(criteria, n)
+function devices(criteria::Function; nmax::Integer = typemax(Int))
+    devlist = find(map(criteria, 0:devcount()-1))-1
     isempty(devlist) && error("No suitable devices found")
+    devlist[1:min(nmax, length(devlist))]
+end
+
+# do syntax, f(devlist)
+function devices(f::Function, criteria::Function; nmax::Integer = typemax(Int))
+    devlist = devices(criteria, nmax=nmax)
     devices(f, devlist)
 end
 
