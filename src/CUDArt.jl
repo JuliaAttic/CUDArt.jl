@@ -6,7 +6,8 @@ export
     CuModule, CuFunction,
     CudaArray, to_host,
     dim3, configure_call, launch,
-    Stream, stream, null_stream, destroy, synchronize
+    Stream, stream, null_stream, destroy, synchronize,
+    cudafinalizer
 
 import Base: length, size, ndims, eltype, pointer, convert, copy!, get!, fill!
 

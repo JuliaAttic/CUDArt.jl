@@ -26,9 +26,6 @@ function devices(f::Function, criteria::Function; nmax::Integer = typemax(Int))
     devices(f, devlist)
 end
 
-# A cache of utility CUDA kernels
-const global ptxdict = Dict()
-
 function devices(f::Function, devlist::Union(Integer,AbstractVector))
     local ret
     try
@@ -50,9 +47,27 @@ function devices(f::Function, devlist::Union(Integer,AbstractVector))
             return f(devlist)
         end
     finally
+        cudafinalize()
         for dev in devlist
             devicereset(dev)
         end
     end
     ret
+end
+
+# A cache of useful CUDA kernels
+const global ptxdict = Dict()
+
+# Items to clean up before resetting the device
+let finalizer_list = {}
+global cudafinalizer
+cudafinalizer(obj, func) = push!(finalizer_list, (obj, func))
+global cudafinalize
+function cudafinalize()
+    for item in finalizer_list
+        item[2](item[1])
+    end
+    empty!(finalizer_list)
+    nothing
+end
 end
