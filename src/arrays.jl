@@ -130,6 +130,7 @@ CudaPitchedArray{T,N}(a::Array{T,N}) = copy!(CudaPitchedArray(T, size(a)), a)
 CudaPitchedArray{T,N}(a::AbstractArray{T,N}) = CudaPitchedArray(convert(Array{T,N}, a))
 
 convert(::Type{rt.cudaPitchedPtr}, g::CudaPitchedArray) = pointer(g)
+convert{T}(::Type{Ptr{T}}, g::CudaPitchedArray{T}) = convert(Ptr{T}, rawpointer(g))
 
 function free(g::CudaPitchedArray)
     p = g.ptr.ptr
