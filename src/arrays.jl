@@ -98,7 +98,7 @@ function fill!{T}(X::CudaArray{T}, val)
     valT = convert(T, val)
     func = ptxdict[("fill_contiguous", T)]
     nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
-    launch(func, 32*nsm, 256, (rawpointer(X), length(X), valT))
+    launch(func, 32*nsm, 256, (X, length(X), valT))
     X
 end
 
@@ -203,6 +203,6 @@ function fill!{T}(X::CudaPitchedArray{T}, val)
     func = ptxdict[("fill_pitched", T)]
     nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
     blockspergrid, threadsperblock = ndims(X) == 1 ? (32*nsm, 256) : (32*nsm, (16,16))
-    launch(func, blockspergrid, threadsperblock, (rawpointer(X), size(X,1), size(X,2), size(X,3), div(pitch(X), sizeof(T)), valT))
+    launch(func, blockspergrid, threadsperblock, (X, size(X,1), size(X,2), size(X,3), div(pitch(X), sizeof(T)), valT))
     X
 end
