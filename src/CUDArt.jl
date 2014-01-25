@@ -4,8 +4,10 @@ export
     device, devices, attribute, capability,
     driver_version, runtime_version,
     CuModule, CuFunction,
-    CudaArray, to_host,
-    dim3, configure_call, launch,
+    AbstractCudaArray, CudaArray, CudaPitchedArray,
+    to_host,
+#     dim3, configure_call, 
+    launch, device_synchronize,
     Stream, stream, null_stream, destroy, synchronize,
     cudafinalizer
 

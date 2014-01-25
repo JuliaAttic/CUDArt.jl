@@ -3,8 +3,10 @@ devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); int(ret[1]))
 device() = (ret = Cint[0]; rt.cudaGetDevice(ret); int(ret[1]))
 device(dev::Integer) = rt.cudaSetDevice(dev)
 
-devicereset() = rt.cudaDeviceReset()
-devicereset(dev::Integer) = (device(dev); devicereset())
+device_reset() = rt.cudaDeviceReset()
+device_reset(dev::Integer) = (device(dev); device_reset())
+
+device_synchronize() = rt.cudaDeviceSynchronize()
 
 device_properties(dev::Integer) = (aprop = Array(rt.cudaDeviceProp, 1); rt.cudaGetDeviceProperties(aprop, dev); aprop[1])
 
@@ -49,7 +51,7 @@ function devices(f::Function, devlist::Union(Integer,AbstractVector))
     finally
         cudafinalize()
         for dev in devlist
-            devicereset(dev)
+            device_reset(dev)
         end
     end
     ret
