@@ -27,7 +27,6 @@ const cudaArraySurfaceLoadStore = 0x02
 const cudaArrayCubemap = 0x04
 const cudaArrayTextureGather = 0x08
 const cudaIpcMemLazyEnablePeerAccess = 0x01
-const cudaDevicePropDontCare = 
 const CUDA_IPC_HANDLE_SIZE = 64
 const cudaSurfaceType1D = 0x01
 const cudaSurfaceType2D = 0x02
@@ -668,7 +667,7 @@ immutable Array_2_Cint
     d1::Cint
     d2::Cint
 end
-type cudaDeviceProp
+immutable cudaDeviceProp
     name::Array_256_Uint8
     totalGlobalMem::Csize_t
     sharedMemPerBlock::Csize_t

@@ -14,6 +14,8 @@ attribute(dev::Integer, code::Integer) = (ret = Cint[0]; rt.cudaDeviceGetAttribu
 
 capability(dev::Integer) = (attribute(dev,rt.cudaDevAttrComputeCapabilityMajor),
                             attribute(dev,rt.cudaDevAttrComputeCapabilityMinor))
+                            
+name(p::rt.cudaDeviceProp) = bytestring(convert(Ptr{Uint8}, pointer([p.name])))
 
 # criteria = dev -> Bool
 function devices(criteria::Function; nmax::Integer = typemax(Int))
