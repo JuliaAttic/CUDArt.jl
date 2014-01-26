@@ -1,7 +1,7 @@
 devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); int(ret[1]))
 
 device() = (ret = Cint[0]; rt.cudaGetDevice(ret); int(ret[1]))
-device(dev::Integer) = rt.cudaSetDevice(dev)
+device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
 device_reset() = rt.cudaDeviceReset()
 device_reset(dev::Integer) = (device(dev); device_reset())

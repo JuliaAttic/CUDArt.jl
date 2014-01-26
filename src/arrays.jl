@@ -60,6 +60,7 @@ cudamemcpykind(dst, src) = cudamemcpykind(pointer(dst), pointer(src))
 type CudaArray{T,N} <: AbstractCudaArray{T,N}
     ptr::CudaDevicePtr{T}
     dims::NTuple{N,Int}
+    dev::Int
 end
 
 CudaArray(T::Type, dims::Integer...) = CudaArray(T, dims)
@@ -67,7 +68,7 @@ CudaArray(T::Type, dims::Integer...) = CudaArray(T, dims)
 function CudaArray(T::Type, dims::Dims)
     n = prod(dims)
     p = malloc(T, n)
-    g = CudaArray{T,length(dims)}(p, dims)
+    g = CudaArray{T,length(dims)}(p, dims, device())
     finalizer(g, free)
     g
 end
@@ -84,6 +85,9 @@ function free(g::CudaArray)
         g.ptr = CudaDevicePtr(eltype(g))
     end
 end
+
+device(A::AbstractCudaArray) = A.dev
+device(A::AbstractArray) = -1  # for host
 
 function copy!{T}(dst::Union(Array{T},CudaArray{T}), src::Union(Array{T},CudaArray{T}))
     if length(dst) != length(src)
@@ -111,6 +115,7 @@ end
 type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
     ptr::rt.cudaPitchedPtr
     dims::NTuple{N,Int}
+    dev::Int
 end
 
 CudaPitchedArray(T::Type, dims::Integer...) = CudaPitchedArray(T, dims)
@@ -121,7 +126,7 @@ function CudaPitchedArray(T::Type, dims::Dims)
     p = Array(rt.cudaPitchedPtr, 1)
     ext = CudaExtent(T, dims)
     rt.cudaMalloc3D(p, ext)
-    g = CudaPitchedArray{T,length(dims)}(p[1], dims)
+    g = CudaPitchedArray{T,length(dims)}(p[1], dims, device())
     finalizer(g, free)
     g
 end
