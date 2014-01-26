@@ -51,4 +51,7 @@ function cudaMemset3D(pitchedDevPtr::cudaPitchedPtr, value::Uint8, extent::cudaE
   checkerror(ccall( (:wrapcudaMemset3D, libwrapcuda), cudaError_t, (Ptr{cudaPitchedPtr}, Cint, Ptr{cudaExtent}), &pitchedDevPtr, value, &extent))
 end
 
+# Convenience constructors
+cudaPitchedPtr() = cudaPitchedPtr(C_NULL, 0, 0, 0)
+
 end

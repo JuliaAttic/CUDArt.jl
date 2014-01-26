@@ -141,7 +141,7 @@ function free(g::CudaPitchedArray)
     p = g.ptr.ptr
     if p != C_NULL
         rt.cudaFree(p)
-#         g.ptr.ptr = C_NULL
+        g.ptr = rt.cudaPitchedPtr()
     end
 end
 
