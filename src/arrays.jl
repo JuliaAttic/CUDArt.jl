@@ -163,7 +163,7 @@ CudaExtent{T}(a::AbstractCudaArray{T}) = CudaExtent(pitchbytes(a), size(a,2), si
 
 function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},CudaPitchedArray{T}))
     if size(dst) != size(src)
-        throw(DimensionMismatch("Size $size(dst) of dst is not equal to $size(src) of src"))
+        throw(DimensionMismatch("Size $(size(dst)) of dst is not equal to $(size(src)) of src"))
     end
     copy!(dst, map(d->1:d, size(dst)), src, map(d->1:d, size(src)))
 end
@@ -171,12 +171,12 @@ end
 function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), dstI::(Union(Int,Range1{Int})...), src::Union(Array{T},CudaPitchedArray{T}), srcI::(Union(Int,Range1{Int})...))
     nd = length(srcI)
     if length(dstI) != nd
-        throw(DimensionMismatch("Destination of $length(dstI) dimensions differs from dimensionality $nd of src"))
+        throw(DimensionMismatch("Destination of $(length(dstI)) dimensions differs from dimensionality $nd of src"))
     end
     for i = 1:nd
-        length(dstI[i]) == length(srcI[i]) || throw(DimensionMismatch("In dimension $i, destination range of length $length(dstI[i]) but source range has length $length(srcI[i])"))
-        first(dstI[i]) >= 1 && last(dstI[i]) <= size(dst, i) || throw(DimensionMismatch("In dimension $i, destination range of $(dstI[i]) is not within array dimension of $size(dst,i)"))
-        first(srcI[i]) >= 1 && last(srcI[i]) <= size(src, i) || throw(DimensionMismatch("In dimension $i, source range of $(srcI[i]) is not within array dimension of $size(src,i)"))
+        length(dstI[i]) == length(srcI[i]) || throw(DimensionMismatch("In dimension $i, destination range of length $(length(dstI[i])) but source range has length $(length(srcI[i]))"))
+        first(dstI[i]) >= 1 && last(dstI[i]) <= size(dst, i) || throw(DimensionMismatch("In dimension $i, destination range of $(dstI[i]) is not within array dimension of $(size(dst,i))"))
+        first(srcI[i]) >= 1 && last(srcI[i]) <= size(src, i) || throw(DimensionMismatch("In dimension $i, source range of $(srcI[i]) is not within array dimension of $(size(src,i))"))
     end
     ext = CudaExtent(eltype(src),map(length, srcI))
     srcpos = CudaPos(eltype(src),map(first, srcI))
@@ -189,10 +189,10 @@ end
 function get!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},CudaPitchedArray{T}), srcI::(Union(Int,Range1{Int})...), default)
     nd = length(srcI)
     if ndims(dst) != nd
-        throw(DimensionMismatch("Destination of $ndims(dst) dimensions differs from dimensionality $nd of src"))
+        throw(DimensionMismatch("Destination of $(ndims(dst)) dimensions differs from dimensionality $nd of src"))
     end
     for i = 1:nd
-        size(dst,i) == length(srcI[i]) || throw(DimensionMismatch("In dimension $i, destination has dimension $length(dstI[i]) but source range has length $length(srcI[i])"))
+        size(dst,i) == length(srcI[i]) || throw(DimensionMismatch("In dimension $i, destination has dimension $(size(dst,i)) but source range has length $(length(srcI[i]))"))
     end
     srcII = ntuple(nd, i->isa(srcI[i], Int) ? (srcI[i]:srcI[i]) : srcI[i])
     dstIc, srcIc = Base.indcopy(size(src), srcII)
