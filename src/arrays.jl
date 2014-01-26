@@ -151,13 +151,15 @@ function pitchedptr(a::Array)
     rt.cudaPitchedPtr(pointer(a), size(a,1)*sizeof(eltype(a)), size(a,1), size(a,2))
 end
 
-pitch(g::CudaArray) = size(g,1)*sizeof(eltype(g))
-pitch(g::CudaPitchedArray) = g.ptr.pitch
+pitchbytes(g::CudaArray) = size(g,1)*sizeof(eltype(g))
+pitchbytes(g::CudaPitchedArray) = g.ptr.pitch
+
+pitchel(g::AbstractCudaArray) = div(pitchbytes(g),sizeof(eltype(g)))
 
 rawpointer(g::CudaArray) = g.ptr
 rawpointer(g::CudaPitchedArray) = g.ptr.ptr
 
-CudaExtent{T}(a::AbstractCudaArray{T}) = CudaExtent(pitch(a), size(a,2), size(a,3))
+CudaExtent{T}(a::AbstractCudaArray{T}) = CudaExtent(pitchbytes(a), size(a,2), size(a,3))
 
 function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},CudaPitchedArray{T}))
     if size(dst) != size(src)
@@ -208,6 +210,6 @@ function fill!{T}(X::CudaPitchedArray{T}, val)
     func = ptxdict[("fill_pitched", T)]
     nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
     blockspergrid, threadsperblock = ndims(X) == 1 ? (32*nsm, 256) : (32*nsm, (16,16))
-    launch(func, blockspergrid, threadsperblock, (X, size(X,1), size(X,2), size(X,3), div(pitch(X), sizeof(T)), valT))
+    launch(func, blockspergrid, threadsperblock, (rawpointer(X), size(X,1), size(X,2), size(X,3), pitchel(X), valT))
     X
 end
