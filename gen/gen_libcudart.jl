@@ -176,7 +176,7 @@ function cudaMallocArray(array, desc, width, height, flags)
   checkerror(ccall( (:cudaMallocArray, libcudart), cudaError_t, (Ptr{cudaArray_t}, Ptr{cudaChannelFormatDesc}, Csize_t, Csize_t, Uint32), array, desc, width, height, flags))
 end
 function cudaFree(devPtr)
-  ccall( (:cudaFree, libcudart), cudaError_t, (Ptr{None},), devPtr)
+  checkerror(ccall( (:cudaFree, libcudart), cudaError_t, (Ptr{None},), devPtr))
 end
 function cudaFreeHost(ptr)
   checkerror(ccall( (:cudaFreeHost, libcudart), cudaError_t, (Ptr{None},), ptr))

@@ -3,8 +3,22 @@ devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); int(ret[1]))
 device() = (ret = Cint[0]; rt.cudaGetDevice(ret); int(ret[1]))
 device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
-device_reset() = rt.cudaDeviceReset()
-device_reset(dev::Integer) = (device(dev); device_reset())
+device_reset() = device_reset(device())
+function device_reset(dev::Integer)
+    # Clear all items on this device from cuda_ptrs, so they don't get freed later
+    todelete = {}
+    for (p,pdev) in cuda_ptrs
+        if pdev == dev
+            push!(todelete, p)
+        end
+    end
+    for p in todelete
+        delete!(cuda_ptrs, p)
+    end
+    # Reset the device
+    device(dev)
+    rt.cudaDeviceReset()
+end
 
 device_synchronize() = rt.cudaDeviceSynchronize()
 
@@ -51,7 +65,6 @@ function devices(f::Function, devlist::Union(Integer,AbstractVector))
             return f(devlist)
         end
     finally
-        cudafinalize()
         for dev in devlist
             device_reset(dev)
         end
@@ -61,17 +74,3 @@ end
 
 # A cache of useful CUDA kernels
 const global ptxdict = Dict()
-
-# Items to clean up before resetting the device
-let finalizer_list = {}
-global cudafinalizer
-cudafinalizer(obj, func) = push!(finalizer_list, (obj, func))
-global cudafinalize
-function cudafinalize()
-    for item in finalizer_list
-        item[2](item[1])
-    end
-    empty!(finalizer_list)
-    nothing
-end
-end

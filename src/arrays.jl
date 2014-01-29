@@ -1,8 +1,8 @@
-###############
-#
-# Arrays on GPU
-#
-###############
+##################
+#                #
+# Arrays on GPUs #
+#                #
+##################
 
 abstract AbstractCudaArray{T,N}
 
@@ -13,15 +13,21 @@ function size{T,N}(g::AbstractCudaArray{T,N}, d::Integer)
 end
 ndims{T,N}(g::AbstractCudaArray{T,N}) = N
 eltype{T,N}(g::AbstractCudaArray{T,N}) = T
+device(A::AbstractCudaArray) = A.dev
+device(A::AbstractArray) = -1  # for host
+
 pointer(g::AbstractCudaArray) = g.ptr
+# free(g::AbstractCudaArray) = free(rawpointer(g))
 
 to_host{T}(g::AbstractCudaArray{T}) = copy!(Array(T, size(g)), g)
 
 
-###########################
-# Low-level memory handling
-###########################
-immutable CudaDevicePtr{T}
+#############################
+# Low-level memory handling #
+#############################
+const debugMemory = false
+
+type CudaDevicePtr{T}
     ptr::Ptr{T}
 end
 CudaDevicePtr() = CudaDevicePtr(C_NULL)
@@ -29,15 +35,34 @@ CudaDevicePtr(T::Type) = CudaDevicePtr(convert(Ptr{T},C_NULL))
 convert{T}(::Type{Ptr{T}}, p::CudaDevicePtr{T}) = p.ptr
 convert{T}(::Type{Ptr{None}}, p::CudaDevicePtr{T}) = convert(Ptr{None}, p.ptr)
 
+rawpointer(p::CudaDevicePtr) = p
+
 function malloc(T::Type, n::Integer)
-    p = Ptr{Void}[0]
+    p = Ptr{Void}[C_NULL]
     nbytes = sizeof(T)*n
     rt.cudaMalloc(p, nbytes)
-    CudaDevicePtr(convert(Ptr{T},p[1]))
+    cptr = CudaDevicePtr(convert(Ptr{T},p[1]))
+    finalizer(cptr, free)
+    cuda_ptrs[cptr] = device()
+    cptr
 end
 malloc(nbytes::Integer) = malloc(Uint8, nbytes)
 
-free(p::CudaDevicePtr) = rt.cudaFree(p)
+# Enable both manual and garbage-collected memory management.
+# If you need to free resources, you can call free manually.
+# cuda_ptrs keeps track of all memory that needs to be freed,
+# and prevents double-free (which otherwise causes serious problems).
+# key = ptr, val = device id
+const cuda_ptrs = Dict{Any,Int}()
+
+function free{T}(p::CudaDevicePtr{T})
+    cnull = convert(Ptr{T}, C_NULL)
+    if p.ptr != cnull && haskey(cuda_ptrs, p)
+        delete!(cuda_ptrs, p)
+        rt.cudaFree(p)
+        p.ptr = cnull
+    end
+end
 
 typealias Ptrs Union(Ptr, CudaDevicePtr, rt.cudaPitchedPtr)
 typealias CudaPtrs Union(CudaDevicePtr, rt.cudaPitchedPtr)
@@ -46,21 +71,32 @@ cudamemcpykind(dstp::Ptr, srcp::Ptr) = rt.cudaMemcpyHostToHost
 cudamemcpykind(dstp::CudaPtrs, srcp::Ptr) = rt.cudaMemcpyHostToDevice
 cudamemcpykind(dstp::Ptr, srcp::CudaPtrs) = rt.cudaMemcpyDeviceToHost
 cudamemcpykind(dstp::CudaPtrs, srcp::CudaPtrs) = rt.cudaMemcpyDeviceToDevice
-cudamemcpykind(dst::Ptrs, src::Ptrs) = error("This should never happen") # avoid a useless ambiguity warning
+cudamemcpykind(dst::Ptrs, src::Ptrs) = error("This should never happen") # prevent a useless ambiguity warning
 cudamemcpykind(dst, src::Ptrs) = cudamemcpykind(pointer(dst), src)
 cudamemcpykind(dst::Ptrs, src) = cudamemcpykind(dst, pointer(src))
 cudamemcpykind(dst, src) = cudamemcpykind(pointer(dst), pointer(src))
 
-#################################################
-#
-#  CudaArray: contiguous array on GPU
-#
-#################################################
+######################################
+# CudaArray: contiguous array on GPU #
+######################################
 
-type CudaArray{T,N} <: AbstractCudaArray{T,N}
-    ptr::CudaDevicePtr{T}
-    dims::NTuple{N,Int}
-    dev::Int
+if !debugMemory
+    type CudaArray{T,N} <: AbstractCudaArray{T,N}
+        ptr::CudaDevicePtr{T}
+        dims::NTuple{N,Int}
+        dev::Int
+    end
+else
+    type CudaArray{T,N} <: AbstractCudaArray{T,N}
+        ptr::CudaDevicePtr{T}
+        dims::NTuple{N,Int}
+        dev::Int
+        bt
+        
+        function CudaArray(ptr::CudaDevicePtr{T}, dims::NTuple{N,Int}, dev::Integer)
+            new(ptr, dims, dev, backtrace())
+        end
+    end
 end
 
 CudaArray(T::Type, dims::Integer...) = CudaArray(T, dims)
@@ -68,26 +104,43 @@ CudaArray(T::Type, dims::Integer...) = CudaArray(T, dims)
 function CudaArray(T::Type, dims::Dims)
     n = prod(dims)
     p = malloc(T, n)
-    g = CudaArray{T,length(dims)}(p, dims, device())
-    finalizer(g, free)
-    g
+    CudaArray{T,length(dims)}(p, dims, device())
 end
 
 CudaArray{T,N}(a::Array{T,N}) = copy!(CudaArray(T, size(a)), a)
 CudaArray{T,N}(a::AbstractArray{T,N}) = CudaArray(convert(Array{T,N}, a))
 
-convert{T}(::Type{Ptr{T}}, g::CudaArray{T}) = pointer(g).ptr
-convert(::Type{Ptr{None}}, g::CudaArray) = convert(Ptr{None}, pointer(g))
+convert{T}(::Type{Ptr{T}}, g::CudaArray) = convert(Ptr{T}, pointer(g))
 
-function free(g::CudaArray)
-    if convert(Ptr{None},g.ptr) != C_NULL
-        free(g.ptr)
-        g.ptr = CudaDevicePtr(eltype(g))
+# convert{T,N}(::Type{CudaArray{T,N}}, g::CudaArray{T,N}) = g
+# convert{R,S,N}(::Type{CudaArray{R,N}}, g::CudaArray{S,N}) = CudaArray{R,N}(g.ptr, g.dims, g.dev)
+reinterpret{T}(::Type{T}, g::CudaArray{T}) = g
+function reinterpret{R,S}(::Type{R}, g::CudaArray{S})
+    if sizeof(R) != sizeof(S)
+        error("result shape not specified")
     end
+    CudaArray{R,ndims(g)}(g.ptr, g.dims, g.dev)
+end
+function reinterpret{R,S}(::Type{R}, g::CudaArray{S}, dims::Dims)
+    lenR = div(sizeof(S)*length(g),sizeof(R))
+    if prod(dims) != lenR
+        throw(DimensionMismatch("New dimensions $dims must be consistent with array of length $lenR"))
+    end
+    CudaArray{R,length(dims)}(g.ptr, dims, g.dev)
 end
 
-device(A::AbstractCudaArray) = A.dev
-device(A::AbstractArray) = -1  # for host
+free(g::CudaArray) = free(pointer(g))
+
+if debugMemory
+    function show(io::IO, g::CudaArray)
+        println(io, typeof(g))
+        println(io, "  ptr: ", g.ptr)
+        println(io, "  dims: ", g.dims)
+        println(io, "  dev: ", g.dev)
+        print(io, "Allocated from:")
+        Base.show_backtrace(io, g.bt)
+    end
+end
 
 function copy!{T}(dst::Union(Array{T},CudaArray{T}), src::Union(Array{T},CudaArray{T}))
     if length(dst) != length(src)
@@ -106,16 +159,27 @@ function fill!{T}(X::CudaArray{T}, val)
     X
 end
 
-############################################################################
-#
-#  CudaPitchedArray: layout-optimized 1-, 2- and 3-dimensional arrays on GPU
-#
-############################################################################
+#############################################################################
+# CudaPitchedArray: layout-optimized 1-, 2- and 3-dimensional arrays on GPU #
+#############################################################################
 
-type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
-    ptr::rt.cudaPitchedPtr
-    dims::NTuple{N,Int}
-    dev::Int
+if !debugMemory
+    type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
+        ptr::rt.cudaPitchedPtr
+        dims::NTuple{N,Int}
+        dev::Int
+    end
+else
+    type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
+        ptr::rt.cudaPitchedPtr
+        dims::NTuple{N,Int}
+        dev::Int
+        bt
+        
+        function CudaPitchedArray(ptr::rt.cudaPitchedPtr, dims::NTuple{N,Int}, dev::Integer)
+            new(ptr, dims, dev, backtrace())
+        end
+    end
 end
 
 CudaPitchedArray(T::Type, dims::Integer...) = CudaPitchedArray(T, dims)
@@ -126,7 +190,10 @@ function CudaPitchedArray(T::Type, dims::Dims)
     p = Array(rt.cudaPitchedPtr, 1)
     ext = CudaExtent(T, dims)
     rt.cudaMalloc3D(p, ext)
-    g = CudaPitchedArray{T,length(dims)}(p[1], dims, device())
+    cptr = p[1].ptr
+    dev = device()
+    cuda_ptrs[cptr] = dev
+    g = CudaPitchedArray{T,length(dims)}(p[1], dims, dev)
     finalizer(g, free)
     g
 end
@@ -137,13 +204,62 @@ CudaPitchedArray{T,N}(a::AbstractArray{T,N}) = CudaPitchedArray(convert(Array{T,
 convert(::Type{rt.cudaPitchedPtr}, g::CudaPitchedArray) = pointer(g)
 convert{T}(::Type{Ptr{T}}, g::CudaPitchedArray{T}) = convert(Ptr{T}, rawpointer(g))
 
+# convert{T,N}(::Type{CudaPitchedArray{T,N}}, g::CudaPitchedArray{T,N}) = g
+# convert{R,S,N}(::Type{CudaPitchedArray{R,N}}, g::CudaPitchedArray{S,N}) = CudaPitchedArray{R,N}(g.ptr, g.dims, g.dev)
+
+reinterpret{T}(::Type{T}, g::CudaPitchedArray{T}) = g
+function reinterpret{R,S}(::Type{R}, g::CudaPitchedArray{S})
+    if sizeof(R) != sizeof(S)
+        error("result shape not specified")
+    end
+    CudaPitchedArray{R,ndims(g)}(g.ptr, g.dims, g.dev)
+end
+function reinterpret{R,S}(::Type{R}, g::CudaPitchedArray{S}, dims::Dims)
+    if length(g) == 0 && prod(dims) == 0
+        return CudaPitchedArray{R,length(dims)}(g.ptr, dims, g.dev)
+    end
+    # Because of the pitch, we don't need the first dimension to agree exactly
+    if dims[1]*sizeof(R) > size(g,1)*sizeof(S)
+        throw(DimensionMismatch("First dimension $(dims[1]) is too large for $(size(g,1)*sizeof(S)) bytes"))
+    end
+    # Require agreement for dimensions 2 and 3
+    nd = length(dims)
+    lg, ld = 1, 1
+    for d = 2:nd
+        lg *= size(g,d)
+        ld *= dims[d]
+    end
+    for d = nd+1:ndims(g)
+        lg *= size(g,d)
+    end
+    if ld != lg
+        throw(DimensionMismatch("New dimensions $dims must be consistent---in all dimensions except the first---with array of dimensions with product $lg"))
+    end
+    pptr = g.ptr
+    newptr = rt.cudaPitchedPtr(pptr.ptr, pptr.pitch, dims[1], nd>1?dims[2]:1)
+    CudaPitchedArray{R,length(dims)}(newptr, dims, g.dev)
+end
+
 function free(g::CudaPitchedArray)
     p = g.ptr.ptr
-    if p != C_NULL
+    if p != C_NULL && haskey(cuda_ptrs, p)
+        delete!(cuda_ptrs, p)
         rt.cudaFree(p)
         g.ptr = rt.cudaPitchedPtr()
     end
 end
+
+if debugMemory
+    function show(io::IO, g::CudaPitchedArray)
+        println(io, typeof(g))
+        println(io, "  ptr: ", g.ptr)
+        println(io, "  dims: ", g.dims)
+        println(io, "  dev: ", g.dev)
+        print(io, "Allocated from:")
+        Base.show_backtrace(io, g.bt)
+    end
+end
+
 
 pitchedptr(g::CudaPitchedArray) = pointer(g)
 function pitchedptr(a::Array)

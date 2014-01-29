@@ -21,6 +21,9 @@ function checkerror(code::Cuint)
     if code == cudaSuccess
         return nothing
     end
+    # Because try/finally may disguise the source of the problem, let's show a backtrace here
+    warn("CUDA error triggered from:")
+    Base.show_backtrace(STDOUT, backtrace())
     throw(bytestring(cudaGetErrorString(code)))
 end
 
@@ -50,6 +53,15 @@ end
 function cudaMemset3D(pitchedDevPtr::cudaPitchedPtr, value::Uint8, extent::cudaExtent)
   checkerror(ccall( (:wrapcudaMemset3D, libwrapcuda), cudaError_t, (Ptr{cudaPitchedPtr}, Cint, Ptr{cudaExtent}), &pitchedDevPtr, value, &extent))
 end
+
+# # Issue warning, not error, on bad cudaFree
+# function cudaFree(devPtr)
+#     code = ccall( (:cudaFree, libcudart), cudaError_t, (Ptr{None},), devPtr)
+#     if code != cudaSuccess
+#         warn(string(bytestring(cudaGetErrorString(code)), " on ", devPtr))
+#         Base.show_backtrace(STDOUT, backtrace())
+#     end
+# end
 
 # Convenience constructors
 cudaPitchedPtr() = cudaPitchedPtr(C_NULL, 0, 0, 0)
