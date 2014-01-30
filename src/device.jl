@@ -62,6 +62,7 @@ function devices(f::Function, devlist::Union(Integer,AbstractVector))
                     ptxdict[(func, datatypes[i])] = CuFunction(mdutils, func*"_"*funcexts[i])
                 end
             end
+            ptxdict["clock_block"] = CuFunction(mdutils, "clock_block")
             return f(devlist)
         end
     finally

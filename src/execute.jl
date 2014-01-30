@@ -53,3 +53,12 @@ function launch(f::CuFunction, grid::CudaDims, block::CudaDims, args::Tuple; shm
         Ptr{Ptr{Void}}), # extra parameters
         f.handle, gx, gy, gz, tx, ty, tz, shmem_bytes, stream.handle, kernel_args, 0))
 end
+
+# Note this is asynchronous wrt the host
+function cudasleep(secs; dev::Integer=device(), stream=null_stream)
+    device(dev)
+    rate = attribute(dev, rt.cudaDevAttrClockRate)
+    tics = int64(1000*rate*secs)  # rate is in kHz
+    func = ptxdict["clock_block"]
+    launch(func, 1, 1, (tics,), stream=stream)
+end

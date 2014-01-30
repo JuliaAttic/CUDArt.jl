@@ -28,30 +28,6 @@ __device__ void fill_pitched(T *data, size_t width, size_t height, size_t depth,
     }
 }
 
-// To build a library, we have to explicitly instantiate these.
-// Don't wrap in extern "C", use Cpp.jl to do the name-mangling.
-// template void fill_contiguous<double>(double *, size_t, double);
-// template void fill_contiguous<float>(float *, size_t, float);
-// template void fill_contiguous<int64_t>(int64_t *, size_t, int64_t);
-// template void fill_contiguous<uint64_t>(uint64_t *, size_t, uint64_t);
-// template void fill_contiguous<int32_t>(int32_t *, size_t, int32_t);
-// template void fill_contiguous<uint32_t>(uint32_t *, size_t, uint32_t);
-// template void fill_contiguous<int16_t>(int16_t *, size_t, int16_t);
-// template void fill_contiguous<uint16_t>(uint16_t *, size_t, uint16_t);
-// template void fill_contiguous<int8_t>(int8_t *, size_t, int8_t);
-// template void fill_contiguous<uint8_t>(uint8_t *, size_t, uint8_t);
-// 
-// template void fill_pitched<double>(double*, size_t, size_t, size_t, size_t, double);
-// template void fill_pitched<float>(float*, size_t, size_t, size_t, size_t, float);
-// template void fill_pitched<int64_t>(int64_t*, size_t, size_t, size_t, size_t, int64_t);
-// template void fill_pitched<uint64_t>(uint64_t*, size_t, size_t, size_t, size_t, uint64_t);
-// template void fill_pitched<int32_t>(int32_t*, size_t, size_t, size_t, size_t, int32_t);
-// template void fill_pitched<uint32_t>(uint32_t*, size_t, size_t, size_t, size_t, uint32_t);
-// template void fill_pitched<int16_t>(int16_t*, size_t, size_t, size_t, size_t, int16_t);
-// template void fill_pitched<uint16_t>(uint16_t*, size_t, size_t, size_t, size_t, uint16_t);
-// template void fill_pitched<int8_t>(int8_t*, size_t, size_t, size_t, size_t, int8_t);
-// template void fill_pitched<uint8_t>(uint8_t*, size_t, size_t, size_t, size_t, uint8_t);
-
 extern "C"
 {
     void __global__ fill_contiguous_double(double *data, size_t len, double val) {fill_contiguous(data, len, val);}
@@ -95,6 +71,21 @@ extern "C"
     void __global__ fill_pitched_uint8(uint8_t *data, size_t width, size_t height, size_t depth, size_t pitch, uint8_t val) {
         fill_pitched(data, width, height, depth, pitch, val);
     }
+}
+
+// For implementing sleep, from http://stackoverflow.com/questions/11217117/equivalent-of-usleep-in-cuda-kernel
+extern "C" {
+// __global__ void clock_block(int64_t *d_o, int64_t clock_count)
+__global__ void clock_block(int64_t clock_count)
+{
+    int64_t start_clock = clock64();
+    int64_t clock_offset = 0;
+    while (clock_offset < clock_count)
+    {
+        clock_offset = clock64() - start_clock;
+    }
+//     d_o[0] = (int64_t) clock_offset;
+}
 }
 
 /*// Debugging

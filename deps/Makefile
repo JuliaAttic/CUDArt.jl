@@ -4,4 +4,4 @@ libwrapcuda: wrapcuda.c
 	nvcc --shared --compiler-options=-fPIC --linker-options=-fPIC wrapcuda.c -o libwrapcuda.so
 
 utils: utils.cu
-	nvcc -ptx utils.cu
+	nvcc -ptx -gencode=arch=compute_20,code=sm_20 utils.cu
