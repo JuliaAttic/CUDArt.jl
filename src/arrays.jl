@@ -107,7 +107,7 @@ function CudaArray(T::Type, dims::Dims)
     CudaArray{T,length(dims)}(p, dims, device())
 end
 
-CudaArray{T,N}(a::Array{T,N}) = copy!(CudaArray(T, size(a)), a)
+CudaArray{T,N}(a::Array{T,N}; stream=null_stream) = copy!(CudaArray(T, size(a)), a; stream=stream)
 CudaArray{T,N}(a::AbstractArray{T,N}) = CudaArray(convert(Array{T,N}, a))
 
 convert{T}(::Type{Ptr{T}}, g::CudaArray) = convert(Ptr{T}, pointer(g))
@@ -142,21 +142,21 @@ if debugMemory
     end
 end
 
-function copy!{T}(dst::Union(Array{T},CudaArray{T}), src::Union(Array{T},CudaArray{T}))
+function copy!{T}(dst::Union(Array{T},CudaArray{T}), src::Union(Array{T},CudaArray{T}); stream=null_stream)
     if length(dst) != length(src)
         throw(ArgumentError("Inconsistent array length."))
     end
     nbytes = length(src) * sizeof(T)
-    rt.cudaMemcpy(dst, src, nbytes, cudamemcpykind(dst, src))
+    rt.cudaMemcpyAsync(dst, src, nbytes, cudamemcpykind(dst, src), stream)
     return dst
 end
 
-function fill!{T}(X::CudaArray{T}, val)
+function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
     valT = convert(T, val)
     func = ptxdict[("fill_contiguous", T)]
     nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
     mul = min(32, iceil(length(X)/(256*nsm)))
-    launch(func, mul*nsm, 256, (X, length(X), valT))
+    launch(func, mul*nsm, 256, (X, length(X), valT); stream=stream)
     X
 end
 
@@ -278,14 +278,14 @@ rawpointer(g::CudaPitchedArray) = g.ptr.ptr
 
 CudaExtent{T}(a::AbstractCudaArray{T}) = CudaExtent(pitchbytes(a), size(a,2), size(a,3))
 
-function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},CudaPitchedArray{T}))
+function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},CudaPitchedArray{T}); kwargs...)
     if size(dst) != size(src)
         throw(DimensionMismatch("Size $(size(dst)) of dst is not equal to $(size(src)) of src"))
     end
-    copy!(dst, map(d->1:d, size(dst)), src, map(d->1:d, size(src)))
+    copy!(dst, map(d->1:d, size(dst)), src, map(d->1:d, size(src)); kwargs...)
 end
 
-function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), dstI::(Union(Int,Range1{Int})...), src::Union(Array{T},CudaPitchedArray{T}), srcI::(Union(Int,Range1{Int})...))
+function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), dstI::(Union(Int,Range1{Int})...), src::Union(Array{T},CudaPitchedArray{T}), srcI::(Union(Int,Range1{Int})...); stream=null_stream)
     nd = length(srcI)
     if length(dstI) != nd
         throw(DimensionMismatch("Destination of $(length(dstI)) dimensions differs from dimensionality $nd of src"))
@@ -299,11 +299,11 @@ function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), dstI::(Union(Int,Ran
     srcpos = CudaPos(eltype(src),map(first, srcI))
     dstpos = CudaPos(eltype(dst),map(first, dstI))
     params = [rt.cudaMemcpy3DParms(C_NULL, srcpos, pitchedptr(src), C_NULL, dstpos, pitchedptr(dst), ext, cudamemcpykind(dst, src))]
-    rt.cudaMemcpy3D(params)
+    rt.cudaMemcpy3DAsync(params, stream)
     dst
 end
 
-function get!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},CudaPitchedArray{T}), srcI::(Union(Int,Range1{Int})...), default)
+function get!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},CudaPitchedArray{T}), srcI::(Union(Int,Range1{Int})...), default; kwargs...)
     nd = length(srcI)
     if ndims(dst) != nd
         throw(DimensionMismatch("Destination of $(ndims(dst)) dimensions differs from dimensionality $nd of src"))
@@ -314,20 +314,20 @@ function get!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},C
     srcII = ntuple(nd, i->isa(srcI[i], Int) ? (srcI[i]:srcI[i]) : srcI[i])
     dstIc, srcIc = Base.indcopy(size(src), srcII)
     if srcIc != srcII
-        fill!(dst, default)
-        copy!(dst, dstIc, src, srcIc)
+        fill!(dst, default; kwargs...)
+        copy!(dst, dstIc, src, srcIc; kwargs...)
     else
-        copy!(dst, dstIc, src, srcIc)
+        copy!(dst, dstIc, src, srcIc; kwargs...)
     end
     dst
 end
 
-function fill!{T}(X::CudaPitchedArray{T}, val)
+function fill!{T}(X::CudaPitchedArray{T}, val; stream=null_stream)
     valT = convert(T, val)
     func = ptxdict[("fill_pitched", T)]
     nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
     mul = min(32, iceil(length(X)/(256*nsm)))
     blockspergrid, threadsperblock = ndims(X) == 1 ? (mul*nsm, 256) : (mul*nsm, (16,16))
-    launch(func, blockspergrid, threadsperblock, (X, size(X,1), size(X,2), size(X,3), pitchel(X), valT))
+    launch(func, blockspergrid, threadsperblock, (X, size(X,1), size(X,2), size(X,3), pitchel(X), valT); stream=stream)
     X
 end

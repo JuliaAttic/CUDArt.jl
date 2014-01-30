@@ -133,10 +133,9 @@ gc()  # check for finalizer errors
 # Multiple devices, streams, and wait() #
 #########################################
 if CUDArt.devcount() > 1
-    CUDArt.devices(dev->true, nmax=1) do devlist
-        @show devlist
+    CUDArt.devices(dev->true, nmax=2) do devlist
         results = Array(Any, 5)
-        streams = [CUDArt.Stream() for i = 1:length(devlist)]
+        streams = [Stream(), Stream()]
         i = 1
         nextidx() = (idx=i; i+=1; idx)
         @sync begin
@@ -150,9 +149,8 @@ if CUDArt.devcount() > 1
                         tstart = time()
                         dev = devlist[idev]
                         stream = streams[idev]
-                        realtics = CUDArt.cudasleep(0.1; dev=dev, stream=stream)
-                        CUDArt.synchronize(stream)
-#                         CUDArt.device_synchronize()
+                        cudasleep(0.1; dev=dev, stream=stream)
+                        wait(stream)
                         tstop = time()
                         results[idx] = (tstart, tstop, dev)
                     end

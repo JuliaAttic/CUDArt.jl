@@ -8,11 +8,11 @@ export
     to_host, pitchel, pitchbytes,
 #     dim3, configure_call, 
     launch, device_synchronize,
-    Stream, stream, null_stream, synchronize,
+    Stream, null_stream,
     destroy, free, cudafinalizer
 
 import Base: length, size, ndims, eltype, pointer, convert, reinterpret, show,
-    copy!, get!, fill!
+    copy!, get!, fill!, wait
 
 # Prepare the CUDA runtime API bindings
 include("libcudart.jl")
