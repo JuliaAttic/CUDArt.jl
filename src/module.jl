@@ -20,6 +20,7 @@ immutable CuModule
         end
         md
     end
+    CuModule() = new(C_NULL)
 end
 
 # do syntax, f(module)
