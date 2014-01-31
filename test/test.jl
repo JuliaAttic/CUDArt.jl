@@ -147,15 +147,19 @@ if CUDArt.devcount() > 1
                             break
                         end
                         tstart = time()
+                        @show idev
                         dev = devlist[idev]
                         stream = streams[idev]
-                        cudasleep(0.1; dev=dev, stream=stream)
+                        CUDArt.cudasleep(0.1; dev=dev, stream=stream)
                         wait(stream)
                         tstop = time()
                         results[idx] = (tstart, tstop, dev)
                     end
                 end
             end
+        end
+        for r in results
+            @show (r[2]-r[1])
         end
         results
     end
