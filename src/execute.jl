@@ -33,6 +33,6 @@ function cudasleep(secs; dev::Integer=device(), stream=null_stream)
     device(dev)
     rate = attribute(dev, rt.cudaDevAttrClockRate)
     tics = int64(1000*rate*secs)  # rate is in kHz
-    func = ptxdict["clock_block"]
+    func = ptxdict[(dev, "clock_block")]
     launch(func, 1, 1, (tics,), stream=stream)
 end
