@@ -134,8 +134,9 @@ gc()  # check for finalizer errors
 #########################################
 if CUDArt.devcount() > 1
     CUDArt.devices(dev->true, nmax=2) do devlist
-        results = Array(Any, 5)
-        streams = [Stream(), Stream()]
+        sleeptime = 0.5
+        results = Array(Any, int(2.5*length(devlist)))
+        streams = [(CUDArt.device(dev); CUDArt.Stream()) for dev in devlist]
         i = 1
         nextidx() = (idx=i; i+=1; idx)
         @sync begin
@@ -147,20 +148,21 @@ if CUDArt.devcount() > 1
                             break
                         end
                         tstart = time()
-                        @show idev
                         dev = devlist[idev]
                         stream = streams[idev]
-                        CUDArt.cudasleep(0.1; dev=dev, stream=stream)
-                        wait(stream)
+                        CUDArt.cudasleep(sleeptime; dev=dev, stream=stream)
+                        CUDArt.wait(stream)
                         tstop = time()
                         results[idx] = (tstart, tstop, dev)
                     end
                 end
             end
         end
-        for r in results
-            @show (r[2]-r[1])
+        for i = 1:length(results)
+            r = results[i]
+            @test sleeptime <= (r[2]-r[1]) <= 1.2*sleeptime
+            @test r[3] == devlist[mod1(i, 2)]
         end
-        results
+        nothing
     end
 end

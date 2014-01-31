@@ -116,7 +116,7 @@ function cudaStreamSynchronize(stream)
   checkerror(ccall( (:cudaStreamSynchronize, libcudart), cudaError_t, (cudaStream_t,), stream))
 end
 function cudaStreamQuery(stream)
-  checkerror(ccall( (:cudaStreamQuery, libcudart), cudaError_t, (cudaStream_t,), stream))
+  ccall( (:cudaStreamQuery, libcudart), cudaError_t, (cudaStream_t,), stream)
 end
 function cudaEventCreate(event)
   checkerror(ccall( (:cudaEventCreate, libcudart), cudaError_t, (Ptr{cudaEvent_t},), event))

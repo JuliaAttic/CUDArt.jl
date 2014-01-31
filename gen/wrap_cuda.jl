@@ -19,7 +19,7 @@ headers = [joinpath(cudapath,"cuda_runtime_api.h")]
 # from Clang/src/wrap_c.jl, with the following customizations:
 #   - error-check functions that return a cudaError_t
 #   - omit types from function prototypes
-skipcheck = []#["cudaFree"]
+skipcheck = ["cudaStreamQuery"]#["cudaFree"]
 function wrap_c.wrap(buf::IO, funcdecl::FunctionDecl, libname::ASCIIString)
     function print_args(buf::IO, cursors, types)
         i = 1
