@@ -3,8 +3,8 @@ module CUDArt
 export
     device, devices, attribute, capability,
     driver_version, runtime_version,
-    CuModule, CuFunction,
-    AbstractCudaArray, CudaArray, CudaPitchedArray,
+    CuModule, CuFunction, unload,
+    AbstractCudaArray, CudaArray, CudaPitchedArray, HostArray,
     to_host, pitchel, pitchbytes,
 #     dim3, configure_call, 
     launch, device_synchronize,

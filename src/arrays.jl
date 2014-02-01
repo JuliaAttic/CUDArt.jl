@@ -1,8 +1,8 @@
-##################
-#                #
-# Arrays on GPUs #
-#                #
-##################
+####################
+#                  #
+# CUDA Array types #
+#                  #
+####################
 
 abstract AbstractCudaArray{T,N}
 
@@ -108,6 +108,7 @@ function CudaArray(T::Type, dims::Dims)
 end
 
 CudaArray{T,N}(a::Array{T,N}; stream=null_stream) = copy!(CudaArray(T, size(a)), a; stream=stream)
+CudaArray{T,N}(a::HostArray{T,N}; stream=null_stream) = copy!(CudaArray(T, size(a)), a; stream=stream)
 CudaArray{T,N}(a::AbstractArray{T,N}) = CudaArray(convert(Array{T,N}, a))
 
 convert{T}(::Type{Ptr{T}}, g::CudaArray) = convert(Ptr{T}, pointer(g))
@@ -140,15 +141,6 @@ if debugMemory
         print(io, "Allocated from:")
         Base.show_backtrace(io, g.bt)
     end
-end
-
-function copy!{T}(dst::Union(Array{T},CudaArray{T}), src::Union(Array{T},CudaArray{T}); stream=null_stream)
-    if length(dst) != length(src)
-        throw(ArgumentError("Inconsistent array length."))
-    end
-    nbytes = length(src) * sizeof(T)
-    rt.cudaMemcpyAsync(dst, src, nbytes, cudamemcpykind(dst, src), stream)
-    return dst
 end
 
 function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
@@ -330,4 +322,60 @@ function fill!{T}(X::CudaPitchedArray{T}, val; stream=null_stream)
     blockspergrid, threadsperblock = ndims(X) == 1 ? (mul*nsm, 256) : (mul*nsm, (16,16))
     launch(func, blockspergrid, threadsperblock, (X, size(X,1), size(X,2), size(X,3), pitchel(X), valT); stream=stream)
     X
+end
+
+#####################################
+# HostArray (pinned memory on host) #
+#####################################
+
+type HostArray{T,N} <: AbstractArray{T,N}
+    ptr::Ptr{Void}
+    data::Array{T,N}
+end
+
+HostArray{T}(::Type{T}, sz...; flags::Integer=rt.cudaHostAllocDefault) = HostArray(T, sz, flags=flags)
+function HostArray{T}(::Type{T}, sz::Dims; flags::Integer=rt.cudaHostAllocDefault)
+    p = Ptr{Void}[C_NULL]
+    rt.cudaHostAlloc(p, prod(sz)*sizeof(T), flags)
+    ptr = p[1]
+    data = pointer_to_array(convert(Ptr{T}, ptr), sz, false)
+    ha = HostArray(ptr, data)
+    finalizer(ha, free)
+    cuda_ptrs[ptr] = device()
+    ha
+end
+
+function free(ha::HostArray)
+    if ha.ptr != C_NULL && haskey(cuda_ptrs, ha.ptr)
+        rt.cudaFreeHost(ha.ptr)
+        ha.ptr = C_NULL
+        ha.data = Array(eltype(ha), ntuple(ndims(ha), d->0))
+    end
+end
+
+size(ha::HostArray) = size(ha.data)
+size(ha::HostArray, d) = size(ha.data, d)
+ndims{T,N}(ha::HostArray{T,N}) = N
+eltype{T,N}(ha::HostArray{T,N}) = T
+getindex(ha, i) = getindex(ha.data, i)
+getindex(ha, i, j) = getindex(ha.data, i, j)
+getindex(ha, i...) = getindex(ha.data, i...)
+setindex!(ha, val, i) = setindex!(ha.data, val, i)
+setindex!(ha, val, i, j) = setindex!(ha.data, val, i, j)
+setindex!(ha, val, i...) = setindex!(ha.data, val, i...)
+pointer(ha::HostArray)    = pointer(ha.data)
+rawpointer(ha::HostArray) = pointer(ha)
+pitchedptr(ha::HostArray) = pointer(ha)
+pitch(ha::HostArray) = size(ha,1)*sizeof(eltype(ha))
+convert{T}(::Type{Ptr{None}}, ha::HostArray{T}) = ha.ptr
+
+
+
+function copy!{T}(dst::Union(Array{T},HostArray{T},CudaArray{T}), src::Union(Array{T},HostArray{T},CudaArray{T}); stream=null_stream)
+    if length(dst) != length(src)
+        throw(ArgumentError("Inconsistent array length."))
+    end
+    nbytes = length(src) * sizeof(T)
+    rt.cudaMemcpyAsync(dst, src, nbytes, cudamemcpykind(dst, src), stream)
+    return dst
 end

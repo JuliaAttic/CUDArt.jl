@@ -113,6 +113,28 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     get!(d_dest, d_src, (3,5:6), 7.3)
     h_dest = CUDArt.to_host(d_dest)
     @test isequal(h_dest, [15 7.3])
+    # HostArray (pinned memory)
+    A = CUDArt.HostArray(Int32, (6,4))
+    A[2,2] = 7
+    @test A[2,2] == 7
+    G = CUDArt.CudaArray(A)
+    CUDArt.device_synchronize()
+    A[2,2] = 3
+    @test A[2,2] == 3
+    copy!(A, G)
+#     @test A[2,2] == 3  # asynchronous
+    CUDArt.device_synchronize()
+    @test A[2,2] == 7
+    S = pointer_to_array(pointer(A)+48, (6,2), false)  # a "SubArray"
+    B = rand(int32(1:15), 6, 2)
+    GB = CUDArt.CudaArray(B)
+    copy!(S, GB)
+    CUDArt.device_synchronize()
+    @test A[:,3:4] == B
+    GB = CUDArt.CudaPitchedArray(2B)
+    copy!(S, GB)
+    CUDArt.device_synchronize()
+    @test A[:,3:4] == 2B
     # Executing kernels
     a = rand(Float32, 3, 4)
     b = rand(Float32, 3, 4)
