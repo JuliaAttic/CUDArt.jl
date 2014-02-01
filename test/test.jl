@@ -160,7 +160,7 @@ if CUDArt.devcount() > 1
         end
         for i = 1:length(results)
             r = results[i]
-            @test sleeptime <= (r[2]-r[1]) <= 1.2*sleeptime
+            @test sleeptime <= (r[2]-r[1]) <= 1.1*sleeptime
             @test r[3] == devlist[mod1(i, 2)]
         end
         nothing

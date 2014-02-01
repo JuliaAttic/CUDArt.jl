@@ -28,7 +28,7 @@ function launch(f::CuFunction, grid::CudaDims, block::CudaDims, args::Tuple; shm
         f.handle, gx, gy, gz, tx, ty, tz, shmem_bytes, stream, kernel_args, 0))
 end
 
-# Note this is asynchronous wrt the host
+# Note this is asynchronous wrt the host, but you can wait on the stream
 function cudasleep(secs; dev::Integer=device(), stream=null_stream)
     device(dev)
     rate = attribute(dev, rt.cudaDevAttrClockRate)
