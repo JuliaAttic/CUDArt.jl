@@ -5,6 +5,7 @@ export
     driver_version, runtime_version,
     CuModule, CuFunction, unload,
     AbstractCudaArray, CudaArray, CudaPitchedArray, HostArray,
+    AbstractCudaArray, CudaArray, CudaPitchedArray,
     to_host, pitchel, pitchbytes,
 #     dim3, configure_call, 
     launch, device_synchronize,
