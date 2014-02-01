@@ -65,10 +65,10 @@ function cudaThreadSetCacheConfig(cacheConfig)
   checkerror(ccall( (:cudaThreadSetCacheConfig, libcudart), cudaError_t, (cudaFuncCache,), cacheConfig))
 end
 function cudaGetLastError()
-  checkerror(ccall( (:cudaGetLastError, libcudart), cudaError_t, (), ))
+  ccall( (:cudaGetLastError, libcudart), cudaError_t, (), )
 end
 function cudaPeekAtLastError()
-  checkerror(ccall( (:cudaPeekAtLastError, libcudart), cudaError_t, (), ))
+  ccall( (:cudaPeekAtLastError, libcudart), cudaError_t, (), )
 end
 function cudaGetErrorString(error)
   ccall( (:cudaGetErrorString, libcudart), Ptr{Uint8}, (cudaError_t,), error)
