@@ -59,6 +59,9 @@ type HostArray{T,N} <: AbstractArray{T,N}
     data::Array{T,N}
 end
 
+typealias Arrays{T} Union(Array{T},HostArray{T},AbstractCudaArray{T})
+typealias ContiguousArrays{T} Union(Array{T},HostArray{T},CudaArray{T})
+
 ###################
 # Implementations #
 ###################
@@ -176,7 +179,7 @@ if debugMemory
     end
 end
 
-function copy!{T}(dst::Union(Array{T},HostArray{T},CudaArray{T}), src::Union(Array{T},HostArray{T},CudaArray{T}); stream=null_stream)
+function copy!{T}(dst::ContiguousArrays{T}, src::ContiguousArrays{T}; stream=null_stream)
     if length(dst) != length(src)
         throw(ArgumentError("Inconsistent array length."))
     end
@@ -280,7 +283,7 @@ end
 
 
 pitchedptr(g::CudaPitchedArray) = pointer(g)
-function pitchedptr(a::Array)
+function pitchedptr(a::ContiguousArrays)
     1 <= ndims(a) <= 3 || error("Supports only dimensions 1, 2, or 3")
     rt.cudaPitchedPtr(pointer(a), size(a,1)*sizeof(eltype(a)), size(a,1), size(a,2))
 end
@@ -295,14 +298,14 @@ rawpointer(g::CudaPitchedArray) = g.ptr.ptr
 
 CudaExtent{T}(a::AbstractCudaArray{T}) = CudaExtent(pitchbytes(a), size(a,2), size(a,3))
 
-function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},CudaPitchedArray{T}); kwargs...)
+function copy!{T}(dst::Arrays{T}, src::Arrays{T}; kwargs...)
     if size(dst) != size(src)
         throw(DimensionMismatch("Size $(size(dst)) of dst is not equal to $(size(src)) of src"))
     end
     copy!(dst, map(d->1:d, size(dst)), src, map(d->1:d, size(src)); kwargs...)
 end
 
-function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), dstI::(Union(Int,Range1{Int})...), src::Union(Array{T},CudaPitchedArray{T}), srcI::(Union(Int,Range1{Int})...); stream=null_stream)
+function copy!{T}(dst::Arrays{T}, dstI::(Union(Int,Range1{Int})...), src::Arrays{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
     nd = length(srcI)
     if length(dstI) != nd
         throw(DimensionMismatch("Destination of $(length(dstI)) dimensions differs from dimensionality $nd of src"))
@@ -320,7 +323,8 @@ function copy!{T}(dst::Union(Array{T},CudaPitchedArray{T}), dstI::(Union(Int,Ran
     dst
 end
 
-function get!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},CudaPitchedArray{T}), srcI::(Union(Int,Range1{Int})...), default; kwargs...)
+
+function cudaget!{T}(dst::Arrays{T}, src::Arrays{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...)
     nd = length(srcI)
     if ndims(dst) != nd
         throw(DimensionMismatch("Destination of $(ndims(dst)) dimensions differs from dimensionality $nd of src"))
@@ -338,6 +342,10 @@ function get!{T}(dst::Union(Array{T},CudaPitchedArray{T}), src::Union(Array{T},C
     end
     dst
 end
+get!{T}(dst::AbstractCudaArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
+get!{T}(dst::AbstractCudaArray{T}, src::Arrays{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
+get!{T}(dst::Arrays{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
+
 
 function fill!{T}(X::CudaPitchedArray{T}, val; stream=null_stream)
     valT = convert(T, val)
@@ -385,7 +393,6 @@ setindex!(ha, val, i, j) = setindex!(ha.data, val, i, j)
 setindex!(ha, val, i...) = setindex!(ha.data, val, i...)
 pointer(ha::HostArray)    = pointer(ha.data)
 rawpointer(ha::HostArray) = pointer(ha)
-pitchedptr(ha::HostArray) = pointer(ha)
 pitch(ha::HostArray) = size(ha,1)*sizeof(eltype(ha))
 convert{T}(::Type{Ptr{None}}, ha::HostArray{T}) = ha.ptr
 fill!(ha::HostArray, val) = fill!(ha.data, val)
