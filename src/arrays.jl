@@ -1,10 +1,67 @@
-####################
-#                  #
-# CUDA Array types #
-#                  #
-####################
+###############################
+# CUDA Array and memory types #
+###############################
 
 abstract AbstractCudaArray{T,N}
+
+# Set the following to true to store a backtrace
+# at allocation time, to identify where each array comes from
+const debugMemory = false
+
+# A raw pointer
+type CudaDevicePtr{T}
+    ptr::Ptr{T}
+end
+
+# Contiguous arrays on the GPU
+if !debugMemory
+    type CudaArray{T,N} <: AbstractCudaArray{T,N}
+        ptr::CudaDevicePtr{T}
+        dims::NTuple{N,Int}
+        dev::Int
+    end
+else
+    type CudaArray{T,N} <: AbstractCudaArray{T,N}
+        ptr::CudaDevicePtr{T}
+        dims::NTuple{N,Int}
+        dev::Int
+        bt
+
+        function CudaArray(ptr::CudaDevicePtr{T}, dims::NTuple{N,Int}, dev::Integer)
+            new(ptr, dims, dev, backtrace())
+        end
+    end
+end
+
+# Layout-optimized 1-, 2-, and 3-dimensional arrays
+if !debugMemory
+    type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
+        ptr::rt.cudaPitchedPtr
+        dims::NTuple{N,Int}
+        dev::Int
+    end
+else
+    type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
+        ptr::rt.cudaPitchedPtr
+        dims::NTuple{N,Int}
+        dev::Int
+        bt
+
+        function CudaPitchedArray(ptr::rt.cudaPitchedPtr, dims::NTuple{N,Int}, dev::Integer)
+            new(ptr, dims, dev, backtrace())
+        end
+    end
+end
+
+# Pinned memory on the host
+type HostArray{T,N} <: AbstractArray{T,N}
+    ptr::Ptr{Void}
+    data::Array{T,N}
+end
+
+###################
+# Implementations #
+###################
 
 length(g::AbstractCudaArray) = prod(g.dims)
 size(g::AbstractCudaArray) = g.dims
@@ -17,7 +74,6 @@ device(A::AbstractCudaArray) = A.dev
 device(A::AbstractArray) = -1  # for host
 
 pointer(g::AbstractCudaArray) = g.ptr
-# free(g::AbstractCudaArray) = free(rawpointer(g))
 
 to_host{T}(g::AbstractCudaArray{T}) = copy!(Array(T, size(g)), g)
 
@@ -25,11 +81,7 @@ to_host{T}(g::AbstractCudaArray{T}) = copy!(Array(T, size(g)), g)
 #############################
 # Low-level memory handling #
 #############################
-const debugMemory = false
 
-type CudaDevicePtr{T}
-    ptr::Ptr{T}
-end
 CudaDevicePtr() = CudaDevicePtr(C_NULL)
 CudaDevicePtr(T::Type) = CudaDevicePtr(convert(Ptr{T},C_NULL))
 convert{T}(::Type{Ptr{T}}, p::CudaDevicePtr{T}) = p.ptr
@@ -80,25 +132,6 @@ cudamemcpykind(dst, src) = cudamemcpykind(pointer(dst), pointer(src))
 # CudaArray: contiguous array on GPU #
 ######################################
 
-if !debugMemory
-    type CudaArray{T,N} <: AbstractCudaArray{T,N}
-        ptr::CudaDevicePtr{T}
-        dims::NTuple{N,Int}
-        dev::Int
-    end
-else
-    type CudaArray{T,N} <: AbstractCudaArray{T,N}
-        ptr::CudaDevicePtr{T}
-        dims::NTuple{N,Int}
-        dev::Int
-        bt
-        
-        function CudaArray(ptr::CudaDevicePtr{T}, dims::NTuple{N,Int}, dev::Integer)
-            new(ptr, dims, dev, backtrace())
-        end
-    end
-end
-
 CudaArray(T::Type, dims::Integer...) = CudaArray(T, dims)
 
 function CudaArray(T::Type, dims::Dims)
@@ -143,6 +176,15 @@ if debugMemory
     end
 end
 
+function copy!{T}(dst::Union(Array{T},HostArray{T},CudaArray{T}), src::Union(Array{T},HostArray{T},CudaArray{T}); stream=null_stream)
+    if length(dst) != length(src)
+        throw(ArgumentError("Inconsistent array length."))
+    end
+    nbytes = length(src) * sizeof(T)
+    rt.cudaMemcpyAsync(dst, src, nbytes, cudamemcpykind(dst, src), stream)
+    return dst
+end
+
 function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
     valT = convert(T, val)
     func = ptxdict[(device(), "fill_contiguous", T)]
@@ -155,25 +197,6 @@ end
 #############################################################################
 # CudaPitchedArray: layout-optimized 1-, 2- and 3-dimensional arrays on GPU #
 #############################################################################
-
-if !debugMemory
-    type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
-        ptr::rt.cudaPitchedPtr
-        dims::NTuple{N,Int}
-        dev::Int
-    end
-else
-    type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
-        ptr::rt.cudaPitchedPtr
-        dims::NTuple{N,Int}
-        dev::Int
-        bt
-        
-        function CudaPitchedArray(ptr::rt.cudaPitchedPtr, dims::NTuple{N,Int}, dev::Integer)
-            new(ptr, dims, dev, backtrace())
-        end
-    end
-end
 
 CudaPitchedArray(T::Type, dims::Integer...) = CudaPitchedArray(T, dims)
 
@@ -328,11 +351,6 @@ end
 # HostArray (pinned memory on host) #
 #####################################
 
-type HostArray{T,N} <: AbstractArray{T,N}
-    ptr::Ptr{Void}
-    data::Array{T,N}
-end
-
 HostArray{T}(::Type{T}, sz...; flags::Integer=rt.cudaHostAllocDefault) = HostArray(T, sz, flags=flags)
 function HostArray{T}(::Type{T}, sz::Dims; flags::Integer=rt.cudaHostAllocDefault)
     p = Ptr{Void}[C_NULL]
@@ -368,14 +386,4 @@ rawpointer(ha::HostArray) = pointer(ha)
 pitchedptr(ha::HostArray) = pointer(ha)
 pitch(ha::HostArray) = size(ha,1)*sizeof(eltype(ha))
 convert{T}(::Type{Ptr{None}}, ha::HostArray{T}) = ha.ptr
-
-
-
-function copy!{T}(dst::Union(Array{T},HostArray{T},CudaArray{T}), src::Union(Array{T},HostArray{T},CudaArray{T}); stream=null_stream)
-    if length(dst) != length(src)
-        throw(ArgumentError("Inconsistent array length."))
-    end
-    nbytes = length(src) * sizeof(T)
-    rt.cudaMemcpyAsync(dst, src, nbytes, cudamemcpykind(dst, src), stream)
-    return dst
-end
+fill!(ha::HostArray, val) = fill!(ha.data, val)
