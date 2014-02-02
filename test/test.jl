@@ -69,6 +69,11 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     # Test CudaArrays and CudaPitchedArrays
     for AT in (CUDArt.CudaArray, CUDArt.CudaPitchedArray)
         g = AT(Float64, (5,3))
+        if AT == CUDArt.CudaPitchedArray
+            p = pointer(g)
+            @test p.xsize == 5
+            @test p.ysize == 3
+        end
         h = CUDArt.to_host(g)
         @test typeof(h) == Array{Float64,2}
         @test size(h) == (5,3)
@@ -76,6 +81,11 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         h2 = CUDArt.to_host(g2)
         @test typeof(h2) == Array{Int,1}
         @test h2 == 1:5
+        if AT == CUDArt.CudaPitchedArray
+            p = pointer(g2)
+            @test p.xsize == 5
+            @test p.ysize == 1
+        end
         # fill!
         fill!(g2, uint8(0))
         h2 = CUDArt.to_host(g2)
@@ -113,6 +123,18 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     get!(d_dest, d_src, (3,5:6), 7.3)
     h_dest = CUDArt.to_host(d_dest)
     @test isequal(h_dest, [15 7.3])
+    # Copies between CudaPitchedArrays and CudaArrays
+    A = rand(uint16(5:11), 7, 2)
+    GA = CUDArt.CudaArray(A)
+    GP = CUDArt.CudaPitchedArray(eltype(A), size(A))
+    copy!(GP, GA)
+    H = CUDArt.to_host(GP)
+    @test H == A
+    A[3,2] = 0
+    copy!(GP, A)
+    copy!(GA, GP)
+    H = CUDArt.to_host(GA)
+    @test H == A
     # HostArray (pinned memory)
     A = CUDArt.HostArray(Int32, (6,4))
     A[2,2] = 7

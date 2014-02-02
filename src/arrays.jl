@@ -206,10 +206,12 @@ function CudaPitchedArray(T::Type, dims::Dims)
     p = Array(rt.cudaPitchedPtr, 1)
     ext = CudaExtent(T, dims)
     rt.cudaMalloc3D(p, ext)
-    cptr = p[1].ptr
+    pp = p[1]
+    pp = rt.cudaPitchedPtr(pp, dims[1]) # correct the xsize
+    cptr = pp.ptr
     dev = device()
     cuda_ptrs[cptr] = dev
-    g = CudaPitchedArray{T,length(dims)}(p[1], dims, dev)
+    g = CudaPitchedArray{T,length(dims)}(pp, dims, dev)
     finalizer(g, free)
     g
 end

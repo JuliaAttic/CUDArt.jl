@@ -65,5 +65,6 @@ end
 
 # Convenience constructors
 cudaPitchedPtr() = cudaPitchedPtr(C_NULL, 0, 0, 0)
+cudaPitchedPtr(pp::cudaPitchedPtr, xsize::Integer) = cudaPitchedPtr(pp.ptr, pp.pitch, xsize, pp.ysize)
 
 end
