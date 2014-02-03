@@ -9,7 +9,7 @@ export
     to_host, pitchel, pitchbytes,
 #     dim3, configure_call, 
     launch, device_synchronize,
-    Stream, null_stream,
+    Stream, null_stream, cudasleep,
     destroy, free, cudafinalizer
 
 import Base: length, size, ndims, eltype, pointer, convert, reinterpret, show,

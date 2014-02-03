@@ -30,9 +30,13 @@ end
 
 # Note this is asynchronous wrt the host, but you can wait on the stream
 function cudasleep(secs; dev::Integer=device(), stream=null_stream)
-    device(dev)
+    device(dev) 
     rate = attribute(dev, rt.cudaDevAttrClockRate)
-    tics = int64(1000*rate*secs)  # rate is in kHz
     func = ptxdict[(dev, "clock_block")]
-    launch(func, 1, 1, (tics,), stream=stream)
+    twatchdog = 1.95  # watchdog timer kicks in after 2 secs
+    while secs > 0
+        tics = int64(1000*rate*min(twatchdog, secs))  # rate is in kHz
+        secs -= twatchdog
+        launch(func, 1, 1, (tics,), stream=stream)
+    end
 end
