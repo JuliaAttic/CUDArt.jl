@@ -78,6 +78,15 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         @test typeof(h) == Array{Float64,2}
         @test size(h) == (5,3)
         g2 = AT(1:5)
+        g3 = similar(g2)
+        @test eltype(g3) == eltype(g2)
+        @test size(g3) == size(g2)
+        g3 = similar(g2, Float32)
+        @test eltype(g3) == Float32
+        g3 = similar(g2, (7,))
+        @test eltype(g3) == Int
+        @test size(g3) == (7,)
+        @test typeof(g3) == AT{Int, 1}
         h2 = CUDArt.to_host(g2)
         @test typeof(h2) == Array{Int,1}
         @test h2 == 1:5

@@ -12,7 +12,8 @@ export
     Stream, null_stream, cudasleep,
     destroy, free, cudafinalizer
 
-import Base: length, size, ndims, eltype, pointer, convert, reinterpret, show,
+import Base: length, size, ndims, eltype, similar, pointer,
+    convert, reinterpret, show,
     copy!, get!, fill!, wait
 
 # Prepare the CUDA runtime API bindings

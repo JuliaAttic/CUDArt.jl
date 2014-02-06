@@ -147,6 +147,11 @@ CudaArray{T,N}(a::Array{T,N}; stream=null_stream) = copy!(CudaArray(T, size(a)),
 CudaArray{T,N}(a::HostArray{T,N}; stream=null_stream) = copy!(CudaArray(T, size(a)), a; stream=stream)
 CudaArray{T,N}(a::AbstractArray{T,N}) = CudaArray(convert(Array{T,N}, a))
 
+similar(g::CudaArray, T, dims::Dims) = CudaArray(T, dims)
+similar(g::CudaArray) = CudaArray(eltype(g), size(g))
+similar(g::CudaArray, T) = CudaArray(T, size(g))
+similar(g::CudaArray, dims::Dims) = CudaArray(eltype(g), dims)
+
 convert{T}(::Type{Ptr{T}}, g::CudaArray) = convert(Ptr{T}, pointer(g))
 
 # convert{T,N}(::Type{CudaArray{T,N}}, g::CudaArray{T,N}) = g
@@ -221,6 +226,11 @@ end
 
 CudaPitchedArray{T,N}(a::Array{T,N}) = copy!(CudaPitchedArray(T, size(a)), a)
 CudaPitchedArray{T,N}(a::AbstractArray{T,N}) = CudaPitchedArray(convert(Array{T,N}, a))
+
+similar(g::CudaPitchedArray, T, dims::Dims) = CudaPitchedArray(T, dims)
+similar(g::CudaPitchedArray) = CudaPitchedArray(eltype(g), size(g))
+similar(g::CudaPitchedArray, T) = CudaPitchedArray(T, size(g))
+similar(g::CudaPitchedArray, dims::Dims) = CudaPitchedArray(eltype(g), dims)
 
 convert(::Type{rt.cudaPitchedPtr}, g::CudaPitchedArray) = pointer(g)
 convert{T}(::Type{Ptr{T}}, g::CudaPitchedArray{T}) = convert(Ptr{T}, rawpointer(g))
