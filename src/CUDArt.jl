@@ -8,7 +8,7 @@ export
     AbstractCudaArray, CudaArray, CudaPitchedArray,
     to_host, pitchel, pitchbytes,
 #     dim3, configure_call, 
-    launch, device_synchronize,
+    launch, device_synchronize, synchronize,
     Stream, null_stream, cudasleep,
     destroy, free, cudafinalizer
 
