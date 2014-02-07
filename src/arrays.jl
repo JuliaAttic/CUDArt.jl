@@ -297,6 +297,11 @@ function pitchedptr(a::ContiguousArrays)
     1 <= ndims(a) <= 3 || error("Supports only dimensions 1, 2, or 3")
     rt.cudaPitchedPtr(pointer(a), size(a,1)*sizeof(eltype(a)), size(a,1), size(a,2))
 end
+function pitchedptr{T}(p::Ptr{T}, sz)
+    1 <= length(sz) <= 3 || error("Supports only dimensions 1, 2, or 3")
+    rt.cudaPitchedPtr(p, sz[1]*sizeof(T), sz[1], length(sz) > 1 ? sz[2] : 1)
+end
+
 
 pitchbytes(g::CudaArray) = size(g,1)*sizeof(eltype(g))
 pitchbytes(g::CudaPitchedArray) = g.ptr.pitch
@@ -329,6 +334,21 @@ function copy!{T}(dst::Arrays{T}, dstI::(Union(Int,Range1{Int})...), src::Arrays
     srcpos = CudaPos(eltype(src),map(first, srcI))
     dstpos = CudaPos(eltype(dst),map(first, dstI))
     params = [rt.cudaMemcpy3DParms(C_NULL, srcpos, pitchedptr(src), C_NULL, dstpos, pitchedptr(dst), ext, cudamemcpykind(dst, src))]
+    rt.cudaMemcpy3DAsync(params, stream)
+    dst
+end
+
+function copy!{T}(dst::Ptr{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
+    nd = length(srcI)
+    for i = 1:nd
+        first(srcI[i]) >= 1 && last(srcI[i]) <= size(src, i) || throw(DimensionMismatch("In dimension $i, source range of $(srcI[i]) is not within array dimension of $(size(src,i))"))
+    end
+    sz = map(length, srcI)
+    ext = CudaExtent(eltype(src),sz)
+    srcpos = CudaPos(eltype(src),map(first, srcI))
+    dstpos = CudaPos(0, 0, 0)
+    pdst = pitchedptr(dst, sz)
+    params = [rt.cudaMemcpy3DParms(C_NULL, srcpos, pitchedptr(src), C_NULL, dstpos, pdst, ext, rt.cudaMemcpyDeviceToHost)]
     rt.cudaMemcpy3DAsync(params, stream)
     dst
 end
