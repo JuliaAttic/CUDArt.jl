@@ -50,6 +50,40 @@ immutable CuFunction
     end
 end
 
+# A cache of useful CUDA kernels
+const global ptxdict = Dict()
+
+function init!(mdutils::Array{CuModule}, devlist)
+    funcnames = ["fill_contiguous", "fill_pitched"]
+    funcexts  = ["double","float","int64","uint64","int32","uint32","int16","uint16","int8","uint8"]
+    datatypes = [Float64,Float32,Int64,Uint64,Int32,Uint32,Int16,Uint16,Int8,Uint8]
+    utilfile  = joinpath(Pkg.dir(), "CUDArt/deps/utils.ptx")
+    # initialize all devices
+    for idev = 1:length(devlist)
+        dev = devlist[idev]
+        device(dev)
+        # allocate and destroy memory to force initialization
+        free(malloc(Uint8, 1))
+        # Load the utility functions
+        mdutils[idev] = CuModule(utilfile, false)
+        for func in funcnames
+            for i = 1:length(funcexts)
+                ptxdict[(dev, func, datatypes[i])] = CuFunction(mdutils[idev], func*"_"*funcexts[i])
+            end
+        end
+        ptxdict[(dev, "clock_block")] = CuFunction(mdutils[idev], "clock_block")
+    end
+end
+
+function close!(mdutils::Array{CuModule}, devlist)
+    for idev = 1:length(devlist)
+        if mdutils[idev].handle != C_NULL
+            unload(mdutils[idev])
+        end
+        device_reset(devlist[idev])
+    end
+end
+
 const driver_error_descriptions = (Int=>ASCIIString)[
         0 => "Success",
         1 => "Invalid value",
