@@ -8,12 +8,20 @@ function checkdrv(code::Integer)
     nothing
 end
 
+function checkdrv(code::Integer, msg::String)
+    if code != 0
+        warn(msg)
+        error(driver_error_descriptions[int(code)])
+    end
+    nothing
+end
+
 immutable CuModule
     handle::Ptr{Void}
 
     function CuModule(filename::ASCIIString, finalize::Bool = true)
         a = Array(Ptr{Void}, 1)
-        checkdrv(ccall((:cuModuleLoad, libcuda), Cint, (Ptr{Ptr{Void}}, Ptr{Cchar}), a, filename))
+        checkdrv(ccall((:cuModuleLoad, libcuda), Cint, (Ptr{Ptr{Void}}, Ptr{Cchar}), a, filename), filename)
         md = new(a[1])
         if finalize
             finalizer(md, unload)
