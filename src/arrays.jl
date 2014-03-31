@@ -59,8 +59,8 @@ type HostArray{T,N} <: AbstractArray{T,N}
     data::Array{T,N}
 end
 
-typealias Arrays{T} Union(Array{T},HostArray{T},AbstractCudaArray{T})
-typealias ContiguousArrays{T} Union(Array{T},HostArray{T},CudaArray{T})
+typealias CdArray{T} Union(Array{T},HostArray{T},AbstractCudaArray{T})
+typealias ContiguousArray{T} Union(Array{T},HostArray{T},CudaArray{T})
 
 ###################
 # Implementations #
@@ -184,7 +184,7 @@ if debugMemory
     end
 end
 
-function copy!{T}(dst::ContiguousArrays{T}, src::ContiguousArrays{T}; stream=null_stream)
+function copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray{T}; stream=null_stream)
     if length(dst) != length(src)
         throw(ArgumentError("Inconsistent array length."))
     end
@@ -293,7 +293,7 @@ end
 
 
 pitchedptr(g::CudaPitchedArray) = pointer(g)
-function pitchedptr(a::ContiguousArrays)
+function pitchedptr(a::ContiguousArray)
     1 <= ndims(a) <= 3 || error("Supports only dimensions 1, 2, or 3")
     rt.cudaPitchedPtr(pointer(a), size(a,1)*sizeof(eltype(a)), size(a,1), size(a,2))
 end
@@ -313,14 +313,14 @@ rawpointer(g::CudaPitchedArray) = g.ptr.ptr
 
 CudaExtent{T}(a::AbstractCudaArray{T}) = CudaExtent(pitchbytes(a), size(a,2), size(a,3))
 
-function copy!{T}(dst::Arrays{T}, src::Arrays{T}; kwargs...)
+function copy!{T}(dst::CdArray{T}, src::CdArray{T}; kwargs...)
     if size(dst) != size(src)
         throw(DimensionMismatch("Size $(size(dst)) of dst is not equal to $(size(src)) of src"))
     end
     copy!(dst, map(d->1:d, size(dst)), src, map(d->1:d, size(src)); kwargs...)
 end
 
-function copy!{T}(dst::Arrays{T}, dstI::(Union(Int,Range1{Int})...), src::Arrays{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
+function copy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::CdArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
     nd = length(srcI)
     if length(dstI) != nd
         throw(DimensionMismatch("Destination of $(length(dstI)) dimensions differs from dimensionality $nd of src"))
@@ -353,8 +353,7 @@ function copy!{T}(dst::Ptr{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range
     dst
 end
 
-
-function cudaget!{T}(dst::Arrays{T}, src::Arrays{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...)
+function cudaget!{T}(dst::CdArray{T}, src::CdArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...)
     nd = length(srcI)
     if ndims(dst) != nd
         throw(DimensionMismatch("Destination of $(ndims(dst)) dimensions differs from dimensionality $nd of src"))
@@ -373,8 +372,8 @@ function cudaget!{T}(dst::Arrays{T}, src::Arrays{T}, srcI::(Union(Int,Range1{Int
     dst
 end
 get!{T}(dst::AbstractCudaArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
-get!{T}(dst::AbstractCudaArray{T}, src::Arrays{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
-get!{T}(dst::Arrays{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
+get!{T}(dst::AbstractCudaArray{T}, src::CdArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
+get!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
 
 
 function fill!{T}(X::CudaPitchedArray{T}, val; stream=null_stream)

@@ -1,5 +1,5 @@
 cubox(p::CudaDevicePtr) = cubox(p.ptr)
-cubox(a::Arrays) = cubox(rawpointer(a))
+cubox(a::CdArray) = cubox(rawpointer(a))
 cubox{T}(x::T) = T[x]
 
 function launch(f::CuFunction, grid::CudaDims, block::CudaDims, args::Tuple; shmem_bytes::Int=4, stream=null_stream)
