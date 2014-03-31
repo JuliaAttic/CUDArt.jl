@@ -33,7 +33,7 @@ name(p::rt.cudaDeviceProp) = bytestring(convert(Ptr{Uint8}, pointer([p.name])))
 
 # criteria = dev -> Bool
 function devices(criteria::Function; nmax::Integer = typemax(Int))
-    devlist = find(map(criteria, 0:devcount()-1))-1
+    devlist = find(map(criteria, 0:devcount().-1)).-1
     isempty(devlist) && error("No suitable devices found")
     devlist[1:min(nmax, length(devlist))]
 end
