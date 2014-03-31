@@ -338,16 +338,17 @@ function copy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::CdArr
     dst
 end
 
-function copy!{T}(dst::Ptr{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
+function copy!{T}(dst::ContiguousArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
     nd = length(srcI)
     for i = 1:nd
         first(srcI[i]) >= 1 && last(srcI[i]) <= size(src, i) || throw(DimensionMismatch("In dimension $i, source range of $(srcI[i]) is not within array dimension of $(size(src,i))"))
+        length(srcI[i]) == size(dst, i) || throw(DimensionMismatch("In dimension $i, the size $(size(dst, i)) of the destination is inconsistent with the size $(length(srcI[i])) being copied"))
     end
     sz = map(length, srcI)
     ext = CudaExtent(eltype(src),sz)
     srcpos = CudaPos(eltype(src),map(first, srcI))
     dstpos = CudaPos(0, 0, 0)
-    pdst = pitchedptr(dst, sz)
+    pdst = pitchedptr(dst)
     params = [rt.cudaMemcpy3DParms(C_NULL, srcpos, pitchedptr(src), C_NULL, dstpos, pdst, ext, rt.cudaMemcpyDeviceToHost)]
     rt.cudaMemcpy3DAsync(params, stream)
     dst
