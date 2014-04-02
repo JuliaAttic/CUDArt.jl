@@ -12,7 +12,7 @@ export
     Stream, null_stream, cudasleep,
     destroy, free, cudafinalizer
 
-import Base: length, size, ndims, eltype, similar, pointer,
+import Base: length, size, ndims, eltype, similar, pointer, stride,
     convert, reinterpret, show,
     copy!, get!, fill!, wait
 

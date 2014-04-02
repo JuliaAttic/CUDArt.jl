@@ -59,7 +59,7 @@ type HostArray{T,N} <: AbstractArray{T,N}
     data::Array{T,N}
 end
 
-typealias CdArray{T} Union(Array{T},HostArray{T},AbstractCudaArray{T})
+typealias CdArray{T} Union(DenseArray{T},HostArray{T},AbstractCudaArray{T})
 typealias ContiguousArray{T} Union(Array{T},HostArray{T},CudaArray{T})
 
 ###################
@@ -147,6 +147,8 @@ CudaArray{T,N}(a::Array{T,N}; stream=null_stream) = copy!(CudaArray(T, size(a)),
 CudaArray{T,N}(a::HostArray{T,N}; stream=null_stream) = copy!(CudaArray(T, size(a)), a; stream=stream)
 CudaArray{T,N}(a::AbstractArray{T,N}) = CudaArray(convert(Array{T,N}, a))
 
+stride(g::CudaArray, dim::Integer) = prod(size(g)[1:dims-1])
+
 similar(g::CudaArray, T, dims::Dims) = CudaArray(T, dims)
 similar(g::CudaArray) = CudaArray(eltype(g), size(g))
 similar(g::CudaArray, T) = CudaArray(T, size(g))
@@ -225,7 +227,12 @@ function CudaPitchedArray(T::Type, dims::Dims)
 end
 
 CudaPitchedArray{T,N}(a::Array{T,N}) = copy!(CudaPitchedArray(T, size(a)), a)
+CudaPitchedArray{T,N}(a::SharedArray{T,N}) = CudaPitchedArray(sdata(a))
 CudaPitchedArray{T,N}(a::AbstractArray{T,N}) = CudaPitchedArray(convert(Array{T,N}, a))
+
+stride(g::CudaPitchedArray, dim::Integer) = dim == 1 ? 1 :
+                                            dim == 2 ? pitchel(g) :
+                                            dim == 3 ? pitchel(g)*size(g,2) : pitchel(g)*size(g,2)*size(g,3)
 
 similar(g::CudaPitchedArray, T, dims::Dims) = CudaPitchedArray(T, dims)
 similar(g::CudaPitchedArray) = CudaPitchedArray(eltype(g), size(g))
@@ -330,6 +337,8 @@ function copy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::CdArr
         first(dstI[i]) >= 1 && last(dstI[i]) <= size(dst, i) || throw(DimensionMismatch("In dimension $i, destination range of $(dstI[i]) is not within array dimension of $(size(dst,i))"))
         first(srcI[i]) >= 1 && last(srcI[i]) <= size(src, i) || throw(DimensionMismatch("In dimension $i, source range of $(srcI[i]) is not within array dimension of $(size(src,i))"))
     end
+    checkstrides_pitched(dst)
+    checkstrides_pitched(src)
     ext = CudaExtent(eltype(src),map(length, srcI))
     srcpos = CudaPos(eltype(src),map(first, srcI))
     dstpos = CudaPos(eltype(dst),map(first, dstI))
@@ -338,12 +347,13 @@ function copy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::CdArr
     dst
 end
 
-function copy!{T}(dst::ContiguousArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
+function copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
     nd = length(srcI)
     for i = 1:nd
         first(srcI[i]) >= 1 && last(srcI[i]) <= size(src, i) || throw(DimensionMismatch("In dimension $i, source range of $(srcI[i]) is not within array dimension of $(size(src,i))"))
         length(srcI[i]) == size(dst, i) || throw(DimensionMismatch("In dimension $i, the size $(size(dst, i)) of the destination is inconsistent with the size $(length(srcI[i])) being copied"))
     end
+    checkstrides_pitched(dst)
     sz = map(length, srcI)
     ext = CudaExtent(eltype(src),sz)
     srcpos = CudaPos(eltype(src),map(first, srcI))
@@ -428,3 +438,8 @@ rawpointer(ha::HostArray) = pointer(ha)
 pitch(ha::HostArray) = size(ha,1)*sizeof(eltype(ha))
 convert{T}(::Type{Ptr{None}}, ha::HostArray{T}) = ha.ptr
 fill!(ha::HostArray, val) = fill!(ha.data, val)
+
+function checkstrides_pitched(A)
+    stride(A, 1) == 1 || error("A must have a stride of 1 along the first dimension")
+    stride(A, 3) == stride(A, 2) * size(A, 2) || error("A must be contiguous for dimension 2")
+end
