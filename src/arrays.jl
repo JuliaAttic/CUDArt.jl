@@ -320,14 +320,23 @@ rawpointer(g::CudaPitchedArray) = g.ptr.ptr
 
 CudaExtent{T}(a::AbstractCudaArray{T}) = CudaExtent(pitchbytes(a), size(a,2), size(a,3))
 
-function copy!{T}(dst::CdArray{T}, src::CdArray{T}; kwargs...)
+copy!{T}(dst::AbstractCudaArray{T}, src::AbstractCudaArray{T}; kwargs...) = cudacopy!(dst, src; kwargs...)
+copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}; kwargs...) = cudacopy!(dst, src; kwargs...)
+copy!{T}(dst::AbstractCudaArray{T}, src::CdArray{T}; kwargs...) = cudacopy!(dst, src; kwargs...)
+function cudacopy!{T}(dst::CdArray{T}, src::CdArray{T}; kwargs...)
     if size(dst) != size(src)
         throw(DimensionMismatch("Size $(size(dst)) of dst is not equal to $(size(src)) of src"))
     end
     copy!(dst, map(d->1:d, size(dst)), src, map(d->1:d, size(src)); kwargs...)
 end
 
-function copy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::CdArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
+copy!{T}(dst::AbstractCudaArray{T}, dstI::(Union(Int,Range1{Int})...), src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream) =
+    cudacopy!(dst, dstI, src, srcI, stream=stream)
+copy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream) =
+    cudacopy!(dst, dstI, src, srcI, stream=stream)
+copy!{T}(dst::AbstractCudaArray{T}, dstI::(Union(Int,Range1{Int})...), src::CdArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream) =
+    cudacopy!(dst, dstI, src, srcI, stream=stream)
+function cudacopy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::CdArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
     nd = length(srcI)
     if length(dstI) != nd
         throw(DimensionMismatch("Destination of $(length(dstI)) dimensions differs from dimensionality $nd of src"))
