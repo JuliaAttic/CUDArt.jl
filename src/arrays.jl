@@ -147,7 +147,7 @@ CudaArray{T,N}(a::Array{T,N}; stream=null_stream) = copy!(CudaArray(T, size(a)),
 CudaArray{T,N}(a::HostArray{T,N}; stream=null_stream) = copy!(CudaArray(T, size(a)), a; stream=stream)
 CudaArray{T,N}(a::AbstractArray{T,N}) = CudaArray(convert(Array{T,N}, a))
 
-stride(g::CudaArray, dim::Integer) = prod(size(g)[1:dims-1])
+stride(g::CudaArray, dim::Integer) = prod(size(g)[1:dim-1])
 
 similar(g::CudaArray, T, dims::Dims) = CudaArray(T, dims)
 similar(g::CudaArray) = CudaArray(eltype(g), size(g))
