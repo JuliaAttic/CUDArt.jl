@@ -89,7 +89,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         @test typeof(g3) == AT{Int, 1}
         h2 = CUDArt.to_host(g2)
         @test typeof(h2) == Array{Int,1}
-        @test h2 == 1:5
+        @test h2 == [1:5]
         if AT == CUDArt.CudaPitchedArray
             p = pointer(g2)
             @test p.xsize == 5
@@ -113,7 +113,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         @test all(h .== 8.4)
         fill!(g, NaN)
         h = CUDArt.to_host(g)
-        @test isequal(h, nans(size(g)))
+        @test isequal(h, fill(NaN, size(g)))
         gbig = AT(Int32, (2000,1000))
         fill!(gbig, -17)
         hbig = CUDArt.to_host(gbig)
