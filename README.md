@@ -2,7 +2,7 @@
 
 This is a wrapper of the CUDA Runtime API.
 It also implements some elements from the Driver API for working with CUDA modules and launching kernels.
-It borrows heavily from the CUDA.jl repository created by Dahua Lin.
+It borrows heavily from the [CUDA.jl](https://github.com/JuliaGPU/CUDA.jl) repository created by Dahua Lin.
 
 # Platform support
 
