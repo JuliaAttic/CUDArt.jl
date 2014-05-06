@@ -33,6 +33,8 @@ Start by saying `using CUDArt`, or `import CUDArt` if you prefer to qualify ever
 
 ## GPU initialization
 
+One or more GPUs can be initialized, used for computations, and freed for other uses. There are some complexities in this process due to the interaction with Julia's garbage collection---a CUDA array object allocated in one "session" should not be usable if you close the device and then open a new "session." Fortunately, CUDArt should make the process transparent, and as a user you shouldn't have to think about this at all.
+
 The easiest way to ensure that you get full functionality, with proper cleanup of resources, is by using the `do` block syntax:
 ```julia
 result = devices(dev->true) do devlist
