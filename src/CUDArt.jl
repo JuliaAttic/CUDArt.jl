@@ -1,7 +1,7 @@
 module CUDArt
 
 export
-    device, devices, attribute, capability,
+    device, devices, device_reset, attribute, capability,
     driver_version, runtime_version,
     CuModule, CuFunction, unload,
     AbstractCudaArray, CudaArray, CudaPitchedArray, HostArray,
