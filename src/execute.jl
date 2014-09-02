@@ -1,4 +1,4 @@
-cubox(p::CudaDevicePtr) = cubox(p.ptr)
+cubox(p::CudaPtr) = cubox(p.ptr)
 cubox(a::CdArray) = cubox(rawpointer(a))
 cubox{T}(x::T) = T[x]
 
@@ -21,16 +21,16 @@ function launch(f::CuFunction, grid::CudaDims, block::CudaDims, args::Tuple; shm
         Cuint,  # block dim x
         Cuint,  # block dim y
         Cuint,  # block dim z
-        Cuint,  # shared memory bytes, 
-        Ptr{Void}, # stream 
-        Ptr{Ptr{Void}}, # kernel parameters, 
+        Cuint,  # shared memory bytes,
+        Ptr{Void}, # stream
+        Ptr{Ptr{Void}}, # kernel parameters,
         Ptr{Ptr{Void}}), # extra parameters
         f.handle, gx, gy, gz, tx, ty, tz, shmem_bytes, stream, kernel_args, 0))
 end
 
 # Note this is asynchronous wrt the host, but you can wait on the stream
 function cudasleep(secs; dev::Integer=device(), stream=null_stream)
-    device(dev) 
+    device(dev)
     rate = attribute(dev, rt.cudaDevAttrClockRate)
     func = ptxdict[(dev, "clock_block")]
     twatchdog = 1.95  # watchdog timer kicks in after 2 secs

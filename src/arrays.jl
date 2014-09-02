@@ -9,25 +9,27 @@ abstract AbstractCudaArray{T,N}
 const debugMemory = false
 
 # A raw pointer
-type CudaDevicePtr{T}
+type CudaPtr{T}
     ptr::Ptr{T}
 end
+
+typealias CudaDevicePtr CudaPtr
 
 # Contiguous arrays on the GPU
 if !debugMemory
     type CudaArray{T,N} <: AbstractCudaArray{T,N}
-        ptr::CudaDevicePtr{T}
+        ptr::CudaPtr{T}
         dims::NTuple{N,Int}
         dev::Int
     end
 else
     type CudaArray{T,N} <: AbstractCudaArray{T,N}
-        ptr::CudaDevicePtr{T}
+        ptr::CudaPtr{T}
         dims::NTuple{N,Int}
         dev::Int
         bt
 
-        function CudaArray(ptr::CudaDevicePtr{T}, dims::NTuple{N,Int}, dev::Integer)
+        function CudaArray(ptr::CudaPtr{T}, dims::NTuple{N,Int}, dev::Integer)
             new(ptr, dims, dev, backtrace())
         end
     end
@@ -86,18 +88,18 @@ summary(g::AbstractCudaArray) = string(g)
 # Low-level memory handling #
 #############################
 
-CudaDevicePtr() = CudaDevicePtr(C_NULL)
-CudaDevicePtr(T::Type) = CudaDevicePtr(convert(Ptr{T},C_NULL))
-convert{T}(::Type{Ptr{T}}, p::CudaDevicePtr{T}) = p.ptr
-convert{T}(::Type{Ptr{Void}}, p::CudaDevicePtr{T}) = convert(Ptr{Void}, p.ptr)
+CudaPtr() = CudaPtr(C_NULL)
+CudaPtr(T::Type) = CudaPtr(convert(Ptr{T},C_NULL))
+convert{T}(::Type{Ptr{T}}, p::CudaPtr{T}) = p.ptr
+convert{T}(::Type{Ptr{Void}}, p::CudaPtr{T}) = convert(Ptr{Void}, p.ptr)
 
-rawpointer(p::CudaDevicePtr) = p
+rawpointer(p::CudaPtr) = p
 
 function malloc(T::Type, n::Integer)
     p = Ptr{Void}[C_NULL]
     nbytes = sizeof(T)*n
     rt.cudaMalloc(p, nbytes)
-    cptr = CudaDevicePtr(convert(Ptr{T},p[1]))
+    cptr = CudaPtr(convert(Ptr{T},p[1]))
     finalizer(cptr, free)
     cuda_ptrs[cptr] = device()
     cptr
@@ -111,7 +113,7 @@ malloc(nbytes::Integer) = malloc(Uint8, nbytes)
 # key = ptr, val = device id
 const cuda_ptrs = Dict{Any,Int}()
 
-function free{T}(p::CudaDevicePtr{T})
+function free{T}(p::CudaPtr{T})
     cnull = convert(Ptr{T}, C_NULL)
     if p.ptr != cnull && haskey(cuda_ptrs, p)
         delete!(cuda_ptrs, p)
@@ -120,8 +122,8 @@ function free{T}(p::CudaDevicePtr{T})
     end
 end
 
-typealias Ptrs Union(Ptr, CudaDevicePtr, rt.cudaPitchedPtr)
-typealias CudaPtrs Union(CudaDevicePtr, rt.cudaPitchedPtr)
+typealias Ptrs Union(Ptr, CudaPtr, rt.cudaPitchedPtr)
+typealias CudaPtrs Union(CudaPtr, rt.cudaPitchedPtr)
 
 cudamemcpykind(dstp::Ptr, srcp::Ptr) = rt.cudaMemcpyHostToHost
 cudamemcpykind(dstp::CudaPtrs, srcp::Ptr) = rt.cudaMemcpyHostToDevice
