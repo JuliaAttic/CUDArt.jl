@@ -10,9 +10,10 @@ export
     device, devices, device_reset, attribute, capability,
     driver_version, runtime_version,
     CuModule, CuFunction, unload,
-    AbstractCudaArray, CudaArray, CudaPitchedArray, HostArray,
+    AbstractCudaArray, AbstractCudaVector, AbstractCudaMatrix,
+    CudaArray, CudaVector, CudaMatrix, CudaVecOrMat,
+    CudaPitchedArray, HostArray,
     to_host, pitchel, pitchbytes,
-#     dim3, configure_call,
     launch, device_synchronize, synchronize,
     Stream, null_stream, cudasleep,
     destroy, free, cudafinalizer

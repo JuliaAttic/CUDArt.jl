@@ -2,7 +2,10 @@
 # CUDA Array and memory types #
 ###############################
 
+# Abstract CUDA array types
 abstract AbstractCudaArray{T,N}
+typealias AbstractCudaVector{T} AbstractCudaArray{T,1}
+typealias AbstractCudaMatrix{T} AbstractCudaArray{T,2}
 
 # Set the following to true to store a backtrace
 # at allocation time, to identify where each array comes from
@@ -27,6 +30,11 @@ else
         end
     end
 end
+
+# Vector and matrix aliases
+typealias CudaVector{T} CudaArray{T,1}
+typealias CudaMatrix{T} CudaArray{T,2}
+typealias CudaVecOrMat{T} Union(CudaVector{T}, CudaMatrix{T})
 
 # Layout-optimized 1-, 2-, and 3-dimensional arrays
 if !debugMemory
