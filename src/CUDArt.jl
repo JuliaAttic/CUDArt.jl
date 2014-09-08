@@ -6,14 +6,16 @@ export
     # pointer symbols
     CudaPtr, convert, rawpointer, CUDA_NULL, integer, unsigned,
     eltype, ==, -, +, zero, one,
+    # array symbols
+    AbstractCudaArray, AbstractCudaVector, AbstractCudaMatrix,
+    CudaArray, CudaVector, CudaMatrix, CudaVecOrMat,
+    CudaPitchedArray, HostArray,
+    to_host, similar,
     # other symbols
     device, devices, device_reset, attribute, capability,
     driver_version, runtime_version,
     CuModule, CuFunction, unload,
-    AbstractCudaArray, AbstractCudaVector, AbstractCudaMatrix,
-    CudaArray, CudaVector, CudaMatrix, CudaVecOrMat,
-    CudaPitchedArray, HostArray,
-    to_host, pitchel, pitchbytes,
+    pitchel, pitchbytes,
     launch, device_synchronize, synchronize,
     Stream, null_stream, cudasleep,
     destroy, free, cudafinalizer

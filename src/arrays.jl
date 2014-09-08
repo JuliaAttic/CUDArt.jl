@@ -103,6 +103,7 @@ CudaArray{T,N}(a::AbstractArray{T,N}) = CudaArray(convert(Array{T,N}, a))
 
 stride(g::CudaArray, dim::Integer) = prod(size(g)[1:dim-1])
 
+similar(g::CudaArray, T, dims::Int...) = similar(g,T,dims)
 similar(g::CudaArray, T, dims::Dims) = CudaArray(T, dims)
 similar(g::CudaArray) = CudaArray(eltype(g), size(g))
 similar(g::CudaArray, T) = CudaArray(T, size(g))
