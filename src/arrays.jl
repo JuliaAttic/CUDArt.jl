@@ -88,7 +88,7 @@ to_host{T}(g::AbstractCudaArray{T}) = copy!(Array(T, size(g)), g)
 CudaDevicePtr() = CudaDevicePtr(C_NULL)
 CudaDevicePtr(T::Type) = CudaDevicePtr(convert(Ptr{T},C_NULL))
 convert{T}(::Type{Ptr{T}}, p::CudaDevicePtr{T}) = p.ptr
-convert{T}(::Type{Ptr{None}}, p::CudaDevicePtr{T}) = convert(Ptr{None}, p.ptr)
+convert{T}(::Type{Ptr{Void}}, p::CudaDevicePtr{T}) = convert(Ptr{Void}, p.ptr)
 
 rawpointer(p::CudaDevicePtr) = p
 
@@ -445,7 +445,7 @@ setindex!(ha::HostArray, val, i...) = setindex!(ha.data, val, i...)
 pointer(ha::HostArray)    = pointer(ha.data)
 rawpointer(ha::HostArray) = pointer(ha)
 pitch(ha::HostArray) = size(ha,1)*sizeof(eltype(ha))
-convert{T}(::Type{Ptr{None}}, ha::HostArray{T}) = ha.ptr
+convert{T}(::Type{Ptr{Void}}, ha::HostArray{T}) = ha.ptr
 fill!(ha::HostArray, val) = fill!(ha.data, val)
 
 function checkstrides_pitched(A)

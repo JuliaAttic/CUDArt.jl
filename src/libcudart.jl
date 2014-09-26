@@ -40,7 +40,7 @@ include("../gen/gen_libcudart.jl")
 
 # # Make cudaSetupArgument more convenient
 # function cudaSetupArgument(arg, size, offset)
-#   checkerror(ccall( (:cudaSetupArgument, libcudart), cudaError_t, (Ptr{None}, Csize_t, Csize_t), &arg, size, offset))
+#   checkerror(ccall( (:cudaSetupArgument, libcudart), cudaError_t, (Ptr{Void}, Csize_t, Csize_t), &arg, size, offset))
 # end
 
 # Fix issues stemming from the inability to pass structs as args
@@ -56,7 +56,7 @@ end
 
 # # Issue warning, not error, on bad cudaFree
 # function cudaFree(devPtr)
-#     code = ccall( (:cudaFree, libcudart), cudaError_t, (Ptr{None},), devPtr)
+#     code = ccall( (:cudaFree, libcudart), cudaError_t, (Ptr{Void},), devPtr)
 #     if code != cudaSuccess
 #         warn(string(bytestring(cudaGetErrorString(code)), " on ", devPtr))
 #         Base.show_backtrace(STDOUT, backtrace())

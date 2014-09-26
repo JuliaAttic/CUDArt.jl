@@ -38,13 +38,13 @@ function cudaIpcOpenEventHandle(event, handle)
   checkerror(ccall( (:cudaIpcOpenEventHandle, libcudart), cudaError_t, (Ptr{cudaEvent_t}, cudaIpcEventHandle_t), event, handle))
 end
 function cudaIpcGetMemHandle(handle, devPtr)
-  checkerror(ccall( (:cudaIpcGetMemHandle, libcudart), cudaError_t, (Ptr{cudaIpcMemHandle_t}, Ptr{None}), handle, devPtr))
+  checkerror(ccall( (:cudaIpcGetMemHandle, libcudart), cudaError_t, (Ptr{cudaIpcMemHandle_t}, Ptr{Void}), handle, devPtr))
 end
 function cudaIpcOpenMemHandle(devPtr, handle, flags)
-  checkerror(ccall( (:cudaIpcOpenMemHandle, libcudart), cudaError_t, (Ptr{Ptr{None}}, cudaIpcMemHandle_t, Uint32), devPtr, handle, flags))
+  checkerror(ccall( (:cudaIpcOpenMemHandle, libcudart), cudaError_t, (Ptr{Ptr{Void}}, cudaIpcMemHandle_t, Uint32), devPtr, handle, flags))
 end
 function cudaIpcCloseMemHandle(devPtr)
-  checkerror(ccall( (:cudaIpcCloseMemHandle, libcudart), cudaError_t, (Ptr{None},), devPtr))
+  checkerror(ccall( (:cudaIpcCloseMemHandle, libcudart), cudaError_t, (Ptr{Void},), devPtr))
 end
 function cudaThreadExit()
   checkerror(ccall( (:cudaThreadExit, libcudart), cudaError_t, (), ))
@@ -110,7 +110,7 @@ function cudaStreamWaitEvent(stream, event, flags)
   checkerror(ccall( (:cudaStreamWaitEvent, libcudart), cudaError_t, (cudaStream_t, cudaEvent_t, Uint32), stream, event, flags))
 end
 function cudaStreamAddCallback(stream, callback, userData, flags)
-  checkerror(ccall( (:cudaStreamAddCallback, libcudart), cudaError_t, (cudaStream_t, cudaStreamCallback_t, Ptr{None}, Uint32), stream, callback, userData, flags))
+  checkerror(ccall( (:cudaStreamAddCallback, libcudart), cudaError_t, (cudaStream_t, cudaStreamCallback_t, Ptr{Void}, Uint32), stream, callback, userData, flags))
 end
 function cudaStreamSynchronize(stream)
   checkerror(ccall( (:cudaStreamSynchronize, libcudart), cudaError_t, (cudaStream_t,), stream))
@@ -143,19 +143,19 @@ function cudaConfigureCall(gridDim, blockDim, sharedMem, stream)
   checkerror(ccall( (:cudaConfigureCall, libcudart), cudaError_t, (dim3, dim3, Csize_t, cudaStream_t), gridDim, blockDim, sharedMem, stream))
 end
 function cudaSetupArgument(arg, size, offset)
-  checkerror(ccall( (:cudaSetupArgument, libcudart), cudaError_t, (Ptr{None}, Csize_t, Csize_t), arg, size, offset))
+  checkerror(ccall( (:cudaSetupArgument, libcudart), cudaError_t, (Ptr{Void}, Csize_t, Csize_t), arg, size, offset))
 end
 function cudaFuncSetCacheConfig(func, cacheConfig)
-  checkerror(ccall( (:cudaFuncSetCacheConfig, libcudart), cudaError_t, (Ptr{None}, cudaFuncCache), func, cacheConfig))
+  checkerror(ccall( (:cudaFuncSetCacheConfig, libcudart), cudaError_t, (Ptr{Void}, cudaFuncCache), func, cacheConfig))
 end
 function cudaFuncSetSharedMemConfig(func, config)
-  checkerror(ccall( (:cudaFuncSetSharedMemConfig, libcudart), cudaError_t, (Ptr{None}, cudaSharedMemConfig), func, config))
+  checkerror(ccall( (:cudaFuncSetSharedMemConfig, libcudart), cudaError_t, (Ptr{Void}, cudaSharedMemConfig), func, config))
 end
 function cudaLaunch(func)
-  checkerror(ccall( (:cudaLaunch, libcudart), cudaError_t, (Ptr{None},), func))
+  checkerror(ccall( (:cudaLaunch, libcudart), cudaError_t, (Ptr{Void},), func))
 end
 function cudaFuncGetAttributes(attr, func)
-  checkerror(ccall( (:cudaFuncGetAttributes, libcudart), cudaError_t, (Ptr{cudaFuncAttributes}, Ptr{None}), attr, func))
+  checkerror(ccall( (:cudaFuncGetAttributes, libcudart), cudaError_t, (Ptr{cudaFuncAttributes}, Ptr{Void}), attr, func))
 end
 function cudaSetDoubleForDevice(d)
   checkerror(ccall( (:cudaSetDoubleForDevice, libcudart), cudaError_t, (Ptr{Cdouble},), d))
@@ -164,22 +164,22 @@ function cudaSetDoubleForHost(d)
   checkerror(ccall( (:cudaSetDoubleForHost, libcudart), cudaError_t, (Ptr{Cdouble},), d))
 end
 function cudaMalloc(devPtr, size)
-  checkerror(ccall( (:cudaMalloc, libcudart), cudaError_t, (Ptr{Ptr{None}}, Csize_t), devPtr, size))
+  checkerror(ccall( (:cudaMalloc, libcudart), cudaError_t, (Ptr{Ptr{Void}}, Csize_t), devPtr, size))
 end
 function cudaMallocHost(ptr, size)
-  checkerror(ccall( (:cudaMallocHost, libcudart), cudaError_t, (Ptr{Ptr{None}}, Csize_t), ptr, size))
+  checkerror(ccall( (:cudaMallocHost, libcudart), cudaError_t, (Ptr{Ptr{Void}}, Csize_t), ptr, size))
 end
 function cudaMallocPitch(devPtr, pitch, width, height)
-  checkerror(ccall( (:cudaMallocPitch, libcudart), cudaError_t, (Ptr{Ptr{None}}, Ptr{Csize_t}, Csize_t, Csize_t), devPtr, pitch, width, height))
+  checkerror(ccall( (:cudaMallocPitch, libcudart), cudaError_t, (Ptr{Ptr{Void}}, Ptr{Csize_t}, Csize_t, Csize_t), devPtr, pitch, width, height))
 end
 function cudaMallocArray(array, desc, width, height, flags)
   checkerror(ccall( (:cudaMallocArray, libcudart), cudaError_t, (Ptr{cudaArray_t}, Ptr{cudaChannelFormatDesc}, Csize_t, Csize_t, Uint32), array, desc, width, height, flags))
 end
 function cudaFree(devPtr)
-  checkerror(ccall( (:cudaFree, libcudart), cudaError_t, (Ptr{None},), devPtr))
+  checkerror(ccall( (:cudaFree, libcudart), cudaError_t, (Ptr{Void},), devPtr))
 end
 function cudaFreeHost(ptr)
-  checkerror(ccall( (:cudaFreeHost, libcudart), cudaError_t, (Ptr{None},), ptr))
+  checkerror(ccall( (:cudaFreeHost, libcudart), cudaError_t, (Ptr{Void},), ptr))
 end
 function cudaFreeArray(array)
   checkerror(ccall( (:cudaFreeArray, libcudart), cudaError_t, (cudaArray_t,), array))
@@ -188,19 +188,19 @@ function cudaFreeMipmappedArray(mipmappedArray)
   checkerror(ccall( (:cudaFreeMipmappedArray, libcudart), cudaError_t, (cudaMipmappedArray_t,), mipmappedArray))
 end
 function cudaHostAlloc(pHost, size, flags)
-  checkerror(ccall( (:cudaHostAlloc, libcudart), cudaError_t, (Ptr{Ptr{None}}, Csize_t, Uint32), pHost, size, flags))
+  checkerror(ccall( (:cudaHostAlloc, libcudart), cudaError_t, (Ptr{Ptr{Void}}, Csize_t, Uint32), pHost, size, flags))
 end
 function cudaHostRegister(ptr, size, flags)
-  checkerror(ccall( (:cudaHostRegister, libcudart), cudaError_t, (Ptr{None}, Csize_t, Uint32), ptr, size, flags))
+  checkerror(ccall( (:cudaHostRegister, libcudart), cudaError_t, (Ptr{Void}, Csize_t, Uint32), ptr, size, flags))
 end
 function cudaHostUnregister(ptr)
-  checkerror(ccall( (:cudaHostUnregister, libcudart), cudaError_t, (Ptr{None},), ptr))
+  checkerror(ccall( (:cudaHostUnregister, libcudart), cudaError_t, (Ptr{Void},), ptr))
 end
 function cudaHostGetDevicePointer(pDevice, pHost, flags)
-  checkerror(ccall( (:cudaHostGetDevicePointer, libcudart), cudaError_t, (Ptr{Ptr{None}}, Ptr{None}, Uint32), pDevice, pHost, flags))
+  checkerror(ccall( (:cudaHostGetDevicePointer, libcudart), cudaError_t, (Ptr{Ptr{Void}}, Ptr{Void}, Uint32), pDevice, pHost, flags))
 end
 function cudaHostGetFlags(pFlags, pHost)
-  checkerror(ccall( (:cudaHostGetFlags, libcudart), cudaError_t, (Ptr{Uint32}, Ptr{None}), pFlags, pHost))
+  checkerror(ccall( (:cudaHostGetFlags, libcudart), cudaError_t, (Ptr{Uint32}, Ptr{Void}), pFlags, pHost))
 end
 function cudaMalloc3D(pitchedDevPtr, extent)
   checkerror(ccall( (:cudaMalloc3D, libcudart), cudaError_t, (Ptr{cudaPitchedPtr}, cudaExtent), pitchedDevPtr, extent))
@@ -233,91 +233,91 @@ function cudaArrayGetInfo(desc, extent, flags, array)
   checkerror(ccall( (:cudaArrayGetInfo, libcudart), cudaError_t, (Ptr{cudaChannelFormatDesc}, Ptr{cudaExtent}, Ptr{Uint32}, cudaArray_t), desc, extent, flags, array))
 end
 function cudaMemcpy(dst, src, count, kind)
-  checkerror(ccall( (:cudaMemcpy, libcudart), cudaError_t, (Ptr{None}, Ptr{None}, Csize_t, cudaMemcpyKind), dst, src, count, kind))
+  checkerror(ccall( (:cudaMemcpy, libcudart), cudaError_t, (Ptr{Void}, Ptr{Void}, Csize_t, cudaMemcpyKind), dst, src, count, kind))
 end
 function cudaMemcpyPeer(dst, dstDevice, src, srcDevice, count)
-  checkerror(ccall( (:cudaMemcpyPeer, libcudart), cudaError_t, (Ptr{None}, Cint, Ptr{None}, Cint, Csize_t), dst, dstDevice, src, srcDevice, count))
+  checkerror(ccall( (:cudaMemcpyPeer, libcudart), cudaError_t, (Ptr{Void}, Cint, Ptr{Void}, Cint, Csize_t), dst, dstDevice, src, srcDevice, count))
 end
 function cudaMemcpyToArray(dst, wOffset, hOffset, src, count, kind)
-  checkerror(ccall( (:cudaMemcpyToArray, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, Ptr{None}, Csize_t, cudaMemcpyKind), dst, wOffset, hOffset, src, count, kind))
+  checkerror(ccall( (:cudaMemcpyToArray, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, Ptr{Void}, Csize_t, cudaMemcpyKind), dst, wOffset, hOffset, src, count, kind))
 end
 function cudaMemcpyFromArray(dst, src, wOffset, hOffset, count, kind)
-  checkerror(ccall( (:cudaMemcpyFromArray, libcudart), cudaError_t, (Ptr{None}, cudaArray_const_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, src, wOffset, hOffset, count, kind))
+  checkerror(ccall( (:cudaMemcpyFromArray, libcudart), cudaError_t, (Ptr{Void}, cudaArray_const_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, src, wOffset, hOffset, count, kind))
 end
 function cudaMemcpyArrayToArray(dst, wOffsetDst, hOffsetDst, src, wOffsetSrc, hOffsetSrc, count, kind)
   checkerror(ccall( (:cudaMemcpyArrayToArray, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, cudaArray_const_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, wOffsetDst, hOffsetDst, src, wOffsetSrc, hOffsetSrc, count, kind))
 end
 function cudaMemcpy2D(dst, dpitch, src, spitch, width, height, kind)
-  checkerror(ccall( (:cudaMemcpy2D, libcudart), cudaError_t, (Ptr{None}, Csize_t, Ptr{None}, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, dpitch, src, spitch, width, height, kind))
+  checkerror(ccall( (:cudaMemcpy2D, libcudart), cudaError_t, (Ptr{Void}, Csize_t, Ptr{Void}, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, dpitch, src, spitch, width, height, kind))
 end
 function cudaMemcpy2DToArray(dst, wOffset, hOffset, src, spitch, width, height, kind)
-  checkerror(ccall( (:cudaMemcpy2DToArray, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, Ptr{None}, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, wOffset, hOffset, src, spitch, width, height, kind))
+  checkerror(ccall( (:cudaMemcpy2DToArray, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, Ptr{Void}, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, wOffset, hOffset, src, spitch, width, height, kind))
 end
 function cudaMemcpy2DFromArray(dst, dpitch, src, wOffset, hOffset, width, height, kind)
-  checkerror(ccall( (:cudaMemcpy2DFromArray, libcudart), cudaError_t, (Ptr{None}, Csize_t, cudaArray_const_t, Csize_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, dpitch, src, wOffset, hOffset, width, height, kind))
+  checkerror(ccall( (:cudaMemcpy2DFromArray, libcudart), cudaError_t, (Ptr{Void}, Csize_t, cudaArray_const_t, Csize_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, dpitch, src, wOffset, hOffset, width, height, kind))
 end
 function cudaMemcpy2DArrayToArray(dst, wOffsetDst, hOffsetDst, src, wOffsetSrc, hOffsetSrc, width, height, kind)
   checkerror(ccall( (:cudaMemcpy2DArrayToArray, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, cudaArray_const_t, Csize_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind), dst, wOffsetDst, hOffsetDst, src, wOffsetSrc, hOffsetSrc, width, height, kind))
 end
 function cudaMemcpyToSymbol(symbol, src, count, offset, kind)
-  checkerror(ccall( (:cudaMemcpyToSymbol, libcudart), cudaError_t, (Ptr{None}, Ptr{None}, Csize_t, Csize_t, cudaMemcpyKind), symbol, src, count, offset, kind))
+  checkerror(ccall( (:cudaMemcpyToSymbol, libcudart), cudaError_t, (Ptr{Void}, Ptr{Void}, Csize_t, Csize_t, cudaMemcpyKind), symbol, src, count, offset, kind))
 end
 function cudaMemcpyFromSymbol(dst, symbol, count, offset, kind)
-  checkerror(ccall( (:cudaMemcpyFromSymbol, libcudart), cudaError_t, (Ptr{None}, Ptr{None}, Csize_t, Csize_t, cudaMemcpyKind), dst, symbol, count, offset, kind))
+  checkerror(ccall( (:cudaMemcpyFromSymbol, libcudart), cudaError_t, (Ptr{Void}, Ptr{Void}, Csize_t, Csize_t, cudaMemcpyKind), dst, symbol, count, offset, kind))
 end
 function cudaMemcpyAsync(dst, src, count, kind, stream)
-  checkerror(ccall( (:cudaMemcpyAsync, libcudart), cudaError_t, (Ptr{None}, Ptr{None}, Csize_t, cudaMemcpyKind, cudaStream_t), dst, src, count, kind, stream))
+  checkerror(ccall( (:cudaMemcpyAsync, libcudart), cudaError_t, (Ptr{Void}, Ptr{Void}, Csize_t, cudaMemcpyKind, cudaStream_t), dst, src, count, kind, stream))
 end
 function cudaMemcpyPeerAsync(dst, dstDevice, src, srcDevice, count, stream)
-  checkerror(ccall( (:cudaMemcpyPeerAsync, libcudart), cudaError_t, (Ptr{None}, Cint, Ptr{None}, Cint, Csize_t, cudaStream_t), dst, dstDevice, src, srcDevice, count, stream))
+  checkerror(ccall( (:cudaMemcpyPeerAsync, libcudart), cudaError_t, (Ptr{Void}, Cint, Ptr{Void}, Cint, Csize_t, cudaStream_t), dst, dstDevice, src, srcDevice, count, stream))
 end
 function cudaMemcpyToArrayAsync(dst, wOffset, hOffset, src, count, kind, stream)
-  checkerror(ccall( (:cudaMemcpyToArrayAsync, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, Ptr{None}, Csize_t, cudaMemcpyKind, cudaStream_t), dst, wOffset, hOffset, src, count, kind, stream))
+  checkerror(ccall( (:cudaMemcpyToArrayAsync, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, Ptr{Void}, Csize_t, cudaMemcpyKind, cudaStream_t), dst, wOffset, hOffset, src, count, kind, stream))
 end
 function cudaMemcpyFromArrayAsync(dst, src, wOffset, hOffset, count, kind, stream)
-  checkerror(ccall( (:cudaMemcpyFromArrayAsync, libcudart), cudaError_t, (Ptr{None}, cudaArray_const_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, src, wOffset, hOffset, count, kind, stream))
+  checkerror(ccall( (:cudaMemcpyFromArrayAsync, libcudart), cudaError_t, (Ptr{Void}, cudaArray_const_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, src, wOffset, hOffset, count, kind, stream))
 end
 function cudaMemcpy2DAsync(dst, dpitch, src, spitch, width, height, kind, stream)
-  checkerror(ccall( (:cudaMemcpy2DAsync, libcudart), cudaError_t, (Ptr{None}, Csize_t, Ptr{None}, Csize_t, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, dpitch, src, spitch, width, height, kind, stream))
+  checkerror(ccall( (:cudaMemcpy2DAsync, libcudart), cudaError_t, (Ptr{Void}, Csize_t, Ptr{Void}, Csize_t, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, dpitch, src, spitch, width, height, kind, stream))
 end
 function cudaMemcpy2DToArrayAsync(dst, wOffset, hOffset, src, spitch, width, height, kind, stream)
-  checkerror(ccall( (:cudaMemcpy2DToArrayAsync, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, Ptr{None}, Csize_t, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, wOffset, hOffset, src, spitch, width, height, kind, stream))
+  checkerror(ccall( (:cudaMemcpy2DToArrayAsync, libcudart), cudaError_t, (cudaArray_t, Csize_t, Csize_t, Ptr{Void}, Csize_t, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, wOffset, hOffset, src, spitch, width, height, kind, stream))
 end
 function cudaMemcpy2DFromArrayAsync(dst, dpitch, src, wOffset, hOffset, width, height, kind, stream)
-  checkerror(ccall( (:cudaMemcpy2DFromArrayAsync, libcudart), cudaError_t, (Ptr{None}, Csize_t, cudaArray_const_t, Csize_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, dpitch, src, wOffset, hOffset, width, height, kind, stream))
+  checkerror(ccall( (:cudaMemcpy2DFromArrayAsync, libcudart), cudaError_t, (Ptr{Void}, Csize_t, cudaArray_const_t, Csize_t, Csize_t, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, dpitch, src, wOffset, hOffset, width, height, kind, stream))
 end
 function cudaMemcpyToSymbolAsync(symbol, src, count, offset, kind, stream)
-  checkerror(ccall( (:cudaMemcpyToSymbolAsync, libcudart), cudaError_t, (Ptr{None}, Ptr{None}, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), symbol, src, count, offset, kind, stream))
+  checkerror(ccall( (:cudaMemcpyToSymbolAsync, libcudart), cudaError_t, (Ptr{Void}, Ptr{Void}, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), symbol, src, count, offset, kind, stream))
 end
 function cudaMemcpyFromSymbolAsync(dst, symbol, count, offset, kind, stream)
-  checkerror(ccall( (:cudaMemcpyFromSymbolAsync, libcudart), cudaError_t, (Ptr{None}, Ptr{None}, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, symbol, count, offset, kind, stream))
+  checkerror(ccall( (:cudaMemcpyFromSymbolAsync, libcudart), cudaError_t, (Ptr{Void}, Ptr{Void}, Csize_t, Csize_t, cudaMemcpyKind, cudaStream_t), dst, symbol, count, offset, kind, stream))
 end
 function cudaMemset(devPtr, value, count)
-  checkerror(ccall( (:cudaMemset, libcudart), cudaError_t, (Ptr{None}, Cint, Csize_t), devPtr, value, count))
+  checkerror(ccall( (:cudaMemset, libcudart), cudaError_t, (Ptr{Void}, Cint, Csize_t), devPtr, value, count))
 end
 function cudaMemset2D(devPtr, pitch, value, width, height)
-  checkerror(ccall( (:cudaMemset2D, libcudart), cudaError_t, (Ptr{None}, Csize_t, Cint, Csize_t, Csize_t), devPtr, pitch, value, width, height))
+  checkerror(ccall( (:cudaMemset2D, libcudart), cudaError_t, (Ptr{Void}, Csize_t, Cint, Csize_t, Csize_t), devPtr, pitch, value, width, height))
 end
 function cudaMemset3D(pitchedDevPtr, value, extent)
   checkerror(ccall( (:cudaMemset3D, libcudart), cudaError_t, (cudaPitchedPtr, Cint, cudaExtent), pitchedDevPtr, value, extent))
 end
 function cudaMemsetAsync(devPtr, value, count, stream)
-  checkerror(ccall( (:cudaMemsetAsync, libcudart), cudaError_t, (Ptr{None}, Cint, Csize_t, cudaStream_t), devPtr, value, count, stream))
+  checkerror(ccall( (:cudaMemsetAsync, libcudart), cudaError_t, (Ptr{Void}, Cint, Csize_t, cudaStream_t), devPtr, value, count, stream))
 end
 function cudaMemset2DAsync(devPtr, pitch, value, width, height, stream)
-  checkerror(ccall( (:cudaMemset2DAsync, libcudart), cudaError_t, (Ptr{None}, Csize_t, Cint, Csize_t, Csize_t, cudaStream_t), devPtr, pitch, value, width, height, stream))
+  checkerror(ccall( (:cudaMemset2DAsync, libcudart), cudaError_t, (Ptr{Void}, Csize_t, Cint, Csize_t, Csize_t, cudaStream_t), devPtr, pitch, value, width, height, stream))
 end
 function cudaMemset3DAsync(pitchedDevPtr, value, extent, stream)
   checkerror(ccall( (:cudaMemset3DAsync, libcudart), cudaError_t, (cudaPitchedPtr, Cint, cudaExtent, cudaStream_t), pitchedDevPtr, value, extent, stream))
 end
 function cudaGetSymbolAddress(devPtr, symbol)
-  checkerror(ccall( (:cudaGetSymbolAddress, libcudart), cudaError_t, (Ptr{Ptr{None}}, Ptr{None}), devPtr, symbol))
+  checkerror(ccall( (:cudaGetSymbolAddress, libcudart), cudaError_t, (Ptr{Ptr{Void}}, Ptr{Void}), devPtr, symbol))
 end
 function cudaGetSymbolSize(size, symbol)
-  checkerror(ccall( (:cudaGetSymbolSize, libcudart), cudaError_t, (Ptr{Csize_t}, Ptr{None}), size, symbol))
+  checkerror(ccall( (:cudaGetSymbolSize, libcudart), cudaError_t, (Ptr{Csize_t}, Ptr{Void}), size, symbol))
 end
 function cudaPointerGetAttributes(attributes, ptr)
-  checkerror(ccall( (:cudaPointerGetAttributes, libcudart), cudaError_t, (Ptr{cudaPointerAttributes}, Ptr{None}), attributes, ptr))
+  checkerror(ccall( (:cudaPointerGetAttributes, libcudart), cudaError_t, (Ptr{cudaPointerAttributes}, Ptr{Void}), attributes, ptr))
 end
 function cudaDeviceCanAccessPeer(canAccessPeer, device, peerDevice)
   checkerror(ccall( (:cudaDeviceCanAccessPeer, libcudart), cudaError_t, (Ptr{Cint}, Cint, Cint), canAccessPeer, device, peerDevice))
@@ -341,7 +341,7 @@ function cudaGraphicsUnmapResources(count, resources, stream)
   checkerror(ccall( (:cudaGraphicsUnmapResources, libcudart), cudaError_t, (Cint, Ptr{cudaGraphicsResource_t}, cudaStream_t), count, resources, stream))
 end
 function cudaGraphicsResourceGetMappedPointer(devPtr, size, resource)
-  checkerror(ccall( (:cudaGraphicsResourceGetMappedPointer, libcudart), cudaError_t, (Ptr{Ptr{None}}, Ptr{Csize_t}, cudaGraphicsResource_t), devPtr, size, resource))
+  checkerror(ccall( (:cudaGraphicsResourceGetMappedPointer, libcudart), cudaError_t, (Ptr{Ptr{Void}}, Ptr{Csize_t}, cudaGraphicsResource_t), devPtr, size, resource))
 end
 function cudaGraphicsSubResourceGetMappedArray(array, resource, arrayIndex, mipLevel)
   checkerror(ccall( (:cudaGraphicsSubResourceGetMappedArray, libcudart), cudaError_t, (Ptr{cudaArray_t}, cudaGraphicsResource_t, Uint32, Uint32), array, resource, arrayIndex, mipLevel))
@@ -356,10 +356,10 @@ function cudaCreateChannelDesc(x, y, z, w, f)
   ccall( (:cudaCreateChannelDesc, libcudart), cudaChannelFormatDesc, (Cint, Cint, Cint, Cint, cudaChannelFormatKind), x, y, z, w, f)
 end
 function cudaBindTexture(offset, texref, devPtr, desc, size)
-  checkerror(ccall( (:cudaBindTexture, libcudart), cudaError_t, (Ptr{Csize_t}, Ptr{textureReference}, Ptr{None}, Ptr{cudaChannelFormatDesc}, Csize_t), offset, texref, devPtr, desc, size))
+  checkerror(ccall( (:cudaBindTexture, libcudart), cudaError_t, (Ptr{Csize_t}, Ptr{textureReference}, Ptr{Void}, Ptr{cudaChannelFormatDesc}, Csize_t), offset, texref, devPtr, desc, size))
 end
 function cudaBindTexture2D(offset, texref, devPtr, desc, width, height, pitch)
-  checkerror(ccall( (:cudaBindTexture2D, libcudart), cudaError_t, (Ptr{Csize_t}, Ptr{textureReference}, Ptr{None}, Ptr{cudaChannelFormatDesc}, Csize_t, Csize_t, Csize_t), offset, texref, devPtr, desc, width, height, pitch))
+  checkerror(ccall( (:cudaBindTexture2D, libcudart), cudaError_t, (Ptr{Csize_t}, Ptr{textureReference}, Ptr{Void}, Ptr{cudaChannelFormatDesc}, Csize_t, Csize_t, Csize_t), offset, texref, devPtr, desc, width, height, pitch))
 end
 function cudaBindTextureToArray(texref, array, desc)
   checkerror(ccall( (:cudaBindTextureToArray, libcudart), cudaError_t, (Ptr{textureReference}, cudaArray_const_t, Ptr{cudaChannelFormatDesc}), texref, array, desc))
@@ -374,13 +374,13 @@ function cudaGetTextureAlignmentOffset(offset, texref)
   checkerror(ccall( (:cudaGetTextureAlignmentOffset, libcudart), cudaError_t, (Ptr{Csize_t}, Ptr{textureReference}), offset, texref))
 end
 function cudaGetTextureReference(texref, symbol)
-  checkerror(ccall( (:cudaGetTextureReference, libcudart), cudaError_t, (Ptr{Ptr{textureReference}}, Ptr{None}), texref, symbol))
+  checkerror(ccall( (:cudaGetTextureReference, libcudart), cudaError_t, (Ptr{Ptr{textureReference}}, Ptr{Void}), texref, symbol))
 end
 function cudaBindSurfaceToArray(surfref, array, desc)
   checkerror(ccall( (:cudaBindSurfaceToArray, libcudart), cudaError_t, (Ptr{surfaceReference}, cudaArray_const_t, Ptr{cudaChannelFormatDesc}), surfref, array, desc))
 end
 function cudaGetSurfaceReference(surfref, symbol)
-  checkerror(ccall( (:cudaGetSurfaceReference, libcudart), cudaError_t, (Ptr{Ptr{surfaceReference}}, Ptr{None}), surfref, symbol))
+  checkerror(ccall( (:cudaGetSurfaceReference, libcudart), cudaError_t, (Ptr{Ptr{surfaceReference}}, Ptr{Void}), surfref, symbol))
 end
 function cudaCreateTextureObject(pTexObject, pResDesc, pTexDesc, pResViewDesc)
   checkerror(ccall( (:cudaCreateTextureObject, libcudart), cudaError_t, (Ptr{cudaTextureObject_t}, Ptr{cudaResourceDesc}, Ptr{cudaTextureDesc}, Ptr{cudaResourceViewDesc}), pTexObject, pResDesc, pTexDesc, pResViewDesc))
@@ -413,6 +413,6 @@ function cudaRuntimeGetVersion(runtimeVersion)
   checkerror(ccall( (:cudaRuntimeGetVersion, libcudart), cudaError_t, (Ptr{Cint},), runtimeVersion))
 end
 function cudaGetExportTable(ppExportTable, pExportTableId)
-  checkerror(ccall( (:cudaGetExportTable, libcudart), cudaError_t, (Ptr{Ptr{None}}, Ptr{cudaUUID_t}), ppExportTable, pExportTableId))
+  checkerror(ccall( (:cudaGetExportTable, libcudart), cudaError_t, (Ptr{Ptr{Void}}, Ptr{cudaUUID_t}), ppExportTable, pExportTableId))
 end
 

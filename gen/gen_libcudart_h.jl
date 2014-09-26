@@ -159,7 +159,7 @@ const cudaMemcpyDeviceToDevice = 3
 const cudaMemcpyDefault = 4
 # end enum cudaMemcpyKind
 immutable cudaPitchedPtr
-    ptr::Ptr{None}
+    ptr::Ptr{Void}
     pitch::Csize_t
     xsize::Csize_t
     ysize::Csize_t
@@ -276,8 +276,8 @@ end
 type cudaPointerAttributes
     memoryType::cudaMemoryType
     device::Cint
-    devicePointer::Ptr{None}
-    hostPointer::Ptr{None}
+    devicePointer::Ptr{Void}
+    hostPointer::Ptr{Void}
 end
 type cudaFuncAttributes
     sharedSizeBytes::Csize_t
