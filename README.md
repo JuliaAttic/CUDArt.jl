@@ -6,7 +6,7 @@ It borrows heavily from the [CUDA.jl](https://github.com/JuliaGPU/CUDA.jl) repos
 
 # Platform support
 
-This has only been tested on Linux.
+This has been tested on Linux and OSX.
 It is likely that only small changes will be necessary to support other platforms (e.g., adding the appropriate library names and paths).
 We would be extremely grateful for pull requests to improve support for other platforms.
 
