@@ -1,5 +1,7 @@
 module CUDArt
 
+using Compat
+
 export
     device, devices, device_reset, attribute, capability,
     driver_version, runtime_version,

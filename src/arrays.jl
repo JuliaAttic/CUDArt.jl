@@ -199,7 +199,7 @@ function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
     valT = convert(T, val)
     func = ptxdict[(device(), "fill_contiguous", T)]
     nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
-    mul = min(32, iceil(length(X)/(256*nsm)))
+    mul = min(32, ceil(Int, length(X)/(256*nsm)))
     launch(func, mul*nsm, 256, (X, length(X), valT); stream=stream)
     X
 end
@@ -400,7 +400,7 @@ function fill!{T}(X::CudaPitchedArray{T}, val; stream=null_stream)
     valT = convert(T, val)
     func = ptxdict[(device(), "fill_pitched", T)]
     nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
-    mul = min(32, iceil(length(X)/(256*nsm)))
+    mul = min(32, ceil(Int, length(X)/(256*nsm)))
     blockspergrid, threadsperblock = ndims(X) == 1 ? (mul*nsm, 256) : (mul*nsm, (16,16))
     launch(func, blockspergrid, threadsperblock, (X, size(X,1), size(X,2), size(X,3), pitchel(X), valT); stream=stream)
     X

@@ -6,7 +6,7 @@ device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 device_reset() = device_reset(device())
 function device_reset(dev::Integer)
     # Clear all items on this device from cuda_ptrs, so they don't get freed later
-    todelete = {}
+    todelete = Any[]
     for (p,pdev) in cuda_ptrs
         if pdev == dev
             push!(todelete, p)
