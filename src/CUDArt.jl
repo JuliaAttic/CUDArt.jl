@@ -19,12 +19,12 @@ import Base: length, size, ndims, eltype, similar, pointer, stride,
     copy!, get!, fill!, wait
 
 # Prepare the CUDA runtime API bindings
-include("libcudart.jl")
+include("libcudart-6.5.jl")
 import .CUDArt_gen
 const rt = CUDArt_gen
 
 # To load PTX code, we also need access to the driver API module utilities
-const libcuda = find_library(["libcuda"], ["/usr/local/cuda"])
+const libcuda = find_library(["libcuda"], ["/usr/local/cuda-6.5"])
 if isempty(libcuda)
     error("CUDA driver API library cannot be found")
 end
