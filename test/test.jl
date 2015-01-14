@@ -59,9 +59,9 @@ CUDArt.device_reset(0)
 
 gc()
 
-##############################################
-# Test CUDA array types and kernel execution #
-##############################################
+#########################
+# Test CUDA array types #
+#########################
 result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     # Copying memory to and from device
     @test length(devlist) == 1
@@ -166,7 +166,13 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     copy!(S, GB)
     CUDArt.device_synchronize()
     @test A[:,3:4] == 2B
-    # Executing kernels
+end
+
+#####################
+# Executing kernels #
+#####################
+result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
+    CUDArt.device(devlist[1])
     a = rand(Float32, 3, 4)
     b = rand(Float32, 3, 4)
     c = CUDArt.CuModule("vadd.ptx") do md
@@ -174,7 +180,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         ga = CUDArt.CudaArray(a)
         gb = CUDArt.CudaArray(b)
         gc = CUDArt.CudaArray(Float32, size(a))
-        CUDArt.launch(vadd, 12, 1, (ga, gb, gc))
+        CUDArt.launch(vadd, length(a), 1, (ga, gb, gc))
         CUDArt.to_host(gc)
     end
     @test_approx_eq c (a+b)
