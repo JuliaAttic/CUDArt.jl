@@ -146,6 +146,7 @@ if CUDArt.devcount() > 1
         nextidx() = (idx=i; i+=1; idx)
         @sync begin
             for idev = 1:length(devlist)
+                sleep(0.01)
                 @async begin
                     while true
                         idx = nextidx()
