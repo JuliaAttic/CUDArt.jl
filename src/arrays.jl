@@ -7,6 +7,9 @@ abstract AbstractCudaArray{T,N}
 typealias AbstractCudaVector{T} AbstractCudaArray{T,1}
 typealias AbstractCudaMatrix{T} AbstractCudaArray{T,2}
 
+# copy method for AbstractCudaArray
+copy(a::AbstractCudaArray; stream=null_stream) = copy!(similar(a),a;stream=stream)
+
 # Set the following to true to store a backtrace
 # at allocation time, to identify where each array comes from
 const debugMemory = false
