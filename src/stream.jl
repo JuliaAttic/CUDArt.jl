@@ -33,7 +33,7 @@ destroy(s::Stream) = rt.cudaStreamDestroy(s.ptr)
 synchronize(s::Stream) = rt.cudaStreamSynchronize(s)
 
 function wait(s::Stream)
-    runnotify = (data, status) -> notify(s.c)
+    runnotify = data -> notify(s.c)
     notifyasync = Base.SingleAsyncWork(runnotify)
     rt.cudaStreamAddCallback(s, c_async_send_cudastream, notifyasync.handle, 0)
     wait(s.c)

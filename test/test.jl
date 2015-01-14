@@ -1,5 +1,6 @@
 import CUDArt
 using Base.Test
+using Compat
 
 ##########################
 # Low-level memory tests #
@@ -194,8 +195,11 @@ gc()  # check for finalizer errors
 if CUDArt.devcount() > 1
     CUDArt.devices(dev->true, nmax=2) do devlist
         sleeptime = 0.5
-        results = Array(Any, iceil(2.5*length(devlist)))
+        results = Array(Any, ceil(Int, 2.5*length(devlist)))
         streams = [(CUDArt.device(dev); CUDArt.Stream()) for dev in devlist]
+        # Force one run to precompile
+        CUDArt.cudasleep(sleeptime; dev=devlist[1], stream=streams[1])
+        wait(streams[1])
         i = 1
         nextidx() = (idx=i; i+=1; idx)
         @sync begin
@@ -210,7 +214,7 @@ if CUDArt.devcount() > 1
                         dev = devlist[idev]
                         stream = streams[idev]
                         CUDArt.cudasleep(sleeptime; dev=dev, stream=stream)
-                        CUDArt.wait(stream)
+                        wait(stream)
                         tstop = time()
                         results[idx] = (tstart, tstop, dev)
                     end
@@ -222,7 +226,7 @@ if CUDArt.devcount() > 1
             @test sleeptime <= (r[2]-r[1]) <= 1.1*sleeptime
             @test r[3] == devlist[mod1(i, 2)]
         end
-        @test results[end][2]-results[1][1] < 1.1*sleeptime*iceil(length(results)/length(devlist))
+        @test results[end][2]-results[1][1] < 1.1*sleeptime*ceil(Int, length(results)/length(devlist))
         nothing
     end
 end
