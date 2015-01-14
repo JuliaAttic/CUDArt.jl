@@ -236,7 +236,49 @@ To be written.
 
 ## Streams
 
-To be written.
+One can use streams to manage or synchronize computations between the
+CPU & GPU, or using multiple CUDA devices.  Using [julia's `@sync` and
+`@async`
+macros](http://docs.julialang.org/en/latest/manual/parallel-computing/),
+here is a short demonstration that activates processing on multiple
+devices:
+
+```
+measured_sleep_time = CUDArt.devices(dev->true, nmax=2) do devlist
+    sleeptime = 0.5
+    results = Array(Float64, 3*length(devlist))
+    streams = [(device(dev); Stream()) for dev in devlist]
+    # Force one run to precompile
+    cudasleep(sleeptime; dev=devlist[1], stream=streams[1])
+    wait(streams[1])
+    i = 1
+    nextidx() = (idx=i; i+=1; idx)
+    @sync begin
+        for idev = 1:length(devlist)
+            @async begin
+                while true
+                    idx = nextidx()
+                    if idx > length(results)
+                        break
+                    end
+                    tstart = time()
+                    dev = devlist[idev]
+                    stream = streams[idev]
+                    cudasleep(sleeptime; dev=dev, stream=stream)
+                    wait(stream)
+                    tstop = time()
+                    results[idx] = tstop-tstart
+                end
+            end
+        end
+    end
+    results
+end
+```
+
+In a more realistic version of this demonstration, you would "feed"
+work and collect the results from all of your CUDA devices using a
+single julia process to organize the efforts.
 
 # Random notes
 
