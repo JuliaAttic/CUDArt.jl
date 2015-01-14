@@ -80,6 +80,7 @@ pointer(g::AbstractCudaArray) = g.ptr
 
 to_host{T}(g::AbstractCudaArray{T}) = copy!(Array(T, size(g)), g)
 
+summary(g::AbstractCudaArray) = string(g)
 
 #############################
 # Low-level memory handling #

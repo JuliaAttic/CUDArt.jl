@@ -15,7 +15,7 @@ export
     destroy, free, cudafinalizer
 
 import Base: length, size, ndims, eltype, similar, pointer, stride,
-    convert, reinterpret, show,
+    convert, reinterpret, show, summary,
     copy!, get!, fill!, wait
 
 # Prepare the CUDA runtime API bindings

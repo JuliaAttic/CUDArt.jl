@@ -9,7 +9,8 @@ function checkerror(code::Cuint)
     if code == cudaSuccess
         return nothing
     end
-    # Because try/finally may disguise the source of the problem, let's show a backtrace here
+    # Because try/finally may disguise the source of the problem,
+    # let's show a backtrace here
     warn("CUDA error triggered from:")
     Base.show_backtrace(STDOUT, backtrace())
     throw(bytestring(cudaGetErrorString(code)))
