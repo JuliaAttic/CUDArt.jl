@@ -31,10 +31,10 @@ end
 
 include("version.jl")
 include("types.jl")
+include("module.jl")
 include("device.jl")
 include("stream.jl")
 #include("event.jl")
-include("module.jl")
 include("arrays.jl")
 include("execute.jl")
 

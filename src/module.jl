@@ -52,43 +52,10 @@ immutable CuFunction
 
     function CuFunction(md::CuModule, name::ASCIIString)
         a = Array(Ptr{Void}, 1)
-        checkdrv(ccall((:cuModuleGetFunction, libcuda), Cint, (Ptr{Ptr{Void}}, Ptr{Void}, Ptr{Cchar}), 
+        checkdrv(ccall((:cuModuleGetFunction, libcuda), Cint,
+                       (Ptr{Ptr{Void}}, Ptr{Void}, Ptr{Cchar}),
                        a, md.handle, name))
         new(a[1])
-    end
-end
-
-# A cache of useful CUDA kernels
-const global ptxdict = Dict()
-
-function init!(mdutils::Array{CuModule}, devlist)
-    funcnames = ["fill_contiguous", "fill_pitched"]
-    funcexts  = ["double","float","int64","uint64","int32","uint32","int16","uint16","int8","uint8"]
-    datatypes = [Float64,Float32,Int64,Uint64,Int32,Uint32,Int16,Uint16,Int8,Uint8]
-    utilfile  = joinpath(Pkg.dir(), "CUDArt/deps/utils.ptx")
-    # initialize all devices
-    for idev = 1:length(devlist)
-        dev = devlist[idev]
-        device(dev)
-        # allocate and destroy memory to force initialization
-        free(malloc(Uint8, 1))
-        # Load the utility functions
-        mdutils[idev] = CuModule(utilfile, false)
-        for func in funcnames
-            for i = 1:length(funcexts)
-                ptxdict[(dev, func, datatypes[i])] = CuFunction(mdutils[idev], func*"_"*funcexts[i])
-            end
-        end
-        ptxdict[(dev, "clock_block")] = CuFunction(mdutils[idev], "clock_block")
-    end
-end
-
-function close!(mdutils::Array{CuModule}, devlist)
-    for idev = 1:length(devlist)
-        if mdutils[idev].handle != C_NULL
-            unload(mdutils[idev])
-        end
-        device_reset(devlist[idev])
     end
 end
 
@@ -140,6 +107,7 @@ const driver_error_descriptions = @compat Dict{Int,ASCIIString}(
         711 => "Too many peers",
         712 => "Host memory already registered",
         713 => "Host memory not registered",
+        719 => "Launch failed, perhaps due to an invalid pointer",
         800 => "Operation not permitted",
         801 => "Operation not supported",
         999 => "Unknown error"
