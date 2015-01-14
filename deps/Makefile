@@ -16,4 +16,4 @@ utils.ptx: utils.cu
 
 .PHONY: clean
 clean:
-	$(RM) $(libfile) utils.ptx
+	$(RM) $(libfile) utils.ptx libwrapcuda.so

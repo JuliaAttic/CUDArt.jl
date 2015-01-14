@@ -9,3 +9,7 @@ endif
 
 vadd.ptx: vadd.cu
 	nvcc -ptx $(NVFLAGS) vadd.cu
+
+.PHONY: clean
+clean:
+	$(RM) vadd.ptx
