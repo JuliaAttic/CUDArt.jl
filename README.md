@@ -24,7 +24,11 @@ During installation, it should compile a couple of files in the `deps/` director
 These files provide utility functions necessary for certain functionality in this package.
 If the build step fails, try fixing the problems and running `Pkg.build("CUDArt")` manually.
 
-After installation, it's probably a good idea to run the `test/test.jl` script to find out whether everything is working on your system.
+After installation, it's probably a good idea to run the `test/runtests.jl` script to find out whether everything is working on your system, or just say `Pkg.test("CUDArt")`.
+
+In case of errors, one thing to check is your CUDA installation itself. For example, examine whether
+the `*.ptx` files are present in `deps/` and `test/`; look at those files and make sure they seem appropriate.
+(E.g., if your computer is 64-bit, are they compiled for 64-bit?)
 
 # Usage
 
@@ -67,7 +71,8 @@ device(dev)
 # Code that does GPU computations
 device_reset(dev)
 ```
-where `dev` is the integer device number.
+where `dev` is the integer device number. This can be handy in case of trouble, because unfortunately 
+the `do` syntax does not usually result in ideal backtraces.
 
 ## Choosing/querying the active device
 
