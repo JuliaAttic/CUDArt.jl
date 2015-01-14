@@ -19,6 +19,7 @@ CudaPtr() = CudaPtr(C_NULL)
 CudaPtr(T::Type) = CudaPtr(convert(Ptr{T},C_NULL))
 convert{T}(::Type{Ptr{T}}, p::CudaPtr{T}) = p.ptr
 convert{T}(::Type{Ptr{Void}}, p::CudaPtr{T}) = convert(Ptr{Void}, p.ptr)
+copy(p::CudaPtr) = CudaPtr(p.ptr)
 
 rawpointer(p::CudaPtr) = p
 
