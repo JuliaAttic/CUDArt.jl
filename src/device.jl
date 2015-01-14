@@ -4,12 +4,16 @@ device() = (ret = Cint[0]; rt.cudaGetDevice(ret); int(ret[1]))
 device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
 device_reset() = device_reset(device())
+if VERSION < v"0.4.0-dev"
+    finalize(x) = nothing
+end
 function device_reset(dev::Integer)
     # Clear all items on this device from cuda_ptrs, so they don't get
     # freed later
     todelete = Any[]
     for (p,pdev) in cuda_ptrs
         if pdev == dev
+            finalize(p)
             push!(todelete, p)
         end
     end
