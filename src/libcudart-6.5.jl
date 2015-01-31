@@ -20,7 +20,7 @@ include("../gen-6.5/gen_libcudart_h.jl")
 
 typealias cudaError_t cudaError
 
-const libcudart = find_library(["libcudart", "cudart"], ["/usr/local/cuda-6.5","/usr/local/cuda"])
+const libcudart = find_library(["libcudart", "cudart"], ["/usr/local/cuda-6.5/lib", "/usr/local/cuda-6.5/lib64", "/usr/local/cuda/lib", "/usr/local/cuda/lib64"])
 if isempty(libcudart)
     error("CUDA runtime API library cannot be found")
 end

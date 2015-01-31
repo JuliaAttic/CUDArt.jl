@@ -28,7 +28,7 @@ import .CUDArt_gen
 const rt = CUDArt_gen
 
 # To load PTX code, we also need access to the driver API module utilities
-const libcuda = find_library(["libcuda"], ["/usr/local/cuda-6.5"])
+const libcuda = find_library(["libcuda"], ["/usr/lib/"])
 if isempty(libcuda)
     error("CUDA driver API library cannot be found")
 end
