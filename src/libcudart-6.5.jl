@@ -22,12 +22,13 @@ typealias cudaError_t cudaError
 
 @windows? (
 begin
-    const dllname = (Int == Int64) ? "cudart64_65" : "cudart32_65"
+    const dllname = (WORD_SIZE==64) ? "cudart64_65" : "cudart32_65"
     const libcudart = find_library([dllname], [string(ENV["CUDA_PATH_V6_5"], "\\bin")])
 end
 : # linux or mac
 begin
-    const libcudart = find_library(["libcudart", "cudart"], ["/usr/local/cuda-6.5/lib", "/usr/local/cuda-6.5/lib64", "/usr/local/cuda/lib", "/usr/local/cuda/lib64"])
+    const libdir = (WORD_SIZE==64) ? "lib64" : "lib"
+    const libcudart = find_library(["libcudart", "cudart"], ["/usr/local/cuda/$libdir", "/usr/local/cuda-6.5/$libdir", "/usr/local/cuda-6.0/$libdir", "/usr/local/cuda-5.5/$libdir", "/usr/local/cuda-5.0/$libdir", "/usr/local/cuda-7.0/$libdir"])
 end)
 
 if isempty(libcudart)
