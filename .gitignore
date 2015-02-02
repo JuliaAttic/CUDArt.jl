@@ -1,2 +1,7 @@
 *.ptx
 *.so
+
+# Windows
+libwrapcuda.dll
+libwrapcuda.exp
+libwrapcuda.lib

@@ -3,7 +3,13 @@
 #include <cuda_runtime_api.h>
 #include <stdio.h>
 
-cudaError_t wrapcudaMalloc3D(struct cudaPitchedPtr *p, struct cudaExtent *ext)
+#ifdef _WIN32
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT
+#endif
+
+DLLEXPORT cudaError_t wrapcudaMalloc3D(struct cudaPitchedPtr *p, struct cudaExtent *ext)
 {
   cudaError_t err;
 /*  printf("width = %d\n", ext->width);
@@ -20,7 +26,7 @@ cudaError_t wrapcudaMalloc3D(struct cudaPitchedPtr *p, struct cudaExtent *ext)
   return err;
 }
 
-cudaError_t wrapcudaMemset3D(struct cudaPitchedPtr *p, char val, struct cudaExtent *ext)
+DLLEXPORT cudaError_t wrapcudaMemset3D(struct cudaPitchedPtr *p, char val, struct cudaExtent *ext)
 {
   return cudaMemset3D(*p, (int) val, *ext);
 }
