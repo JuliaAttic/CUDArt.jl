@@ -22,8 +22,14 @@ typealias cudaError_t cudaError
 
 @windows? (
 begin
-    const dllname = (WORD_SIZE==64) ? "cudart64_65" : "cudart32_65"
-    const libcudart = find_library([dllname], [string(ENV["CUDA_PATH_V6_5"], "\\bin")])
+    # location of cudart64_xx.dll or cudart32_xx.dll have to be in PATH env var
+    # ex: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin
+    # (by default, it is done by CUDA toolkit installer)
+
+    const dllnames = (WORD_SIZE==64) ? 
+        ["cudart64_70", "cudart64_65", "cudart64_60", "cudart64_55", "cudart64_50", "cudart64_50_35"] : 
+        ["cudart32_70", "cudart32_65", "cudart32_60", "cudart32_55", "cudart32_50", "cudart32_50_35"]
+    const libcudart = find_library(dllnames, [""])
 end
 : # linux or mac
 begin
