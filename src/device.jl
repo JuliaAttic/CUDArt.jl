@@ -1,7 +1,15 @@
 devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); int(ret[1]))
 
 device() = (ret = Cint[0]; rt.cudaGetDevice(ret); int(ret[1]))
-device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
+function device(dev::Integer; init::Bool=false)
+    rt.cudaSetDevice(dev)
+    if init
+        ## Force initialization by allocating zero bytes
+        ptr = malloc(0)
+        @assert ptr == CudaPtr() "cudaMalloc returns NULL when allocating zero bytes"
+    end
+    dev
+end
 
 device_reset() = device_reset(device())
 if VERSION < v"0.4.0-dev"
@@ -33,7 +41,7 @@ attribute(dev::Integer, code::Integer) = (ret = Cint[0]; rt.cudaDeviceGetAttribu
 
 capability(dev::Integer) = (attribute(dev,rt.cudaDevAttrComputeCapabilityMajor),
                             attribute(dev,rt.cudaDevAttrComputeCapabilityMinor))
-                            
+
 name(p::rt.cudaDeviceProp) = bytestring(convert(Ptr{Uint8}, pointer([p.name])))
 
 # criteria = dev -> Bool
@@ -73,9 +81,7 @@ function init!(mdutils::Array{CuModule}, devlist)
     # initialize all devices
     for idev = 1:length(devlist)
         dev = devlist[idev]
-        device(dev)
-        # allocate and destroy memory to force initialization
-        free(malloc(Uint8, 1))
+        device(dev, init = true)
         # Load the utility functions
         mdutils[idev] = CuModule(utilfile, false)
         for func in funcnames
