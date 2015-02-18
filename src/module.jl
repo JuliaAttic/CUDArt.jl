@@ -44,7 +44,12 @@ function CuModule(f::Function, filename::ASCIIString)
 end
 
 function unload(md::CuModule)
-    checkdrv(ccall((:cuModuleUnload, libcuda), Cint, (Ptr{Void},), md.handle))
+    ## This is used as a finalizer, so ignore all errors
+    try
+        checkdrv(ccall((:cuModuleUnload, libcuda), Cint, (Ptr{Void},), md.handle))
+    catch ex
+        warn("unload($md) failed, error ignored: $ex")
+    end
 end
 
 immutable CuFunction

@@ -21,7 +21,15 @@ function device_reset(dev::Integer)
     todelete = Any[]
     for (p,pdev) in cuda_ptrs
         if pdev == dev
-            finalize(p)
+            try
+                finalize(p)
+            catch ex
+                ## Make sure previous async errors do not prevent
+                ## all finalizers from running
+                warn("Error in finalize($p) ignored: $ex")
+                ## Reset CUDA errors
+                CUDArt.rt.cudaGetLastError()
+            end
             push!(todelete, p)
         end
     end
