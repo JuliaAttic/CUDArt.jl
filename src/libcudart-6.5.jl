@@ -13,6 +13,7 @@ function checkerror(code::Cuint)
     # let's show a backtrace here
     warn("CUDA error triggered from:")
     Base.show_backtrace(STDOUT, backtrace())
+    println()
     throw(bytestring(cudaGetErrorString(code)))
 end
 
@@ -26,8 +27,8 @@ begin
     # ex: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin
     # (by default, it is done by CUDA toolkit installer)
 
-    const dllnames = (WORD_SIZE==64) ? 
-        ["cudart64_70", "cudart64_65", "cudart64_60", "cudart64_55", "cudart64_50", "cudart64_50_35"] : 
+    const dllnames = (WORD_SIZE==64) ?
+        ["cudart64_70", "cudart64_65", "cudart64_60", "cudart64_55", "cudart64_50", "cudart64_50_35"] :
         ["cudart32_70", "cudart32_65", "cudart32_60", "cudart32_55", "cudart32_50", "cudart32_50_35"]
     const libcudart = find_library(dllnames, [""])
 end
