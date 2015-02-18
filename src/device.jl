@@ -24,11 +24,15 @@ function device_reset(dev::Integer)
             try
                 finalize(p)
             catch ex
-                ## Make sure previous async errors do not prevent
-                ## all finalizers from running
-                warn("Error in finalize($p) ignored: $ex")
-                ## Reset CUDA errors
-                CUDArt.rt.cudaGetLastError()
+                if isa(ex, CudaError) || isa(ex, CudaDriverError)
+                    ## Make sure previous async errors do not prevent
+                    ## all finalizers from running
+                    warn("Error in finalize($p) ignored: $ex")
+                    ## Reset CUDA errors
+                    CUDArt.rt.cudaGetLastError()
+                else
+                    rethrow(ex)
+                end
             end
             push!(todelete, p)
         end

@@ -3,7 +3,7 @@
 
 function checkdrv(code::Integer)
     if code != 0
-        error(driver_error_descriptions[int(code)])
+        throw(CudaDriverError(code))
     end
     nothing
 end
@@ -11,7 +11,7 @@ end
 function checkdrv(code::Integer, msg::String)
     if code != 0
         warn(msg)
-        error(driver_error_descriptions[int(code)])
+        throw(CudaDriverError(code))
     end
     nothing
 end
@@ -48,7 +48,11 @@ function unload(md::CuModule)
     try
         checkdrv(ccall((:cuModuleUnload, libcuda), Cint, (Ptr{Void},), md.handle))
     catch ex
-        warn("unload($md) failed, error ignored: $ex")
+        if isa(ex, CudaError) || isa(ex, CudaDriverError)
+            warn("unload($md) failed, error ignored: $ex")
+        else
+            rethrow(ex)
+        end
     end
 end
 

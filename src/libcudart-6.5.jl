@@ -14,7 +14,7 @@ function checkerror(code::Cuint)
     warn("CUDA error triggered from:")
     Base.show_backtrace(STDOUT, backtrace())
     println()
-    throw(bytestring(cudaGetErrorString(code)))
+    throw(CudaError(code))
 end
 
 include("../gen-6.5/gen_libcudart_h.jl")
