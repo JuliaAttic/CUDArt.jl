@@ -19,7 +19,7 @@ end
 immutable CuModule
     handle::Ptr{Void}
 
-    function CuModule(filename::ASCIIString, finalize::Bool = true)
+    function CuModule(filename::String, finalize::Bool = true)
         a = Array(Ptr{Void}, 1)
         checkdrv(ccall((:cuModuleLoad, libcuda), Cint, (Ptr{Ptr{Void}}, Ptr{Cchar}), a, filename), filename)
         md = new(a[1])
@@ -32,7 +32,7 @@ immutable CuModule
 end
 
 # do syntax, f(module)
-function CuModule(f::Function, filename::ASCIIString)
+function CuModule(f::Function, filename::String)
     md = CuModule(filename, false)
     local ret
     try
@@ -50,7 +50,7 @@ end
 immutable CuFunction
     handle::Ptr{Void}
 
-    function CuFunction(md::CuModule, name::ASCIIString)
+    function CuFunction(md::CuModule, name::String)
         a = Array(Ptr{Void}, 1)
         checkdrv(ccall((:cuModuleGetFunction, libcuda), Cint,
                        (Ptr{Ptr{Void}}, Ptr{Void}, Ptr{Cchar}),
@@ -59,7 +59,7 @@ immutable CuFunction
     end
 end
 
-const driver_error_descriptions = @compat Dict{Int,ASCIIString}(
+const driver_error_descriptions = @compat Dict{Int,String}(
         0 => "Success",
         1 => "Invalid value",
         2 => "Out of memory",
