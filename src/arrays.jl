@@ -178,7 +178,7 @@ function CudaPitchedArray(T::Type, dims::Dims)
     pp = rt.cudaPitchedPtr(pp, dims[1]) # correct the xsize
     cptr = pp.ptr
     dev = device()
-    cuda_ptrs[cptr] = dev
+    cuda_ptrs[WeakRef(cptr)] = dev
     g = CudaPitchedArray{T,length(dims)}(pp, dims, dev)
     finalizer(g, free)
     g
@@ -376,7 +376,7 @@ function HostArray{T}(::Type{T}, sz::Dims; flags::Integer=rt.cudaHostAllocDefaul
     data = pointer_to_array(convert(Ptr{T}, ptr), sz, false)
     ha = HostArray(ptr, data)
     finalizer(ha, free)
-    cuda_ptrs[ptr] = device()
+    cuda_ptrs[WeakRef(ptr)] = device()
     ha
 end
 
