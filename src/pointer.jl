@@ -36,7 +36,7 @@ function malloc(T::Type, n::Integer)
     rt.cudaMalloc(p, nbytes)
     cptr = CudaPtr(convert(Ptr{T},p[1]))
     finalizer(cptr, free)
-    cuda_ptrs[cptr] = device()
+    cuda_ptrs[WeakRef(cptr)] = device()
     cptr
 end
 malloc(nbytes::Integer) = malloc(Uint8, nbytes)
