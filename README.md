@@ -6,14 +6,12 @@ It borrows heavily from the [CUDA.jl](https://github.com/JuliaGPU/CUDA.jl) repos
 
 # Platform support
 
-This has been tested on Linux and OSX.
-It is likely that only small changes will be necessary to support other platforms (e.g., adding the appropriate library names and paths).
-We would be extremely grateful for pull requests to improve support for other platforms.
+This has been tested on Linux, OSX, and Windows. With Windows, at least Visual Studio 2010/2012/2013 are supported.
 
 # Installation
 
 First, you need to have an NVIDIA GPU device in your computer (one that is available for computation, i.e., most likely not your graphics card), and the CUDA library installed.
-You have to perform these steps manually.
+You have to perform these steps manually. **Choose either 32-bit or 64-bit versions to match your julia installation.** 
 
 Install the Julia package using
 ```julia
