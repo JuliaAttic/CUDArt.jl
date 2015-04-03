@@ -41,3 +41,29 @@ function safe_uint32(i::Integer)
     ui
 end
 
+## Wrapper around cudaError_t
+type CudaError <: Exception
+    code :: Cint
+end
+
+function show(io::IO, err::CudaError)
+    nameptr = rt.cudaGetErrorString(err.code)
+    name = nameptr == C_NULL ? "<unknown cudaError_t>" : bytestring(nameptr)
+    descptr = rt.cudaGetErrorName(err.code)
+    desc = descptr == C_NULL ? "<unknown cudaError_t>" : bytestring(descptr)
+    print(io, "CudaError(", name, "): ", desc)
+end
+
+## Wrapper around CUresult (from CUDA driver API)
+type CudaDriverError <: Exception
+    code :: Cint
+end
+
+function show(io::IO, err::CudaDriverError)
+    nameptr, descptr = Ptr{Int8}[C_NULL], Ptr{Int8}[C_NULL]
+    ccall((:cuGetErrorName, libcuda), Cint, (Cint, Ptr{Ptr{Int8}}), err.code, nameptr)
+    ccall((:cuGetErrorString, libcuda), Cint, (Cint, Ptr{Ptr{Int8}}), err.code, descptr)
+    name = nameptr[1] == C_NULL ? "<unknown CUresult>" : bytestring(nameptr[1])
+    desc = descptr[1] == C_NULL ? "<unknown CUresult>" : bytestring(descptr[1])
+    print(io, "CudaDriverError(", name, "): ", desc)
+end

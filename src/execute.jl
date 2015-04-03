@@ -1,6 +1,9 @@
 cubox(p::CudaPtr) = cubox(p.ptr)
 cubox(a::CdArray) = cubox(rawpointer(a))
-cubox{T}(x::T) = T[x]
+function cubox{T}(x::T)
+    isbits(T) || error("Kernel argument must be a bits type")
+    T[x]
+end
 
 function launch(f::CuFunction, grid::CudaDims, block::CudaDims, args::Tuple; shmem_bytes::Int=4, stream=null_stream)
     gx = get_dim_x(grid)

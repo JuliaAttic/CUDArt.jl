@@ -3,7 +3,7 @@
 
 function checkdrv(code::Integer)
     if code != 0
-        error(driver_error_descriptions[int(code)])
+        throw(CudaDriverError(code))
     end
     nothing
 end
@@ -11,7 +11,7 @@ end
 function checkdrv(code::Integer, msg::String)
     if code != 0
         warn(msg)
-        error(driver_error_descriptions[int(code)])
+        throw(CudaDriverError(code))
     end
     nothing
 end
@@ -44,7 +44,16 @@ function CuModule(f::Function, filename::String)
 end
 
 function unload(md::CuModule)
-    checkdrv(ccall((:cuModuleUnload, libcuda), Cint, (Ptr{Void},), md.handle))
+    ## This is used as a finalizer, so ignore all errors
+    try
+        checkdrv(ccall((:cuModuleUnload, libcuda), Cint, (Ptr{Void},), md.handle))
+    catch ex
+        if isa(ex, CudaError) || isa(ex, CudaDriverError)
+            warn("unload($md) failed, error ignored: $ex")
+        else
+            rethrow(ex)
+        end
+    end
 end
 
 immutable CuFunction
