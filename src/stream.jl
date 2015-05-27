@@ -8,7 +8,7 @@ immutable StreamHandle
     handle::Ptr{Void}
 end
 
-convert(::Type{Ptr{Void}}, shnd::StreamHandle) = shnd.handle
+unsafe_convert(::Type{Ptr{Void}}, shnd::StreamHandle) = shnd.handle
 
 abstract AbstractStream
 
@@ -24,7 +24,8 @@ function Stream()
 end
 NullStream() = Stream(StreamHandle(C_NULL), Condition())
 
-convert(::Type{Ptr{Void}}, s::Stream) = convert(Ptr{Void}, s.handle)
+unsafe_convert(::Type{Ptr{Void}}, s::Stream) = unsafe_convert(Ptr{Void}, s.handle)
+unsafe_convert(::Type{Ptr}, s::Stream) = unsafe_convert(Ptr{Void}, s.handle)
 
 const null_stream = NullStream()
 

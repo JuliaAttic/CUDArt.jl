@@ -3,7 +3,7 @@
 
 function checkdrv(code::Integer)
     if code != 0
-        error(driver_error_descriptions[int(code)])
+        error(driver_error_descriptions[@compat(Int(code))])
     end
     nothing
 end
@@ -11,7 +11,7 @@ end
 function checkdrv(code::Integer, msg::String)
     if code != 0
         warn(msg)
-        error(driver_error_descriptions[int(code)])
+        error(driver_error_descriptions[@compat(Int(code))])
     end
     nothing
 end

@@ -16,9 +16,9 @@ typealias CudaDevicePtr CudaPtr
 #############################
 
 CudaPtr() = CudaPtr(C_NULL)
-CudaPtr(T::Type) = CudaPtr(convert(Ptr{T},C_NULL))
-convert{T}(::Type{Ptr{T}}, p::CudaPtr{T}) = p.ptr
-convert{T}(::Type{Ptr{Void}}, p::CudaPtr{T}) = convert(Ptr{Void}, p.ptr)
+CudaPtr(T::Type) = CudaPtr(unsafe_convert(Ptr{T},C_NULL))
+unsafe_convert{P<:Ptr}(::Type{P}, p::CudaPtr) = unsafe_convert(P, p.ptr)
+convert{P<:Ptr}(::Type{P}, p::CudaPtr) = unsafe_convert(P, p.ptr)
 copy(p::CudaPtr) = CudaPtr(p.ptr)
 
 rawpointer(p::CudaPtr) = p
@@ -34,7 +34,7 @@ function malloc(T::Type, n::Integer)
     p = Ptr{Void}[C_NULL]
     nbytes = sizeof(T)*n
     rt.cudaMalloc(p, nbytes)
-    cptr = CudaPtr(convert(Ptr{T},p[1]))
+    cptr = CudaPtr(unsafe_convert(Ptr{T},p[1]))
     finalizer(cptr, free)
     cuda_ptrs[WeakRef(cptr)] = device()
     cptr
@@ -42,7 +42,7 @@ end
 malloc(nbytes::Integer) = malloc(Uint8, nbytes)
 
 function free{T}(p::CudaPtr{T})
-    cnull = convert(Ptr{T}, C_NULL)
+    cnull = unsafe_convert(Ptr{T}, C_NULL)
     if p.ptr != cnull && haskey(cuda_ptrs, p)
         delete!(cuda_ptrs, p)
         rt.cudaFree(p)
@@ -84,14 +84,14 @@ eltype{T}(::CudaPtr{T}) = T
 
 ## limited pointer arithmetic & comparison ##
 
-==(x::CudaPtr, y::CudaPtr) = uint(x) == uint(y)
--(x::CudaPtr, y::CudaPtr) = uint(x) - uint(y)
+==(x::CudaPtr, y::CudaPtr) = @compat(UInt(x)) == @compat(UInt(y))
+-(x::CudaPtr, y::CudaPtr) = @compat(UInt(x)) - @compat(UInt(y))
 
-+(x::CudaPtr, y::Integer) = oftype(x, uint(uint(x) + y))
--(x::CudaPtr, y::Integer) = oftype(x, uint(uint(x) - y))
++(x::CudaPtr, y::Integer) = oftype(x, @compat(UInt(@compat(UInt(x) + y))))
+-(x::CudaPtr, y::Integer) = oftype(x, @compat(UInt(@compat(UInt(x) - y))))
 +(x::Integer, y::CudaPtr) = y + x
 
-zero{T}(::Type{CudaPtr{T}}) = convert(CudaPtr{T}, 0)
-zero{T}(x::CudaPtr{T}) = convert(CudaPtr{T}, 0)
-one{T}(::Type{CudaPtr{T}}) = convert(CudaPtr{T}, 1)
-one{T}(x::CudaPtr{T}) = convert(CudaPtr{T}, 1)
+zero{T}(::Type{CudaPtr{T}}) = unsafe_convert(CudaPtr{T}, C_NULL)
+zero{T}(x::CudaPtr{T}) = unsafe_convert(CudaPtr{T}, C_NULL)
+one{T}(::Type{CudaPtr{T}}) = unsafe_convert(CudaPtr{T}, 1)
+one{T}(x::CudaPtr{T}) = unsafe_convert(CudaPtr{T}, 1)

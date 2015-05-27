@@ -1,5 +1,7 @@
 module CUDArt_gen  # the generated module
 
+using Compat
+
 # In the runtime API, these are all used only inside Ptrs,
 # so these typealiases are safe (if you don't need access to
 # struct elements)
@@ -26,15 +28,15 @@ begin
     # ex: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin
     # (by default, it is done by CUDA toolkit installer)
 
-    const dllnames = (WORD_SIZE==64) ? 
-        ["cudart64_70", "cudart64_65", "cudart64_60", "cudart64_55", "cudart64_50", "cudart64_50_35"] : 
+    const dllnames = (WORD_SIZE==64) ?
+        ["cudart64_70", "cudart64_65", "cudart64_60", "cudart64_55", "cudart64_50", "cudart64_50_35"] :
         ["cudart32_70", "cudart32_65", "cudart32_60", "cudart32_55", "cudart32_50", "cudart32_50_35"]
-    const libcudart = find_library(dllnames, [""])
+    const libcudart = Libdl.find_library(dllnames, [""])
 end
 : # linux or mac
 begin
     const libdir = (WORD_SIZE==64) ? "lib64" : "lib"
-    const libcudart = find_library(["libcudart", "cudart"], ["/usr/local/cuda/$libdir", "/usr/local/cuda-6.5/$libdir", "/usr/local/cuda-6.0/$libdir", "/usr/local/cuda-5.5/$libdir", "/usr/local/cuda-5.0/$libdir", "/usr/local/cuda-7.0/$libdir"])
+    const libcudart = Libdl.find_library(["libcudart", "cudart"], ["/usr/local/cuda/$libdir", "/usr/local/cuda-6.5/$libdir", "/usr/local/cuda-6.0/$libdir", "/usr/local/cuda-5.5/$libdir", "/usr/local/cuda-5.0/$libdir", "/usr/local/cuda-7.0/$libdir"])
 end)
 
 if isempty(libcudart)
@@ -49,7 +51,7 @@ include("../gen-6.5/gen_libcudart.jl")
 # end
 
 # Fix issues stemming from the inability to pass structs as args
-const libwrapcuda = find_library(["libwrapcuda"],[joinpath(Pkg.dir(), "CUDArt", "deps")])
+const libwrapcuda = Libdl.find_library(["libwrapcuda"],[joinpath(Pkg.dir(), "CUDArt", "deps")])
 isempty(libwrapcuda) && error("Cannot find libwrapcuda")
 
 function cudaMalloc3D(p::Array{cudaPitchedPtr,1}, ext::cudaExtent)

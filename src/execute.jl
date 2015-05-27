@@ -25,7 +25,7 @@ function launch(f::CuFunction, grid::CudaDims, block::CudaDims, args::Tuple; shm
         Ptr{Void}, # stream
         Ptr{Ptr{Void}}, # kernel parameters,
         Ptr{Ptr{Void}}), # extra parameters
-        f.handle, gx, gy, gz, tx, ty, tz, shmem_bytes, stream, kernel_args, 0))
+        f.handle, gx, gy, gz, tx, ty, tz, shmem_bytes, stream, kernel_args, C_NULL))
 end
 
 # Note this is asynchronous wrt the host, but you can wait on the stream
@@ -35,7 +35,7 @@ function cudasleep(secs; dev::Integer=device(), stream=null_stream)
     func = ptxdict[(dev, "clock_block")]
     twatchdog = 1.95  # watchdog timer kicks in after 2 secs
     while secs > 0
-        tics = int64(1000*rate*min(twatchdog, secs))  # rate is in kHz
+        tics = @compat(Int64(1000*rate*min(twatchdog, secs)))  # rate is in kHz
         secs -= twatchdog
         launch(func, 1, 1, (tics,), stream=stream)
     end

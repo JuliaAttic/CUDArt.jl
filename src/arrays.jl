@@ -112,7 +112,7 @@ similar(g::CudaArray) = CudaArray(eltype(g), size(g))
 similar(g::CudaArray, T) = CudaArray(T, size(g))
 similar(g::CudaArray, dims::Dims) = CudaArray(eltype(g), dims)
 
-convert{T}(::Type{Ptr{T}}, g::CudaArray) = convert(Ptr{T}, pointer(g))
+unsafe_convert{T}(::Type{Ptr{T}}, g::CudaArray) = unsafe_convert(Ptr{T}, pointer(g))
 
 # convert{T,N}(::Type{CudaArray{T,N}}, g::CudaArray{T,N}) = g
 # convert{R,S,N}(::Type{CudaArray{R,N}}, g::CudaArray{S,N}) = CudaArray{R,N}(g.ptr, g.dims, g.dev)
@@ -197,8 +197,8 @@ similar(g::CudaPitchedArray) = CudaPitchedArray(eltype(g), size(g))
 similar(g::CudaPitchedArray, T) = CudaPitchedArray(T, size(g))
 similar(g::CudaPitchedArray, dims::Dims) = CudaPitchedArray(eltype(g), dims)
 
-convert(::Type{rt.cudaPitchedPtr}, g::CudaPitchedArray) = pointer(g)
-convert{T}(::Type{Ptr{T}}, g::CudaPitchedArray{T}) = convert(Ptr{T}, rawpointer(g))
+unsafe_convert(::Type{rt.cudaPitchedPtr}, g::CudaPitchedArray) = pointer(g)
+unsafe_convert{T}(::Type{Ptr{T}}, g::CudaPitchedArray{T}) = unsafe_convert(Ptr{T}, rawpointer(g))
 
 # convert{T,N}(::Type{CudaPitchedArray{T,N}}, g::CudaPitchedArray{T,N}) = g
 # convert{R,S,N}(::Type{CudaPitchedArray{R,N}}, g::CudaPitchedArray{S,N}) = CudaPitchedArray{R,N}(g.ptr, g.dims, g.dev)
@@ -373,7 +373,7 @@ function HostArray{T}(::Type{T}, sz::Dims; flags::Integer=rt.cudaHostAllocDefaul
     p = Ptr{Void}[C_NULL]
     rt.cudaHostAlloc(p, prod(sz)*sizeof(T), flags)
     ptr = p[1]
-    data = pointer_to_array(convert(Ptr{T}, ptr), sz, false)
+    data = pointer_to_array(unsafe_convert(Ptr{T}, ptr), sz, false)
     ha = HostArray(ptr, data)
     finalizer(ha, free)
     cuda_ptrs[WeakRef(ptr)] = device()
@@ -403,7 +403,7 @@ setindex!(ha::HostArray, val, i...) = setindex!(ha.data, val, i...)
 pointer(ha::HostArray)    = pointer(ha.data)
 rawpointer(ha::HostArray) = pointer(ha)
 pitch(ha::HostArray) = size(ha,1)*sizeof(eltype(ha))
-convert{T}(::Type{Ptr{Void}}, ha::HostArray{T}) = ha.ptr
+unsafe_convert{T}(::Type{Ptr{Void}}, ha::HostArray{T}) = ha.ptr
 fill!(ha::HostArray, val) = fill!(ha.data, val)
 
 function checkstrides_pitched(A)

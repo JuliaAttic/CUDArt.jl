@@ -39,7 +39,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
             @test p.ysize == 1
         end
         # fill!
-        fill!(g2, uint8(0))
+        fill!(g2, 0x00)
         h2 = CUDArt.to_host(g2)
         @test h2 == zeros(Int, 5)
         fill!(g2, 0)
@@ -76,7 +76,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     h_dest = CUDArt.to_host(d_dest)
     @test isequal(h_dest, [15 7.3])
     # Copies between CudaPitchedArrays and CudaArrays
-    A = rand(uint16(5:11), 7, 2)
+    A = rand(@compat(map(UInt16, 5:11)), 7, 2)
     GA = CUDArt.CudaArray(A)
     GP = CUDArt.CudaPitchedArray(eltype(A), size(A))
     copy!(GP, GA)
@@ -100,7 +100,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     CUDArt.device_synchronize()
     @test A[2,2] == 7
     S = pointer_to_array(pointer(A)+48, (6,2), false)  # a "SubArray"
-    B = rand(int32(1:15), 6, 2)
+    B = rand(@compat(map(Int32, 1:15)), 6, 2)
     GB = CUDArt.CudaArray(B)
     copy!(S, GB)
     CUDArt.device_synchronize()

@@ -34,7 +34,7 @@ get_dim_y(g::CudaDims) = safe_uint32(get_size_y(g))
 get_dim_z(g::CudaDims) = safe_uint32(get_size_z(g))
 
 function safe_uint32(i::Integer)
-    ui = uint32(i)
+    ui = @compat(UInt32(i))
     if ui < i
         error("Invalid integer size")
     end

@@ -22,6 +22,8 @@ import Base: length, size, ndims, eltype, similar, pointer, stride,
     copy, convert, reinterpret, show, summary,
     copy!, get!, fill!, wait
 
+import Compat: unsafe_convert
+
 # Prepare the CUDA runtime API bindings
 include("libcudart-6.5.jl")
 import .CUDArt_gen
@@ -30,11 +32,11 @@ const rt = CUDArt_gen
 # To load PTX code, we also need access to the driver API module utilities
 @windows? (
 begin
-    const libcuda = find_library(["nvcuda"], [""])
+    const libcuda = Libdl.find_library(["nvcuda"], [""])
 end
 : # linux or mac
 begin
-    const libcuda = find_library(["libcuda"], ["/usr/lib/"])
+    const libcuda = Libdl.find_library(["libcuda"], ["/usr/lib/"])
 end)
 
 if isempty(libcuda)
