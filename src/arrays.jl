@@ -288,13 +288,13 @@ function cudacopy!{T}(dst::CdArray{T}, src::CdArray{T}; kwargs...)
     copy!(dst, map(d->1:d, size(dst)), src, map(d->1:d, size(src)); kwargs...)
 end
 
-copy!{T}(dst::AbstractCudaArray{T}, dstI::(Union(Int,Range1{Int})...), src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream) =
+copy!{T}(dst::AbstractCudaArray{T}, dstI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}), src::AbstractCudaArray{T}, srcI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}); stream=null_stream) =
     cudacopy!(dst, dstI, src, srcI, stream=stream)
-copy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream) =
+copy!{T}(dst::CdArray{T}, dstI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}), src::AbstractCudaArray{T}, srcI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}); stream=null_stream) =
     cudacopy!(dst, dstI, src, srcI, stream=stream)
-copy!{T}(dst::AbstractCudaArray{T}, dstI::(Union(Int,Range1{Int})...), src::CdArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream) =
+copy!{T}(dst::AbstractCudaArray{T}, dstI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}), src::CdArray{T}, srcI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}); stream=null_stream) =
     cudacopy!(dst, dstI, src, srcI, stream=stream)
-function cudacopy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::CdArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
+function cudacopy!{T}(dst::CdArray{T}, dstI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}), src::CdArray{T}, srcI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}); stream=null_stream)
     nd = length(srcI)
     if length(dstI) != nd
         throw(DimensionMismatch("Destination of $(length(dstI)) dimensions differs from dimensionality $nd of src"))
@@ -314,7 +314,7 @@ function cudacopy!{T}(dst::CdArray{T}, dstI::(Union(Int,Range1{Int})...), src::C
     dst
 end
 
-function copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...); stream=null_stream)
+function copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, srcI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}); stream=null_stream)
     nd = length(srcI)
     for i = 1:nd
         first(srcI[i]) >= 1 && last(srcI[i]) <= size(src, i) || throw(DimensionMismatch("In dimension $i, source range of $(srcI[i]) is not within array dimension of $(size(src,i))"))
@@ -331,7 +331,7 @@ function copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,R
     dst
 end
 
-function cudaget!{T}(dst::CdArray{T}, src::CdArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...)
+function cudaget!{T}(dst::CdArray{T}, src::CdArray{T}, srcI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}), default; kwargs...)
     nd = length(srcI)
     if ndims(dst) != nd
         throw(DimensionMismatch("Destination of $(ndims(dst)) dimensions differs from dimensionality $nd of src"))
@@ -349,9 +349,9 @@ function cudaget!{T}(dst::CdArray{T}, src::CdArray{T}, srcI::(Union(Int,Range1{I
     end
     dst
 end
-get!{T}(dst::AbstractCudaArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
-get!{T}(dst::AbstractCudaArray{T}, src::CdArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
-get!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, srcI::(Union(Int,Range1{Int})...), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
+get!{T}(dst::AbstractCudaArray{T}, src::AbstractCudaArray{T}, srcI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
+get!{T}(dst::AbstractCudaArray{T}, src::CdArray{T}, srcI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
+get!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, srcI::@compat(Tuple{Vararg{Union(Int,UnitRange{Int})}}), default; kwargs...) = cudaget!(dst, src, srcI, default; kwargs...)
 
 
 function fill!{T}(X::CudaPitchedArray{T}, val; stream=null_stream)
@@ -394,11 +394,11 @@ ndims{T,N}(ha::HostArray{T,N}) = N
 eltype{T,N}(ha::HostArray{T,N}) = T
 getindex(ha::HostArray, i::Real) = getindex(ha.data, i)
 getindex(ha::HostArray, i::Union(Real,AbstractVector)) = getindex(ha.data, i)
-getindex(ha::HostArray, i, j) = getindex(ha.data, i, j)
+getindex(ha::HostArray, i::Union(Real,AbstractVector), j::Union(Real,AbstractVector)) = getindex(ha.data, i, j)
 getindex(ha::HostArray, i::Union(Real,AbstractVector)...) = getindex(ha.data, i...)
 setindex!(ha::HostArray, val, i::Real) = setindex!(ha.data, val, i)
 setindex!(ha::HostArray, val, i::Union(Real,AbstractVector)) = setindex!(ha.data, val, i)
-setindex!(ha::HostArray, val, i, j) = setindex!(ha.data, val, i, j)
+setindex!(ha::HostArray, val, i::Union(Real,AbstractVector), j::Union(Real,AbstractVector)) = setindex!(ha.data, val, i, j)
 setindex!(ha::HostArray, val, i...) = setindex!(ha.data, val, i...)
 pointer(ha::HostArray)    = pointer(ha.data)
 rawpointer(ha::HostArray) = pointer(ha)

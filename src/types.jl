@@ -1,4 +1,4 @@
-typealias CudaDims Union(Integer, (Integer,), (Integer, Integer), (Integer, Integer, Integer))
+typealias CudaDims Union(Integer, @compat(Tuple{Integer}), @compat(Tuple{Integer, Integer}), @compat(Tuple{Integer, Integer, Integer}))
 
 const CudaExtent = rt.cudaExtent
 CudaExtent(dims::CudaDims) = CudaExtent(get_size_x(dims), get_size_y(dims), get_size_z(dims))
@@ -9,19 +9,19 @@ CudaPos(dims::CudaDims) = CudaPos(get_size_x(dims)-1, get_size_y(dims)-1, get_si
 CudaPos{T}(::Type{T}, dims::CudaDims) = CudaPos((get_size_x(dims)-1)*sizeof(T), get_size_y(dims)-1, get_size_z(dims)-1)
 
 get_size_x(g::Integer) = g
-get_size_x(g::(Integer,)) = g[1]
-get_size_x(g::(Integer, Integer)) = g[1]
-get_size_x(g::(Integer, Integer, Integer)) = g[1]
+get_size_x(g::@compat(Tuple{Integer})) = g[1]
+get_size_x(g::@compat(Tuple{Integer, Integer})) = g[1]
+get_size_x(g::@compat(Tuple{Integer, Integer, Integer})) = g[1]
 
 get_size_y(g::Integer) = 1
-get_size_y(g::(Integer,)) = 1
-get_size_y(g::(Integer, Integer)) = g[2]
-get_size_y(g::(Integer, Integer, Integer)) = g[2]
+get_size_y(g::@compat(Tuple{Integer})) = 1
+get_size_y(g::@compat(Tuple{Integer, Integer})) = g[2]
+get_size_y(g::@compat(Tuple{Integer, Integer, Integer})) = g[2]
 
 get_size_z(g::Integer) = 1
-get_size_z(g::(Integer,)) = 1
-get_size_z(g::(Integer, Integer)) = 1
-get_size_z(g::(Integer, Integer, Integer)) = g[3]
+get_size_z(g::@compat(Tuple{Integer})) = 1
+get_size_z(g::@compat(Tuple{Integer, Integer})) = 1
+get_size_z(g::@compat(Tuple{Integer, Integer, Integer})) = g[3]
 
 # dim3 and utility functions
 const Dim3 = rt.dim3
@@ -40,4 +40,3 @@ function safe_uint32(i::Integer)
     end
     ui
 end
-
