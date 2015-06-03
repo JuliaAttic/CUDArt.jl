@@ -36,7 +36,7 @@ begin
 end
 : # linux or mac
 begin
-    const libcuda = Libdl.find_library(["libcuda"], ["/usr/lib/"])
+    const libcuda = Libdl.find_library(["libcuda"], ["/usr/lib/", "/usr/local/cuda/lib"])
 end)
 
 if isempty(libcuda)
