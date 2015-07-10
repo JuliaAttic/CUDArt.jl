@@ -339,7 +339,7 @@ function cudaget!{T}(dst::CdArray{T}, src::CdArray{T}, srcI::@compat(Tuple{Varar
     for i = 1:nd
         size(dst,i) == length(srcI[i]) || throw(DimensionMismatch("In dimension $i, destination has dimension $(size(dst,i)) but source range has length $(length(srcI[i]))"))
     end
-    srcII = ntuple(nd, i->isa(srcI[i], Int) ? (srcI[i]:srcI[i]) : srcI[i])
+    srcII = ntuple(i->isa(srcI[i], Int) ? (srcI[i]:srcI[i]) : srcI[i], nd)
     dstIc, srcIc = Base.indcopy(size(src), srcII)
     if srcIc != srcII
         fill!(dst, default; kwargs...)
@@ -384,7 +384,7 @@ function free(ha::HostArray)
     if ha.ptr != C_NULL && haskey(cuda_ptrs, ha.ptr)
         rt.cudaFreeHost(ha.ptr)
         ha.ptr = C_NULL
-        ha.data = Array(eltype(ha), ntuple(ndims(ha), d->0))
+        ha.data = Array(eltype(ha), ntuple(d->0, ndims(ha)))
     end
 end
 
