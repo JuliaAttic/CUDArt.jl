@@ -18,6 +18,7 @@ export
     Stream, null_stream, cudasleep,
     destroy, free, cudafinalizer
 
+import Base: ==, -, +, getindex, setindex!
 import Base: length, size, ndims, eltype, similar, pointer, stride,
     copy, convert, reinterpret, show, summary,
     copy!, get!, fill!, wait
