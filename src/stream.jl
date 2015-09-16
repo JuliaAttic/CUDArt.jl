@@ -36,10 +36,11 @@ synchronize(s::Stream) = rt.cudaStreamSynchronize(s)
 function wait(s::Stream)
     runnotify = data -> notify(s.c)
     notifyasync = Base.SingleAsyncWork(runnotify)
-    rt.cudaStreamAddCallback(s, c_async_send_cudastream, notifyasync.handle, 0)
+    rt.cudaStreamAddCallback(s, c_async_send_cudastream[], notifyasync.handle, 0)
     wait(s.c)
     rt.checkerror(rt.cudaGetLastError())
 end
 
 async_send_cudastream(hnd, status, data) = (ccall(:uv_async_send,Cint,(Ptr{Void},),data); nothing)
-const c_async_send_cudastream = cfunction(async_send_cudastream, Void, (rt.cudaStream_t, rt.cudaError_t, Ptr{Void}))
+
+const c_async_send_cudastream = Ref{Ptr{Void}}()
