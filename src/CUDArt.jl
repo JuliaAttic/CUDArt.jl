@@ -1,3 +1,5 @@
+isdefined(Base, :__precompile__) && __precompile__()
+
 module CUDArt
 
 using Compat
@@ -53,5 +55,14 @@ include("stream.jl")
 include("pointer.jl")
 include("arrays.jl")
 include("execute.jl")
+
+if isdefined(Base, :__precompile__)
+    include("precompile.jl")
+    _precompile_()
+end
+
+function __init__()
+    c_async_send_cudastream[] = cfunction(async_send_cudastream, Void, (rt.cudaStream_t, rt.cudaError_t, Ptr{Void}))
+end
 
 end
