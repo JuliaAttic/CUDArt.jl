@@ -1,6 +1,6 @@
-devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); @compat(Int(ret[1])))
+devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); Int(ret[1]))
 
-device() = (ret = Cint[0]; rt.cudaGetDevice(ret); @compat(Int(ret[1])))
+device() = (ret = Cint[0]; rt.cudaGetDevice(ret); Int(ret[1]))
 device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
 device_reset() = device_reset(device())
@@ -29,7 +29,7 @@ device_synchronize() = rt.cudaDeviceSynchronize()
 
 device_properties(dev::Integer) = (aprop = Array(rt.cudaDeviceProp, 1); rt.cudaGetDeviceProperties(aprop, dev); aprop[1])
 
-attribute(dev::Integer, code::Integer) = (ret = Cint[0]; rt.cudaDeviceGetAttribute(ret, code, dev); @compat(Int(ret[1])))
+attribute(dev::Integer, code::Integer) = (ret = Cint[0]; rt.cudaDeviceGetAttribute(ret, code, dev); Int(ret[1]))
 
 capability(dev::Integer) = (attribute(dev,rt.cudaDevAttrComputeCapabilityMajor),
                             attribute(dev,rt.cudaDevAttrComputeCapabilityMinor))

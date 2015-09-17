@@ -1,7 +1,5 @@
 module CUDArt_gen  # the generated module
 
-using Compat
-
 # In the runtime API, these are all used only inside Ptrs,
 # so these typealiases are safe (if you don't need access to
 # struct elements)

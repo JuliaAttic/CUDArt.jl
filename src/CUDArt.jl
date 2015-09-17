@@ -2,8 +2,6 @@ isdefined(Base, :__precompile__) && __precompile__()
 
 module CUDArt
 
-using Compat
-
 export
     # pointer symbols
     CudaPtr, rawpointer, CUDA_NULL,
@@ -23,9 +21,7 @@ export
 import Base: ==, -, +, getindex, setindex!
 import Base: length, size, ndims, eltype, similar, pointer, stride,
     copy, convert, reinterpret, show, summary,
-    copy!, get!, fill!, wait
-
-import Compat: unsafe_convert
+    copy!, get!, fill!, wait, unsafe_convert
 
 # Prepare the CUDA runtime API bindings
 include("libcudart-6.5.jl")

@@ -35,7 +35,7 @@ function cudasleep(secs; dev::Integer=device(), stream=null_stream)
     func = ptxdict[(dev, "clock_block")]
     twatchdog = 1.95  # watchdog timer kicks in after 2 secs
     while secs > 0
-        tics = @compat(Int64(1000*rate*min(twatchdog, secs)))  # rate is in kHz
+        tics = Int64(1000*rate*min(twatchdog, secs))  # rate is in kHz
         secs -= twatchdog
         launch(func, 1, 1, (tics,), stream=stream)
     end
