@@ -45,11 +45,11 @@ function cudaDeviceSetSharedMemConfig(config)
 end
 
 function cudaDeviceGetByPCIBusId(device,pciBusId)
-    checkerror(ccall((:cudaDeviceGetByPCIBusId,libcudart),cudaError_t,(Ptr{Cint},Ptr{Uint8}),device,pciBusId))
+    checkerror(ccall((:cudaDeviceGetByPCIBusId,libcudart),cudaError_t,(Ptr{Cint},Ptr{UInt8}),device,pciBusId))
 end
 
 function cudaDeviceGetPCIBusId(pciBusId,len,device)
-    checkerror(ccall((:cudaDeviceGetPCIBusId,libcudart),cudaError_t,(Ptr{Uint8},Cint,Cint),pciBusId,len,device))
+    checkerror(ccall((:cudaDeviceGetPCIBusId,libcudart),cudaError_t,(Ptr{UInt8},Cint,Cint),pciBusId,len,device))
 end
 
 function cudaIpcGetEventHandle(handle,event)
@@ -65,7 +65,7 @@ function cudaIpcGetMemHandle(handle,devPtr)
 end
 
 function cudaIpcOpenMemHandle(devPtr,handle,flags)
-    checkerror(ccall((:cudaIpcOpenMemHandle,libcudart),cudaError_t,(Ptr{Ptr{Void}},cudaIpcMemHandle_t,Uint32),devPtr,handle,flags))
+    checkerror(ccall((:cudaIpcOpenMemHandle,libcudart),cudaError_t,(Ptr{Ptr{Void}},cudaIpcMemHandle_t,UInt32),devPtr,handle,flags))
 end
 
 function cudaIpcCloseMemHandle(devPtr)
@@ -105,11 +105,11 @@ function cudaPeekAtLastError()
 end
 
 function cudaGetErrorName(error)
-    ccall((:cudaGetErrorName,libcudart),Ptr{Uint8},(cudaError_t,),error)
+    ccall((:cudaGetErrorName,libcudart),Ptr{UInt8},(cudaError_t,),error)
 end
 
 function cudaGetErrorString(error)
-    ccall((:cudaGetErrorString,libcudart),Ptr{Uint8},(cudaError_t,),error)
+    ccall((:cudaGetErrorString,libcudart),Ptr{UInt8},(cudaError_t,),error)
 end
 
 function cudaGetDeviceCount(count)
@@ -141,7 +141,7 @@ function cudaSetValidDevices(device_arr,len)
 end
 
 function cudaSetDeviceFlags(flags)
-    checkerror(ccall((:cudaSetDeviceFlags,libcudart),cudaError_t,(Uint32,),flags))
+    checkerror(ccall((:cudaSetDeviceFlags,libcudart),cudaError_t,(UInt32,),flags))
 end
 
 function cudaStreamCreate(pStream)
@@ -149,11 +149,11 @@ function cudaStreamCreate(pStream)
 end
 
 function cudaStreamCreateWithFlags(pStream,flags)
-    checkerror(ccall((:cudaStreamCreateWithFlags,libcudart),cudaError_t,(Ptr{cudaStream_t},Uint32),pStream,flags))
+    checkerror(ccall((:cudaStreamCreateWithFlags,libcudart),cudaError_t,(Ptr{cudaStream_t},UInt32),pStream,flags))
 end
 
 function cudaStreamCreateWithPriority(pStream,flags,priority)
-    checkerror(ccall((:cudaStreamCreateWithPriority,libcudart),cudaError_t,(Ptr{cudaStream_t},Uint32,Cint),pStream,flags,priority))
+    checkerror(ccall((:cudaStreamCreateWithPriority,libcudart),cudaError_t,(Ptr{cudaStream_t},UInt32,Cint),pStream,flags,priority))
 end
 
 function cudaStreamGetPriority(hStream,priority)
@@ -161,7 +161,7 @@ function cudaStreamGetPriority(hStream,priority)
 end
 
 function cudaStreamGetFlags(hStream,flags)
-    checkerror(ccall((:cudaStreamGetFlags,libcudart),cudaError_t,(cudaStream_t,Ptr{Uint32}),hStream,flags))
+    checkerror(ccall((:cudaStreamGetFlags,libcudart),cudaError_t,(cudaStream_t,Ptr{UInt32}),hStream,flags))
 end
 
 function cudaStreamDestroy(stream)
@@ -169,11 +169,11 @@ function cudaStreamDestroy(stream)
 end
 
 function cudaStreamWaitEvent(stream,event,flags)
-    checkerror(ccall((:cudaStreamWaitEvent,libcudart),cudaError_t,(cudaStream_t,cudaEvent_t,Uint32),stream,event,flags))
+    checkerror(ccall((:cudaStreamWaitEvent,libcudart),cudaError_t,(cudaStream_t,cudaEvent_t,UInt32),stream,event,flags))
 end
 
 function cudaStreamAddCallback(stream,callback,userData,flags)
-    checkerror(ccall((:cudaStreamAddCallback,libcudart),cudaError_t,(cudaStream_t,cudaStreamCallback_t,Ptr{Void},Uint32),stream,callback,userData,flags))
+    checkerror(ccall((:cudaStreamAddCallback,libcudart),cudaError_t,(cudaStream_t,cudaStreamCallback_t,Ptr{Void},UInt32),stream,callback,userData,flags))
 end
 
 function cudaStreamSynchronize(stream)
@@ -185,7 +185,7 @@ function cudaStreamQuery(stream)
 end
 
 function cudaStreamAttachMemAsync(stream,devPtr,length,flags)
-    checkerror(ccall((:cudaStreamAttachMemAsync,libcudart),cudaError_t,(cudaStream_t,Ptr{Void},Csize_t,Uint32),stream,devPtr,length,flags))
+    checkerror(ccall((:cudaStreamAttachMemAsync,libcudart),cudaError_t,(cudaStream_t,Ptr{Void},Csize_t,UInt32),stream,devPtr,length,flags))
 end
 
 function cudaEventCreate(event)
@@ -193,7 +193,7 @@ function cudaEventCreate(event)
 end
 
 function cudaEventCreateWithFlags(event,flags)
-    checkerror(ccall((:cudaEventCreateWithFlags,libcudart),cudaError_t,(Ptr{cudaEvent_t},Uint32),event,flags))
+    checkerror(ccall((:cudaEventCreateWithFlags,libcudart),cudaError_t,(Ptr{cudaEvent_t},UInt32),event,flags))
 end
 
 function cudaEventRecord(event,stream)
@@ -253,7 +253,7 @@ function cudaOccupancyMaxActiveBlocksPerMultiprocessor(numBlocks,func,blockSize,
 end
 
 function cudaMallocManaged(devPtr,size,flags)
-    checkerror(ccall((:cudaMallocManaged,libcudart),cudaError_t,(Ptr{Ptr{Void}},Csize_t,Uint32),devPtr,size,flags))
+    checkerror(ccall((:cudaMallocManaged,libcudart),cudaError_t,(Ptr{Ptr{Void}},Csize_t,UInt32),devPtr,size,flags))
 end
 
 function cudaMalloc(devPtr,size)
@@ -269,7 +269,7 @@ function cudaMallocPitch(devPtr,pitch,width,height)
 end
 
 function cudaMallocArray(array,desc,width,height,flags)
-    checkerror(ccall((:cudaMallocArray,libcudart),cudaError_t,(Ptr{cudaArray_t},Ptr{cudaChannelFormatDesc},Csize_t,Csize_t,Uint32),array,desc,width,height,flags))
+    checkerror(ccall((:cudaMallocArray,libcudart),cudaError_t,(Ptr{cudaArray_t},Ptr{cudaChannelFormatDesc},Csize_t,Csize_t,UInt32),array,desc,width,height,flags))
 end
 
 function cudaFree(devPtr)
@@ -289,11 +289,11 @@ function cudaFreeMipmappedArray(mipmappedArray)
 end
 
 function cudaHostAlloc(pHost,size,flags)
-    checkerror(ccall((:cudaHostAlloc,libcudart),cudaError_t,(Ptr{Ptr{Void}},Csize_t,Uint32),pHost,size,flags))
+    checkerror(ccall((:cudaHostAlloc,libcudart),cudaError_t,(Ptr{Ptr{Void}},Csize_t,UInt32),pHost,size,flags))
 end
 
 function cudaHostRegister(ptr,size,flags)
-    checkerror(ccall((:cudaHostRegister,libcudart),cudaError_t,(Ptr{Void},Csize_t,Uint32),ptr,size,flags))
+    checkerror(ccall((:cudaHostRegister,libcudart),cudaError_t,(Ptr{Void},Csize_t,UInt32),ptr,size,flags))
 end
 
 function cudaHostUnregister(ptr)
@@ -301,11 +301,11 @@ function cudaHostUnregister(ptr)
 end
 
 function cudaHostGetDevicePointer(pDevice,pHost,flags)
-    checkerror(ccall((:cudaHostGetDevicePointer,libcudart),cudaError_t,(Ptr{Ptr{Void}},Ptr{Void},Uint32),pDevice,pHost,flags))
+    checkerror(ccall((:cudaHostGetDevicePointer,libcudart),cudaError_t,(Ptr{Ptr{Void}},Ptr{Void},UInt32),pDevice,pHost,flags))
 end
 
 function cudaHostGetFlags(pFlags,pHost)
-    checkerror(ccall((:cudaHostGetFlags,libcudart),cudaError_t,(Ptr{Uint32},Ptr{Void}),pFlags,pHost))
+    checkerror(ccall((:cudaHostGetFlags,libcudart),cudaError_t,(Ptr{UInt32},Ptr{Void}),pFlags,pHost))
 end
 
 function cudaMalloc3D(pitchedDevPtr,extent)
@@ -313,15 +313,15 @@ function cudaMalloc3D(pitchedDevPtr,extent)
 end
 
 function cudaMalloc3DArray(array,desc,extent,flags)
-    checkerror(ccall((:cudaMalloc3DArray,libcudart),cudaError_t,(Ptr{cudaArray_t},Ptr{cudaChannelFormatDesc},cudaExtent,Uint32),array,desc,extent,flags))
+    checkerror(ccall((:cudaMalloc3DArray,libcudart),cudaError_t,(Ptr{cudaArray_t},Ptr{cudaChannelFormatDesc},cudaExtent,UInt32),array,desc,extent,flags))
 end
 
 function cudaMallocMipmappedArray(mipmappedArray,desc,extent,numLevels,flags)
-    checkerror(ccall((:cudaMallocMipmappedArray,libcudart),cudaError_t,(Ptr{cudaMipmappedArray_t},Ptr{cudaChannelFormatDesc},cudaExtent,Uint32,Uint32),mipmappedArray,desc,extent,numLevels,flags))
+    checkerror(ccall((:cudaMallocMipmappedArray,libcudart),cudaError_t,(Ptr{cudaMipmappedArray_t},Ptr{cudaChannelFormatDesc},cudaExtent,UInt32,UInt32),mipmappedArray,desc,extent,numLevels,flags))
 end
 
 function cudaGetMipmappedArrayLevel(levelArray,mipmappedArray,level)
-    checkerror(ccall((:cudaGetMipmappedArrayLevel,libcudart),cudaError_t,(Ptr{cudaArray_t},cudaMipmappedArray_const_t,Uint32),levelArray,mipmappedArray,level))
+    checkerror(ccall((:cudaGetMipmappedArrayLevel,libcudart),cudaError_t,(Ptr{cudaArray_t},cudaMipmappedArray_const_t,UInt32),levelArray,mipmappedArray,level))
 end
 
 function cudaMemcpy3D(p)
@@ -345,7 +345,7 @@ function cudaMemGetInfo(free,total)
 end
 
 function cudaArrayGetInfo(desc,extent,flags,array)
-    checkerror(ccall((:cudaArrayGetInfo,libcudart),cudaError_t,(Ptr{cudaChannelFormatDesc},Ptr{cudaExtent},Ptr{Uint32},cudaArray_t),desc,extent,flags,array))
+    checkerror(ccall((:cudaArrayGetInfo,libcudart),cudaError_t,(Ptr{cudaChannelFormatDesc},Ptr{cudaExtent},Ptr{UInt32},cudaArray_t),desc,extent,flags,array))
 end
 
 function cudaMemcpy(dst,src,count,kind)
@@ -469,7 +469,7 @@ function cudaDeviceCanAccessPeer(canAccessPeer,device,peerDevice)
 end
 
 function cudaDeviceEnablePeerAccess(peerDevice,flags)
-    checkerror(ccall((:cudaDeviceEnablePeerAccess,libcudart),cudaError_t,(Cint,Uint32),peerDevice,flags))
+    checkerror(ccall((:cudaDeviceEnablePeerAccess,libcudart),cudaError_t,(Cint,UInt32),peerDevice,flags))
 end
 
 function cudaDeviceDisablePeerAccess(peerDevice)
@@ -481,7 +481,7 @@ function cudaGraphicsUnregisterResource(resource)
 end
 
 function cudaGraphicsResourceSetMapFlags(resource,flags)
-    checkerror(ccall((:cudaGraphicsResourceSetMapFlags,libcudart),cudaError_t,(cudaGraphicsResource_t,Uint32),resource,flags))
+    checkerror(ccall((:cudaGraphicsResourceSetMapFlags,libcudart),cudaError_t,(cudaGraphicsResource_t,UInt32),resource,flags))
 end
 
 function cudaGraphicsMapResources(count,resources,stream)
@@ -497,7 +497,7 @@ function cudaGraphicsResourceGetMappedPointer(devPtr,size,resource)
 end
 
 function cudaGraphicsSubResourceGetMappedArray(array,resource,arrayIndex,mipLevel)
-    checkerror(ccall((:cudaGraphicsSubResourceGetMappedArray,libcudart),cudaError_t,(Ptr{cudaArray_t},cudaGraphicsResource_t,Uint32,Uint32),array,resource,arrayIndex,mipLevel))
+    checkerror(ccall((:cudaGraphicsSubResourceGetMappedArray,libcudart),cudaError_t,(Ptr{cudaArray_t},cudaGraphicsResource_t,UInt32,UInt32),array,resource,arrayIndex,mipLevel))
 end
 
 function cudaGraphicsResourceGetMappedMipmappedArray(mipmappedArray,resource)

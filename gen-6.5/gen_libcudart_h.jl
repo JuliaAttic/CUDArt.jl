@@ -37,95 +37,95 @@ const cudaMemAttachSingle = 0x04
 const CUDA_IPC_HANDLE_SIZE = 64
 
 # begin enum cudaError
-typealias cudaError Uint32
-const cudaSuccess = (uint32)(0)
-const cudaErrorMissingConfiguration = (uint32)(1)
-const cudaErrorMemoryAllocation = (uint32)(2)
-const cudaErrorInitializationError = (uint32)(3)
-const cudaErrorLaunchFailure = (uint32)(4)
-const cudaErrorPriorLaunchFailure = (uint32)(5)
-const cudaErrorLaunchTimeout = (uint32)(6)
-const cudaErrorLaunchOutOfResources = (uint32)(7)
-const cudaErrorInvalidDeviceFunction = (uint32)(8)
-const cudaErrorInvalidConfiguration = (uint32)(9)
-const cudaErrorInvalidDevice = (uint32)(10)
-const cudaErrorInvalidValue = (uint32)(11)
-const cudaErrorInvalidPitchValue = (uint32)(12)
-const cudaErrorInvalidSymbol = (uint32)(13)
-const cudaErrorMapBufferObjectFailed = (uint32)(14)
-const cudaErrorUnmapBufferObjectFailed = (uint32)(15)
-const cudaErrorInvalidHostPointer = (uint32)(16)
-const cudaErrorInvalidDevicePointer = (uint32)(17)
-const cudaErrorInvalidTexture = (uint32)(18)
-const cudaErrorInvalidTextureBinding = (uint32)(19)
-const cudaErrorInvalidChannelDescriptor = (uint32)(20)
-const cudaErrorInvalidMemcpyDirection = (uint32)(21)
-const cudaErrorAddressOfConstant = (uint32)(22)
-const cudaErrorTextureFetchFailed = (uint32)(23)
-const cudaErrorTextureNotBound = (uint32)(24)
-const cudaErrorSynchronizationError = (uint32)(25)
-const cudaErrorInvalidFilterSetting = (uint32)(26)
-const cudaErrorInvalidNormSetting = (uint32)(27)
-const cudaErrorMixedDeviceExecution = (uint32)(28)
-const cudaErrorCudartUnloading = (uint32)(29)
-const cudaErrorUnknown = (uint32)(30)
-const cudaErrorNotYetImplemented = (uint32)(31)
-const cudaErrorMemoryValueTooLarge = (uint32)(32)
-const cudaErrorInvalidResourceHandle = (uint32)(33)
-const cudaErrorNotReady = (uint32)(34)
-const cudaErrorInsufficientDriver = (uint32)(35)
-const cudaErrorSetOnActiveProcess = (uint32)(36)
-const cudaErrorInvalidSurface = (uint32)(37)
-const cudaErrorNoDevice = (uint32)(38)
-const cudaErrorECCUncorrectable = (uint32)(39)
-const cudaErrorSharedObjectSymbolNotFound = (uint32)(40)
-const cudaErrorSharedObjectInitFailed = (uint32)(41)
-const cudaErrorUnsupportedLimit = (uint32)(42)
-const cudaErrorDuplicateVariableName = (uint32)(43)
-const cudaErrorDuplicateTextureName = (uint32)(44)
-const cudaErrorDuplicateSurfaceName = (uint32)(45)
-const cudaErrorDevicesUnavailable = (uint32)(46)
-const cudaErrorInvalidKernelImage = (uint32)(47)
-const cudaErrorNoKernelImageForDevice = (uint32)(48)
-const cudaErrorIncompatibleDriverContext = (uint32)(49)
-const cudaErrorPeerAccessAlreadyEnabled = (uint32)(50)
-const cudaErrorPeerAccessNotEnabled = (uint32)(51)
-const cudaErrorDeviceAlreadyInUse = (uint32)(54)
-const cudaErrorProfilerDisabled = (uint32)(55)
-const cudaErrorProfilerNotInitialized = (uint32)(56)
-const cudaErrorProfilerAlreadyStarted = (uint32)(57)
-const cudaErrorProfilerAlreadyStopped = (uint32)(58)
-const cudaErrorAssert = (uint32)(59)
-const cudaErrorTooManyPeers = (uint32)(60)
-const cudaErrorHostMemoryAlreadyRegistered = (uint32)(61)
-const cudaErrorHostMemoryNotRegistered = (uint32)(62)
-const cudaErrorOperatingSystem = (uint32)(63)
-const cudaErrorPeerAccessUnsupported = (uint32)(64)
-const cudaErrorLaunchMaxDepthExceeded = (uint32)(65)
-const cudaErrorLaunchFileScopedTex = (uint32)(66)
-const cudaErrorLaunchFileScopedSurf = (uint32)(67)
-const cudaErrorSyncDepthExceeded = (uint32)(68)
-const cudaErrorLaunchPendingCountExceeded = (uint32)(69)
-const cudaErrorNotPermitted = (uint32)(70)
-const cudaErrorNotSupported = (uint32)(71)
-const cudaErrorHardwareStackError = (uint32)(72)
-const cudaErrorIllegalInstruction = (uint32)(73)
-const cudaErrorMisalignedAddress = (uint32)(74)
-const cudaErrorInvalidAddressSpace = (uint32)(75)
-const cudaErrorInvalidPc = (uint32)(76)
-const cudaErrorIllegalAddress = (uint32)(77)
-const cudaErrorInvalidPtx = (uint32)(78)
-const cudaErrorInvalidGraphicsContext = (uint32)(79)
-const cudaErrorStartupFailure = (uint32)(127)
-const cudaErrorApiFailureBase = (uint32)(10000)
+typealias cudaError UInt32
+const cudaSuccess = (UInt32)(0)
+const cudaErrorMissingConfiguration = (UInt32)(1)
+const cudaErrorMemoryAllocation = (UInt32)(2)
+const cudaErrorInitializationError = (UInt32)(3)
+const cudaErrorLaunchFailure = (UInt32)(4)
+const cudaErrorPriorLaunchFailure = (UInt32)(5)
+const cudaErrorLaunchTimeout = (UInt32)(6)
+const cudaErrorLaunchOutOfResources = (UInt32)(7)
+const cudaErrorInvalidDeviceFunction = (UInt32)(8)
+const cudaErrorInvalidConfiguration = (UInt32)(9)
+const cudaErrorInvalidDevice = (UInt32)(10)
+const cudaErrorInvalidValue = (UInt32)(11)
+const cudaErrorInvalidPitchValue = (UInt32)(12)
+const cudaErrorInvalidSymbol = (UInt32)(13)
+const cudaErrorMapBufferObjectFailed = (UInt32)(14)
+const cudaErrorUnmapBufferObjectFailed = (UInt32)(15)
+const cudaErrorInvalidHostPointer = (UInt32)(16)
+const cudaErrorInvalidDevicePointer = (UInt32)(17)
+const cudaErrorInvalidTexture = (UInt32)(18)
+const cudaErrorInvalidTextureBinding = (UInt32)(19)
+const cudaErrorInvalidChannelDescriptor = (UInt32)(20)
+const cudaErrorInvalidMemcpyDirection = (UInt32)(21)
+const cudaErrorAddressOfConstant = (UInt32)(22)
+const cudaErrorTextureFetchFailed = (UInt32)(23)
+const cudaErrorTextureNotBound = (UInt32)(24)
+const cudaErrorSynchronizationError = (UInt32)(25)
+const cudaErrorInvalidFilterSetting = (UInt32)(26)
+const cudaErrorInvalidNormSetting = (UInt32)(27)
+const cudaErrorMixedDeviceExecution = (UInt32)(28)
+const cudaErrorCudartUnloading = (UInt32)(29)
+const cudaErrorUnknown = (UInt32)(30)
+const cudaErrorNotYetImplemented = (UInt32)(31)
+const cudaErrorMemoryValueTooLarge = (UInt32)(32)
+const cudaErrorInvalidResourceHandle = (UInt32)(33)
+const cudaErrorNotReady = (UInt32)(34)
+const cudaErrorInsufficientDriver = (UInt32)(35)
+const cudaErrorSetOnActiveProcess = (UInt32)(36)
+const cudaErrorInvalidSurface = (UInt32)(37)
+const cudaErrorNoDevice = (UInt32)(38)
+const cudaErrorECCUncorrectable = (UInt32)(39)
+const cudaErrorSharedObjectSymbolNotFound = (UInt32)(40)
+const cudaErrorSharedObjectInitFailed = (UInt32)(41)
+const cudaErrorUnsupportedLimit = (UInt32)(42)
+const cudaErrorDuplicateVariableName = (UInt32)(43)
+const cudaErrorDuplicateTextureName = (UInt32)(44)
+const cudaErrorDuplicateSurfaceName = (UInt32)(45)
+const cudaErrorDevicesUnavailable = (UInt32)(46)
+const cudaErrorInvalidKernelImage = (UInt32)(47)
+const cudaErrorNoKernelImageForDevice = (UInt32)(48)
+const cudaErrorIncompatibleDriverContext = (UInt32)(49)
+const cudaErrorPeerAccessAlreadyEnabled = (UInt32)(50)
+const cudaErrorPeerAccessNotEnabled = (UInt32)(51)
+const cudaErrorDeviceAlreadyInUse = (UInt32)(54)
+const cudaErrorProfilerDisabled = (UInt32)(55)
+const cudaErrorProfilerNotInitialized = (UInt32)(56)
+const cudaErrorProfilerAlreadyStarted = (UInt32)(57)
+const cudaErrorProfilerAlreadyStopped = (UInt32)(58)
+const cudaErrorAssert = (UInt32)(59)
+const cudaErrorTooManyPeers = (UInt32)(60)
+const cudaErrorHostMemoryAlreadyRegistered = (UInt32)(61)
+const cudaErrorHostMemoryNotRegistered = (UInt32)(62)
+const cudaErrorOperatingSystem = (UInt32)(63)
+const cudaErrorPeerAccessUnsupported = (UInt32)(64)
+const cudaErrorLaunchMaxDepthExceeded = (UInt32)(65)
+const cudaErrorLaunchFileScopedTex = (UInt32)(66)
+const cudaErrorLaunchFileScopedSurf = (UInt32)(67)
+const cudaErrorSyncDepthExceeded = (UInt32)(68)
+const cudaErrorLaunchPendingCountExceeded = (UInt32)(69)
+const cudaErrorNotPermitted = (UInt32)(70)
+const cudaErrorNotSupported = (UInt32)(71)
+const cudaErrorHardwareStackError = (UInt32)(72)
+const cudaErrorIllegalInstruction = (UInt32)(73)
+const cudaErrorMisalignedAddress = (UInt32)(74)
+const cudaErrorInvalidAddressSpace = (UInt32)(75)
+const cudaErrorInvalidPc = (UInt32)(76)
+const cudaErrorIllegalAddress = (UInt32)(77)
+const cudaErrorInvalidPtx = (UInt32)(78)
+const cudaErrorInvalidGraphicsContext = (UInt32)(79)
+const cudaErrorStartupFailure = (UInt32)(127)
+const cudaErrorApiFailureBase = (UInt32)(10000)
 # end enum cudaError
 
 # begin enum cudaChannelFormatKind
-typealias cudaChannelFormatKind Uint32
-const cudaChannelFormatKindSigned = (uint32)(0)
-const cudaChannelFormatKindUnsigned = (uint32)(1)
-const cudaChannelFormatKindFloat = (uint32)(2)
-const cudaChannelFormatKindNone = (uint32)(3)
+typealias cudaChannelFormatKind UInt32
+const cudaChannelFormatKindSigned = (UInt32)(0)
+const cudaChannelFormatKindUnsigned = (UInt32)(1)
+const cudaChannelFormatKindFloat = (UInt32)(2)
+const cudaChannelFormatKindNone = (UInt32)(3)
 # end enum cudaChannelFormatKind
 
 immutable cudaChannelFormatDesc
@@ -144,18 +144,18 @@ typealias cudaMipmappedArray_t Ptr{cudaMipmappedArray}
 typealias cudaMipmappedArray_const_t Ptr{cudaMipmappedArray}
 
 # begin enum cudaMemoryType
-typealias cudaMemoryType Uint32
-const cudaMemoryTypeHost = (uint32)(1)
-const cudaMemoryTypeDevice = (uint32)(2)
+typealias cudaMemoryType UInt32
+const cudaMemoryTypeHost = (UInt32)(1)
+const cudaMemoryTypeDevice = (UInt32)(2)
 # end enum cudaMemoryType
 
 # begin enum cudaMemcpyKind
-typealias cudaMemcpyKind Uint32
-const cudaMemcpyHostToHost = (uint32)(0)
-const cudaMemcpyHostToDevice = (uint32)(1)
-const cudaMemcpyDeviceToHost = (uint32)(2)
-const cudaMemcpyDeviceToDevice = (uint32)(3)
-const cudaMemcpyDefault = (uint32)(4)
+typealias cudaMemcpyKind UInt32
+const cudaMemcpyHostToHost = (UInt32)(0)
+const cudaMemcpyHostToDevice = (UInt32)(1)
+const cudaMemcpyDeviceToHost = (UInt32)(2)
+const cudaMemcpyDeviceToDevice = (UInt32)(3)
+const cudaMemcpyDefault = (UInt32)(4)
 # end enum cudaMemcpyKind
 
 immutable cudaPitchedPtr
@@ -203,76 +203,76 @@ end
 typealias cudaGraphicsResource Void
 
 # begin enum cudaGraphicsRegisterFlags
-typealias cudaGraphicsRegisterFlags Uint32
-const cudaGraphicsRegisterFlagsNone = (uint32)(0)
-const cudaGraphicsRegisterFlagsReadOnly = (uint32)(1)
-const cudaGraphicsRegisterFlagsWriteDiscard = (uint32)(2)
-const cudaGraphicsRegisterFlagsSurfaceLoadStore = (uint32)(4)
-const cudaGraphicsRegisterFlagsTextureGather = (uint32)(8)
+typealias cudaGraphicsRegisterFlags UInt32
+const cudaGraphicsRegisterFlagsNone = (UInt32)(0)
+const cudaGraphicsRegisterFlagsReadOnly = (UInt32)(1)
+const cudaGraphicsRegisterFlagsWriteDiscard = (UInt32)(2)
+const cudaGraphicsRegisterFlagsSurfaceLoadStore = (UInt32)(4)
+const cudaGraphicsRegisterFlagsTextureGather = (UInt32)(8)
 # end enum cudaGraphicsRegisterFlags
 
 # begin enum cudaGraphicsMapFlags
-typealias cudaGraphicsMapFlags Uint32
-const cudaGraphicsMapFlagsNone = (uint32)(0)
-const cudaGraphicsMapFlagsReadOnly = (uint32)(1)
-const cudaGraphicsMapFlagsWriteDiscard = (uint32)(2)
+typealias cudaGraphicsMapFlags UInt32
+const cudaGraphicsMapFlagsNone = (UInt32)(0)
+const cudaGraphicsMapFlagsReadOnly = (UInt32)(1)
+const cudaGraphicsMapFlagsWriteDiscard = (UInt32)(2)
 # end enum cudaGraphicsMapFlags
 
 # begin enum cudaGraphicsCubeFace
-typealias cudaGraphicsCubeFace Uint32
-const cudaGraphicsCubeFacePositiveX = (uint32)(0)
-const cudaGraphicsCubeFaceNegativeX = (uint32)(1)
-const cudaGraphicsCubeFacePositiveY = (uint32)(2)
-const cudaGraphicsCubeFaceNegativeY = (uint32)(3)
-const cudaGraphicsCubeFacePositiveZ = (uint32)(4)
-const cudaGraphicsCubeFaceNegativeZ = (uint32)(5)
+typealias cudaGraphicsCubeFace UInt32
+const cudaGraphicsCubeFacePositiveX = (UInt32)(0)
+const cudaGraphicsCubeFaceNegativeX = (UInt32)(1)
+const cudaGraphicsCubeFacePositiveY = (UInt32)(2)
+const cudaGraphicsCubeFaceNegativeY = (UInt32)(3)
+const cudaGraphicsCubeFacePositiveZ = (UInt32)(4)
+const cudaGraphicsCubeFaceNegativeZ = (UInt32)(5)
 # end enum cudaGraphicsCubeFace
 
 # begin enum cudaResourceType
-typealias cudaResourceType Uint32
-const cudaResourceTypeArray = (uint32)(0)
-const cudaResourceTypeMipmappedArray = (uint32)(1)
-const cudaResourceTypeLinear = (uint32)(2)
-const cudaResourceTypePitch2D = (uint32)(3)
+typealias cudaResourceType UInt32
+const cudaResourceTypeArray = (UInt32)(0)
+const cudaResourceTypeMipmappedArray = (UInt32)(1)
+const cudaResourceTypeLinear = (UInt32)(2)
+const cudaResourceTypePitch2D = (UInt32)(3)
 # end enum cudaResourceType
 
 # begin enum cudaResourceViewFormat
-typealias cudaResourceViewFormat Uint32
-const cudaResViewFormatNone = (uint32)(0)
-const cudaResViewFormatUnsignedChar1 = (uint32)(1)
-const cudaResViewFormatUnsignedChar2 = (uint32)(2)
-const cudaResViewFormatUnsignedChar4 = (uint32)(3)
-const cudaResViewFormatSignedChar1 = (uint32)(4)
-const cudaResViewFormatSignedChar2 = (uint32)(5)
-const cudaResViewFormatSignedChar4 = (uint32)(6)
-const cudaResViewFormatUnsignedShort1 = (uint32)(7)
-const cudaResViewFormatUnsignedShort2 = (uint32)(8)
-const cudaResViewFormatUnsignedShort4 = (uint32)(9)
-const cudaResViewFormatSignedShort1 = (uint32)(10)
-const cudaResViewFormatSignedShort2 = (uint32)(11)
-const cudaResViewFormatSignedShort4 = (uint32)(12)
-const cudaResViewFormatUnsignedInt1 = (uint32)(13)
-const cudaResViewFormatUnsignedInt2 = (uint32)(14)
-const cudaResViewFormatUnsignedInt4 = (uint32)(15)
-const cudaResViewFormatSignedInt1 = (uint32)(16)
-const cudaResViewFormatSignedInt2 = (uint32)(17)
-const cudaResViewFormatSignedInt4 = (uint32)(18)
-const cudaResViewFormatHalf1 = (uint32)(19)
-const cudaResViewFormatHalf2 = (uint32)(20)
-const cudaResViewFormatHalf4 = (uint32)(21)
-const cudaResViewFormatFloat1 = (uint32)(22)
-const cudaResViewFormatFloat2 = (uint32)(23)
-const cudaResViewFormatFloat4 = (uint32)(24)
-const cudaResViewFormatUnsignedBlockCompressed1 = (uint32)(25)
-const cudaResViewFormatUnsignedBlockCompressed2 = (uint32)(26)
-const cudaResViewFormatUnsignedBlockCompressed3 = (uint32)(27)
-const cudaResViewFormatUnsignedBlockCompressed4 = (uint32)(28)
-const cudaResViewFormatSignedBlockCompressed4 = (uint32)(29)
-const cudaResViewFormatUnsignedBlockCompressed5 = (uint32)(30)
-const cudaResViewFormatSignedBlockCompressed5 = (uint32)(31)
-const cudaResViewFormatUnsignedBlockCompressed6H = (uint32)(32)
-const cudaResViewFormatSignedBlockCompressed6H = (uint32)(33)
-const cudaResViewFormatUnsignedBlockCompressed7 = (uint32)(34)
+typealias cudaResourceViewFormat UInt32
+const cudaResViewFormatNone = (UInt32)(0)
+const cudaResViewFormatUnsignedChar1 = (UInt32)(1)
+const cudaResViewFormatUnsignedChar2 = (UInt32)(2)
+const cudaResViewFormatUnsignedChar4 = (UInt32)(3)
+const cudaResViewFormatSignedChar1 = (UInt32)(4)
+const cudaResViewFormatSignedChar2 = (UInt32)(5)
+const cudaResViewFormatSignedChar4 = (UInt32)(6)
+const cudaResViewFormatUnsignedShort1 = (UInt32)(7)
+const cudaResViewFormatUnsignedShort2 = (UInt32)(8)
+const cudaResViewFormatUnsignedShort4 = (UInt32)(9)
+const cudaResViewFormatSignedShort1 = (UInt32)(10)
+const cudaResViewFormatSignedShort2 = (UInt32)(11)
+const cudaResViewFormatSignedShort4 = (UInt32)(12)
+const cudaResViewFormatUnsignedInt1 = (UInt32)(13)
+const cudaResViewFormatUnsignedInt2 = (UInt32)(14)
+const cudaResViewFormatUnsignedInt4 = (UInt32)(15)
+const cudaResViewFormatSignedInt1 = (UInt32)(16)
+const cudaResViewFormatSignedInt2 = (UInt32)(17)
+const cudaResViewFormatSignedInt4 = (UInt32)(18)
+const cudaResViewFormatHalf1 = (UInt32)(19)
+const cudaResViewFormatHalf2 = (UInt32)(20)
+const cudaResViewFormatHalf4 = (UInt32)(21)
+const cudaResViewFormatFloat1 = (UInt32)(22)
+const cudaResViewFormatFloat2 = (UInt32)(23)
+const cudaResViewFormatFloat4 = (UInt32)(24)
+const cudaResViewFormatUnsignedBlockCompressed1 = (UInt32)(25)
+const cudaResViewFormatUnsignedBlockCompressed2 = (UInt32)(26)
+const cudaResViewFormatUnsignedBlockCompressed3 = (UInt32)(27)
+const cudaResViewFormatUnsignedBlockCompressed4 = (UInt32)(28)
+const cudaResViewFormatSignedBlockCompressed4 = (UInt32)(29)
+const cudaResViewFormatUnsignedBlockCompressed5 = (UInt32)(30)
+const cudaResViewFormatSignedBlockCompressed5 = (UInt32)(31)
+const cudaResViewFormatUnsignedBlockCompressed6H = (UInt32)(32)
+const cudaResViewFormatSignedBlockCompressed6H = (UInt32)(33)
+const cudaResViewFormatUnsignedBlockCompressed7 = (UInt32)(34)
 # end enum cudaResourceViewFormat
 
 immutable cudaResourceDesc
@@ -285,10 +285,10 @@ immutable cudaResourceViewDesc
     width::Csize_t
     height::Csize_t
     depth::Csize_t
-    firstMipmapLevel::Uint32
-    lastMipmapLevel::Uint32
-    firstLayer::Uint32
-    lastLayer::Uint32
+    firstMipmapLevel::UInt32
+    lastMipmapLevel::UInt32
+    firstLayer::UInt32
+    lastLayer::UInt32
 end
 
 immutable cudaPointerAttributes
@@ -311,391 +311,391 @@ immutable cudaFuncAttributes
 end
 
 # begin enum cudaFuncCache
-typealias cudaFuncCache Uint32
-const cudaFuncCachePreferNone = (uint32)(0)
-const cudaFuncCachePreferShared = (uint32)(1)
-const cudaFuncCachePreferL1 = (uint32)(2)
-const cudaFuncCachePreferEqual = (uint32)(3)
+typealias cudaFuncCache UInt32
+const cudaFuncCachePreferNone = (UInt32)(0)
+const cudaFuncCachePreferShared = (UInt32)(1)
+const cudaFuncCachePreferL1 = (UInt32)(2)
+const cudaFuncCachePreferEqual = (UInt32)(3)
 # end enum cudaFuncCache
 
 # begin enum cudaSharedMemConfig
-typealias cudaSharedMemConfig Uint32
-const cudaSharedMemBankSizeDefault = (uint32)(0)
-const cudaSharedMemBankSizeFourByte = (uint32)(1)
-const cudaSharedMemBankSizeEightByte = (uint32)(2)
+typealias cudaSharedMemConfig UInt32
+const cudaSharedMemBankSizeDefault = (UInt32)(0)
+const cudaSharedMemBankSizeFourByte = (UInt32)(1)
+const cudaSharedMemBankSizeEightByte = (UInt32)(2)
 # end enum cudaSharedMemConfig
 
 # begin enum cudaComputeMode
-typealias cudaComputeMode Uint32
-const cudaComputeModeDefault = (uint32)(0)
-const cudaComputeModeExclusive = (uint32)(1)
-const cudaComputeModeProhibited = (uint32)(2)
-const cudaComputeModeExclusiveProcess = (uint32)(3)
+typealias cudaComputeMode UInt32
+const cudaComputeModeDefault = (UInt32)(0)
+const cudaComputeModeExclusive = (UInt32)(1)
+const cudaComputeModeProhibited = (UInt32)(2)
+const cudaComputeModeExclusiveProcess = (UInt32)(3)
 # end enum cudaComputeMode
 
 # begin enum cudaLimit
-typealias cudaLimit Uint32
-const cudaLimitStackSize = (uint32)(0)
-const cudaLimitPrintfFifoSize = (uint32)(1)
-const cudaLimitMallocHeapSize = (uint32)(2)
-const cudaLimitDevRuntimeSyncDepth = (uint32)(3)
-const cudaLimitDevRuntimePendingLaunchCount = (uint32)(4)
+typealias cudaLimit UInt32
+const cudaLimitStackSize = (UInt32)(0)
+const cudaLimitPrintfFifoSize = (UInt32)(1)
+const cudaLimitMallocHeapSize = (UInt32)(2)
+const cudaLimitDevRuntimeSyncDepth = (UInt32)(3)
+const cudaLimitDevRuntimePendingLaunchCount = (UInt32)(4)
 # end enum cudaLimit
 
 # begin enum cudaOutputMode
-typealias cudaOutputMode Uint32
-const cudaKeyValuePair = (uint32)(0)
-const cudaCSV = (uint32)(1)
+typealias cudaOutputMode UInt32
+const cudaKeyValuePair = (UInt32)(0)
+const cudaCSV = (UInt32)(1)
 # end enum cudaOutputMode
 
 # begin enum cudaDeviceAttr
-typealias cudaDeviceAttr Uint32
-const cudaDevAttrMaxThreadsPerBlock = (uint32)(1)
-const cudaDevAttrMaxBlockDimX = (uint32)(2)
-const cudaDevAttrMaxBlockDimY = (uint32)(3)
-const cudaDevAttrMaxBlockDimZ = (uint32)(4)
-const cudaDevAttrMaxGridDimX = (uint32)(5)
-const cudaDevAttrMaxGridDimY = (uint32)(6)
-const cudaDevAttrMaxGridDimZ = (uint32)(7)
-const cudaDevAttrMaxSharedMemoryPerBlock = (uint32)(8)
-const cudaDevAttrTotalConstantMemory = (uint32)(9)
-const cudaDevAttrWarpSize = (uint32)(10)
-const cudaDevAttrMaxPitch = (uint32)(11)
-const cudaDevAttrMaxRegistersPerBlock = (uint32)(12)
-const cudaDevAttrClockRate = (uint32)(13)
-const cudaDevAttrTextureAlignment = (uint32)(14)
-const cudaDevAttrGpuOverlap = (uint32)(15)
-const cudaDevAttrMultiProcessorCount = (uint32)(16)
-const cudaDevAttrKernelExecTimeout = (uint32)(17)
-const cudaDevAttrIntegrated = (uint32)(18)
-const cudaDevAttrCanMapHostMemory = (uint32)(19)
-const cudaDevAttrComputeMode = (uint32)(20)
-const cudaDevAttrMaxTexture1DWidth = (uint32)(21)
-const cudaDevAttrMaxTexture2DWidth = (uint32)(22)
-const cudaDevAttrMaxTexture2DHeight = (uint32)(23)
-const cudaDevAttrMaxTexture3DWidth = (uint32)(24)
-const cudaDevAttrMaxTexture3DHeight = (uint32)(25)
-const cudaDevAttrMaxTexture3DDepth = (uint32)(26)
-const cudaDevAttrMaxTexture2DLayeredWidth = (uint32)(27)
-const cudaDevAttrMaxTexture2DLayeredHeight = (uint32)(28)
-const cudaDevAttrMaxTexture2DLayeredLayers = (uint32)(29)
-const cudaDevAttrSurfaceAlignment = (uint32)(30)
-const cudaDevAttrConcurrentKernels = (uint32)(31)
-const cudaDevAttrEccEnabled = (uint32)(32)
-const cudaDevAttrPciBusId = (uint32)(33)
-const cudaDevAttrPciDeviceId = (uint32)(34)
-const cudaDevAttrTccDriver = (uint32)(35)
-const cudaDevAttrMemoryClockRate = (uint32)(36)
-const cudaDevAttrGlobalMemoryBusWidth = (uint32)(37)
-const cudaDevAttrL2CacheSize = (uint32)(38)
-const cudaDevAttrMaxThreadsPerMultiProcessor = (uint32)(39)
-const cudaDevAttrAsyncEngineCount = (uint32)(40)
-const cudaDevAttrUnifiedAddressing = (uint32)(41)
-const cudaDevAttrMaxTexture1DLayeredWidth = (uint32)(42)
-const cudaDevAttrMaxTexture1DLayeredLayers = (uint32)(43)
-const cudaDevAttrMaxTexture2DGatherWidth = (uint32)(45)
-const cudaDevAttrMaxTexture2DGatherHeight = (uint32)(46)
-const cudaDevAttrMaxTexture3DWidthAlt = (uint32)(47)
-const cudaDevAttrMaxTexture3DHeightAlt = (uint32)(48)
-const cudaDevAttrMaxTexture3DDepthAlt = (uint32)(49)
-const cudaDevAttrPciDomainId = (uint32)(50)
-const cudaDevAttrTexturePitchAlignment = (uint32)(51)
-const cudaDevAttrMaxTextureCubemapWidth = (uint32)(52)
-const cudaDevAttrMaxTextureCubemapLayeredWidth = (uint32)(53)
-const cudaDevAttrMaxTextureCubemapLayeredLayers = (uint32)(54)
-const cudaDevAttrMaxSurface1DWidth = (uint32)(55)
-const cudaDevAttrMaxSurface2DWidth = (uint32)(56)
-const cudaDevAttrMaxSurface2DHeight = (uint32)(57)
-const cudaDevAttrMaxSurface3DWidth = (uint32)(58)
-const cudaDevAttrMaxSurface3DHeight = (uint32)(59)
-const cudaDevAttrMaxSurface3DDepth = (uint32)(60)
-const cudaDevAttrMaxSurface1DLayeredWidth = (uint32)(61)
-const cudaDevAttrMaxSurface1DLayeredLayers = (uint32)(62)
-const cudaDevAttrMaxSurface2DLayeredWidth = (uint32)(63)
-const cudaDevAttrMaxSurface2DLayeredHeight = (uint32)(64)
-const cudaDevAttrMaxSurface2DLayeredLayers = (uint32)(65)
-const cudaDevAttrMaxSurfaceCubemapWidth = (uint32)(66)
-const cudaDevAttrMaxSurfaceCubemapLayeredWidth = (uint32)(67)
-const cudaDevAttrMaxSurfaceCubemapLayeredLayers = (uint32)(68)
-const cudaDevAttrMaxTexture1DLinearWidth = (uint32)(69)
-const cudaDevAttrMaxTexture2DLinearWidth = (uint32)(70)
-const cudaDevAttrMaxTexture2DLinearHeight = (uint32)(71)
-const cudaDevAttrMaxTexture2DLinearPitch = (uint32)(72)
-const cudaDevAttrMaxTexture2DMipmappedWidth = (uint32)(73)
-const cudaDevAttrMaxTexture2DMipmappedHeight = (uint32)(74)
-const cudaDevAttrComputeCapabilityMajor = (uint32)(75)
-const cudaDevAttrComputeCapabilityMinor = (uint32)(76)
-const cudaDevAttrMaxTexture1DMipmappedWidth = (uint32)(77)
-const cudaDevAttrStreamPrioritiesSupported = (uint32)(78)
-const cudaDevAttrGlobalL1CacheSupported = (uint32)(79)
-const cudaDevAttrLocalL1CacheSupported = (uint32)(80)
-const cudaDevAttrMaxSharedMemoryPerMultiprocessor = (uint32)(81)
-const cudaDevAttrMaxRegistersPerMultiprocessor = (uint32)(82)
-const cudaDevAttrManagedMemory = (uint32)(83)
-const cudaDevAttrIsMultiGpuBoard = (uint32)(84)
-const cudaDevAttrMultiGpuBoardGroupID = (uint32)(85)
+typealias cudaDeviceAttr UInt32
+const cudaDevAttrMaxThreadsPerBlock = (UInt32)(1)
+const cudaDevAttrMaxBlockDimX = (UInt32)(2)
+const cudaDevAttrMaxBlockDimY = (UInt32)(3)
+const cudaDevAttrMaxBlockDimZ = (UInt32)(4)
+const cudaDevAttrMaxGridDimX = (UInt32)(5)
+const cudaDevAttrMaxGridDimY = (UInt32)(6)
+const cudaDevAttrMaxGridDimZ = (UInt32)(7)
+const cudaDevAttrMaxSharedMemoryPerBlock = (UInt32)(8)
+const cudaDevAttrTotalConstantMemory = (UInt32)(9)
+const cudaDevAttrWarpSize = (UInt32)(10)
+const cudaDevAttrMaxPitch = (UInt32)(11)
+const cudaDevAttrMaxRegistersPerBlock = (UInt32)(12)
+const cudaDevAttrClockRate = (UInt32)(13)
+const cudaDevAttrTextureAlignment = (UInt32)(14)
+const cudaDevAttrGpuOverlap = (UInt32)(15)
+const cudaDevAttrMultiProcessorCount = (UInt32)(16)
+const cudaDevAttrKernelExecTimeout = (UInt32)(17)
+const cudaDevAttrIntegrated = (UInt32)(18)
+const cudaDevAttrCanMapHostMemory = (UInt32)(19)
+const cudaDevAttrComputeMode = (UInt32)(20)
+const cudaDevAttrMaxTexture1DWidth = (UInt32)(21)
+const cudaDevAttrMaxTexture2DWidth = (UInt32)(22)
+const cudaDevAttrMaxTexture2DHeight = (UInt32)(23)
+const cudaDevAttrMaxTexture3DWidth = (UInt32)(24)
+const cudaDevAttrMaxTexture3DHeight = (UInt32)(25)
+const cudaDevAttrMaxTexture3DDepth = (UInt32)(26)
+const cudaDevAttrMaxTexture2DLayeredWidth = (UInt32)(27)
+const cudaDevAttrMaxTexture2DLayeredHeight = (UInt32)(28)
+const cudaDevAttrMaxTexture2DLayeredLayers = (UInt32)(29)
+const cudaDevAttrSurfaceAlignment = (UInt32)(30)
+const cudaDevAttrConcurrentKernels = (UInt32)(31)
+const cudaDevAttrEccEnabled = (UInt32)(32)
+const cudaDevAttrPciBusId = (UInt32)(33)
+const cudaDevAttrPciDeviceId = (UInt32)(34)
+const cudaDevAttrTccDriver = (UInt32)(35)
+const cudaDevAttrMemoryClockRate = (UInt32)(36)
+const cudaDevAttrGlobalMemoryBusWidth = (UInt32)(37)
+const cudaDevAttrL2CacheSize = (UInt32)(38)
+const cudaDevAttrMaxThreadsPerMultiProcessor = (UInt32)(39)
+const cudaDevAttrAsyncEngineCount = (UInt32)(40)
+const cudaDevAttrUnifiedAddressing = (UInt32)(41)
+const cudaDevAttrMaxTexture1DLayeredWidth = (UInt32)(42)
+const cudaDevAttrMaxTexture1DLayeredLayers = (UInt32)(43)
+const cudaDevAttrMaxTexture2DGatherWidth = (UInt32)(45)
+const cudaDevAttrMaxTexture2DGatherHeight = (UInt32)(46)
+const cudaDevAttrMaxTexture3DWidthAlt = (UInt32)(47)
+const cudaDevAttrMaxTexture3DHeightAlt = (UInt32)(48)
+const cudaDevAttrMaxTexture3DDepthAlt = (UInt32)(49)
+const cudaDevAttrPciDomainId = (UInt32)(50)
+const cudaDevAttrTexturePitchAlignment = (UInt32)(51)
+const cudaDevAttrMaxTextureCubemapWidth = (UInt32)(52)
+const cudaDevAttrMaxTextureCubemapLayeredWidth = (UInt32)(53)
+const cudaDevAttrMaxTextureCubemapLayeredLayers = (UInt32)(54)
+const cudaDevAttrMaxSurface1DWidth = (UInt32)(55)
+const cudaDevAttrMaxSurface2DWidth = (UInt32)(56)
+const cudaDevAttrMaxSurface2DHeight = (UInt32)(57)
+const cudaDevAttrMaxSurface3DWidth = (UInt32)(58)
+const cudaDevAttrMaxSurface3DHeight = (UInt32)(59)
+const cudaDevAttrMaxSurface3DDepth = (UInt32)(60)
+const cudaDevAttrMaxSurface1DLayeredWidth = (UInt32)(61)
+const cudaDevAttrMaxSurface1DLayeredLayers = (UInt32)(62)
+const cudaDevAttrMaxSurface2DLayeredWidth = (UInt32)(63)
+const cudaDevAttrMaxSurface2DLayeredHeight = (UInt32)(64)
+const cudaDevAttrMaxSurface2DLayeredLayers = (UInt32)(65)
+const cudaDevAttrMaxSurfaceCubemapWidth = (UInt32)(66)
+const cudaDevAttrMaxSurfaceCubemapLayeredWidth = (UInt32)(67)
+const cudaDevAttrMaxSurfaceCubemapLayeredLayers = (UInt32)(68)
+const cudaDevAttrMaxTexture1DLinearWidth = (UInt32)(69)
+const cudaDevAttrMaxTexture2DLinearWidth = (UInt32)(70)
+const cudaDevAttrMaxTexture2DLinearHeight = (UInt32)(71)
+const cudaDevAttrMaxTexture2DLinearPitch = (UInt32)(72)
+const cudaDevAttrMaxTexture2DMipmappedWidth = (UInt32)(73)
+const cudaDevAttrMaxTexture2DMipmappedHeight = (UInt32)(74)
+const cudaDevAttrComputeCapabilityMajor = (UInt32)(75)
+const cudaDevAttrComputeCapabilityMinor = (UInt32)(76)
+const cudaDevAttrMaxTexture1DMipmappedWidth = (UInt32)(77)
+const cudaDevAttrStreamPrioritiesSupported = (UInt32)(78)
+const cudaDevAttrGlobalL1CacheSupported = (UInt32)(79)
+const cudaDevAttrLocalL1CacheSupported = (UInt32)(80)
+const cudaDevAttrMaxSharedMemoryPerMultiprocessor = (UInt32)(81)
+const cudaDevAttrMaxRegistersPerMultiprocessor = (UInt32)(82)
+const cudaDevAttrManagedMemory = (UInt32)(83)
+const cudaDevAttrIsMultiGpuBoard = (UInt32)(84)
+const cudaDevAttrMultiGpuBoardGroupID = (UInt32)(85)
 # end enum cudaDeviceAttr
 
 immutable Array_256_Uint8
-    d1::Uint8
-    d2::Uint8
-    d3::Uint8
-    d4::Uint8
-    d5::Uint8
-    d6::Uint8
-    d7::Uint8
-    d8::Uint8
-    d9::Uint8
-    d10::Uint8
-    d11::Uint8
-    d12::Uint8
-    d13::Uint8
-    d14::Uint8
-    d15::Uint8
-    d16::Uint8
-    d17::Uint8
-    d18::Uint8
-    d19::Uint8
-    d20::Uint8
-    d21::Uint8
-    d22::Uint8
-    d23::Uint8
-    d24::Uint8
-    d25::Uint8
-    d26::Uint8
-    d27::Uint8
-    d28::Uint8
-    d29::Uint8
-    d30::Uint8
-    d31::Uint8
-    d32::Uint8
-    d33::Uint8
-    d34::Uint8
-    d35::Uint8
-    d36::Uint8
-    d37::Uint8
-    d38::Uint8
-    d39::Uint8
-    d40::Uint8
-    d41::Uint8
-    d42::Uint8
-    d43::Uint8
-    d44::Uint8
-    d45::Uint8
-    d46::Uint8
-    d47::Uint8
-    d48::Uint8
-    d49::Uint8
-    d50::Uint8
-    d51::Uint8
-    d52::Uint8
-    d53::Uint8
-    d54::Uint8
-    d55::Uint8
-    d56::Uint8
-    d57::Uint8
-    d58::Uint8
-    d59::Uint8
-    d60::Uint8
-    d61::Uint8
-    d62::Uint8
-    d63::Uint8
-    d64::Uint8
-    d65::Uint8
-    d66::Uint8
-    d67::Uint8
-    d68::Uint8
-    d69::Uint8
-    d70::Uint8
-    d71::Uint8
-    d72::Uint8
-    d73::Uint8
-    d74::Uint8
-    d75::Uint8
-    d76::Uint8
-    d77::Uint8
-    d78::Uint8
-    d79::Uint8
-    d80::Uint8
-    d81::Uint8
-    d82::Uint8
-    d83::Uint8
-    d84::Uint8
-    d85::Uint8
-    d86::Uint8
-    d87::Uint8
-    d88::Uint8
-    d89::Uint8
-    d90::Uint8
-    d91::Uint8
-    d92::Uint8
-    d93::Uint8
-    d94::Uint8
-    d95::Uint8
-    d96::Uint8
-    d97::Uint8
-    d98::Uint8
-    d99::Uint8
-    d100::Uint8
-    d101::Uint8
-    d102::Uint8
-    d103::Uint8
-    d104::Uint8
-    d105::Uint8
-    d106::Uint8
-    d107::Uint8
-    d108::Uint8
-    d109::Uint8
-    d110::Uint8
-    d111::Uint8
-    d112::Uint8
-    d113::Uint8
-    d114::Uint8
-    d115::Uint8
-    d116::Uint8
-    d117::Uint8
-    d118::Uint8
-    d119::Uint8
-    d120::Uint8
-    d121::Uint8
-    d122::Uint8
-    d123::Uint8
-    d124::Uint8
-    d125::Uint8
-    d126::Uint8
-    d127::Uint8
-    d128::Uint8
-    d129::Uint8
-    d130::Uint8
-    d131::Uint8
-    d132::Uint8
-    d133::Uint8
-    d134::Uint8
-    d135::Uint8
-    d136::Uint8
-    d137::Uint8
-    d138::Uint8
-    d139::Uint8
-    d140::Uint8
-    d141::Uint8
-    d142::Uint8
-    d143::Uint8
-    d144::Uint8
-    d145::Uint8
-    d146::Uint8
-    d147::Uint8
-    d148::Uint8
-    d149::Uint8
-    d150::Uint8
-    d151::Uint8
-    d152::Uint8
-    d153::Uint8
-    d154::Uint8
-    d155::Uint8
-    d156::Uint8
-    d157::Uint8
-    d158::Uint8
-    d159::Uint8
-    d160::Uint8
-    d161::Uint8
-    d162::Uint8
-    d163::Uint8
-    d164::Uint8
-    d165::Uint8
-    d166::Uint8
-    d167::Uint8
-    d168::Uint8
-    d169::Uint8
-    d170::Uint8
-    d171::Uint8
-    d172::Uint8
-    d173::Uint8
-    d174::Uint8
-    d175::Uint8
-    d176::Uint8
-    d177::Uint8
-    d178::Uint8
-    d179::Uint8
-    d180::Uint8
-    d181::Uint8
-    d182::Uint8
-    d183::Uint8
-    d184::Uint8
-    d185::Uint8
-    d186::Uint8
-    d187::Uint8
-    d188::Uint8
-    d189::Uint8
-    d190::Uint8
-    d191::Uint8
-    d192::Uint8
-    d193::Uint8
-    d194::Uint8
-    d195::Uint8
-    d196::Uint8
-    d197::Uint8
-    d198::Uint8
-    d199::Uint8
-    d200::Uint8
-    d201::Uint8
-    d202::Uint8
-    d203::Uint8
-    d204::Uint8
-    d205::Uint8
-    d206::Uint8
-    d207::Uint8
-    d208::Uint8
-    d209::Uint8
-    d210::Uint8
-    d211::Uint8
-    d212::Uint8
-    d213::Uint8
-    d214::Uint8
-    d215::Uint8
-    d216::Uint8
-    d217::Uint8
-    d218::Uint8
-    d219::Uint8
-    d220::Uint8
-    d221::Uint8
-    d222::Uint8
-    d223::Uint8
-    d224::Uint8
-    d225::Uint8
-    d226::Uint8
-    d227::Uint8
-    d228::Uint8
-    d229::Uint8
-    d230::Uint8
-    d231::Uint8
-    d232::Uint8
-    d233::Uint8
-    d234::Uint8
-    d235::Uint8
-    d236::Uint8
-    d237::Uint8
-    d238::Uint8
-    d239::Uint8
-    d240::Uint8
-    d241::Uint8
-    d242::Uint8
-    d243::Uint8
-    d244::Uint8
-    d245::Uint8
-    d246::Uint8
-    d247::Uint8
-    d248::Uint8
-    d249::Uint8
-    d250::Uint8
-    d251::Uint8
-    d252::Uint8
-    d253::Uint8
-    d254::Uint8
-    d255::Uint8
-    d256::Uint8
+    d1::UInt8
+    d2::UInt8
+    d3::UInt8
+    d4::UInt8
+    d5::UInt8
+    d6::UInt8
+    d7::UInt8
+    d8::UInt8
+    d9::UInt8
+    d10::UInt8
+    d11::UInt8
+    d12::UInt8
+    d13::UInt8
+    d14::UInt8
+    d15::UInt8
+    d16::UInt8
+    d17::UInt8
+    d18::UInt8
+    d19::UInt8
+    d20::UInt8
+    d21::UInt8
+    d22::UInt8
+    d23::UInt8
+    d24::UInt8
+    d25::UInt8
+    d26::UInt8
+    d27::UInt8
+    d28::UInt8
+    d29::UInt8
+    d30::UInt8
+    d31::UInt8
+    d32::UInt8
+    d33::UInt8
+    d34::UInt8
+    d35::UInt8
+    d36::UInt8
+    d37::UInt8
+    d38::UInt8
+    d39::UInt8
+    d40::UInt8
+    d41::UInt8
+    d42::UInt8
+    d43::UInt8
+    d44::UInt8
+    d45::UInt8
+    d46::UInt8
+    d47::UInt8
+    d48::UInt8
+    d49::UInt8
+    d50::UInt8
+    d51::UInt8
+    d52::UInt8
+    d53::UInt8
+    d54::UInt8
+    d55::UInt8
+    d56::UInt8
+    d57::UInt8
+    d58::UInt8
+    d59::UInt8
+    d60::UInt8
+    d61::UInt8
+    d62::UInt8
+    d63::UInt8
+    d64::UInt8
+    d65::UInt8
+    d66::UInt8
+    d67::UInt8
+    d68::UInt8
+    d69::UInt8
+    d70::UInt8
+    d71::UInt8
+    d72::UInt8
+    d73::UInt8
+    d74::UInt8
+    d75::UInt8
+    d76::UInt8
+    d77::UInt8
+    d78::UInt8
+    d79::UInt8
+    d80::UInt8
+    d81::UInt8
+    d82::UInt8
+    d83::UInt8
+    d84::UInt8
+    d85::UInt8
+    d86::UInt8
+    d87::UInt8
+    d88::UInt8
+    d89::UInt8
+    d90::UInt8
+    d91::UInt8
+    d92::UInt8
+    d93::UInt8
+    d94::UInt8
+    d95::UInt8
+    d96::UInt8
+    d97::UInt8
+    d98::UInt8
+    d99::UInt8
+    d100::UInt8
+    d101::UInt8
+    d102::UInt8
+    d103::UInt8
+    d104::UInt8
+    d105::UInt8
+    d106::UInt8
+    d107::UInt8
+    d108::UInt8
+    d109::UInt8
+    d110::UInt8
+    d111::UInt8
+    d112::UInt8
+    d113::UInt8
+    d114::UInt8
+    d115::UInt8
+    d116::UInt8
+    d117::UInt8
+    d118::UInt8
+    d119::UInt8
+    d120::UInt8
+    d121::UInt8
+    d122::UInt8
+    d123::UInt8
+    d124::UInt8
+    d125::UInt8
+    d126::UInt8
+    d127::UInt8
+    d128::UInt8
+    d129::UInt8
+    d130::UInt8
+    d131::UInt8
+    d132::UInt8
+    d133::UInt8
+    d134::UInt8
+    d135::UInt8
+    d136::UInt8
+    d137::UInt8
+    d138::UInt8
+    d139::UInt8
+    d140::UInt8
+    d141::UInt8
+    d142::UInt8
+    d143::UInt8
+    d144::UInt8
+    d145::UInt8
+    d146::UInt8
+    d147::UInt8
+    d148::UInt8
+    d149::UInt8
+    d150::UInt8
+    d151::UInt8
+    d152::UInt8
+    d153::UInt8
+    d154::UInt8
+    d155::UInt8
+    d156::UInt8
+    d157::UInt8
+    d158::UInt8
+    d159::UInt8
+    d160::UInt8
+    d161::UInt8
+    d162::UInt8
+    d163::UInt8
+    d164::UInt8
+    d165::UInt8
+    d166::UInt8
+    d167::UInt8
+    d168::UInt8
+    d169::UInt8
+    d170::UInt8
+    d171::UInt8
+    d172::UInt8
+    d173::UInt8
+    d174::UInt8
+    d175::UInt8
+    d176::UInt8
+    d177::UInt8
+    d178::UInt8
+    d179::UInt8
+    d180::UInt8
+    d181::UInt8
+    d182::UInt8
+    d183::UInt8
+    d184::UInt8
+    d185::UInt8
+    d186::UInt8
+    d187::UInt8
+    d188::UInt8
+    d189::UInt8
+    d190::UInt8
+    d191::UInt8
+    d192::UInt8
+    d193::UInt8
+    d194::UInt8
+    d195::UInt8
+    d196::UInt8
+    d197::UInt8
+    d198::UInt8
+    d199::UInt8
+    d200::UInt8
+    d201::UInt8
+    d202::UInt8
+    d203::UInt8
+    d204::UInt8
+    d205::UInt8
+    d206::UInt8
+    d207::UInt8
+    d208::UInt8
+    d209::UInt8
+    d210::UInt8
+    d211::UInt8
+    d212::UInt8
+    d213::UInt8
+    d214::UInt8
+    d215::UInt8
+    d216::UInt8
+    d217::UInt8
+    d218::UInt8
+    d219::UInt8
+    d220::UInt8
+    d221::UInt8
+    d222::UInt8
+    d223::UInt8
+    d224::UInt8
+    d225::UInt8
+    d226::UInt8
+    d227::UInt8
+    d228::UInt8
+    d229::UInt8
+    d230::UInt8
+    d231::UInt8
+    d232::UInt8
+    d233::UInt8
+    d234::UInt8
+    d235::UInt8
+    d236::UInt8
+    d237::UInt8
+    d238::UInt8
+    d239::UInt8
+    d240::UInt8
+    d241::UInt8
+    d242::UInt8
+    d243::UInt8
+    d244::UInt8
+    d245::UInt8
+    d246::UInt8
+    d247::UInt8
+    d248::UInt8
+    d249::UInt8
+    d250::UInt8
+    d251::UInt8
+    d252::UInt8
+    d253::UInt8
+    d254::UInt8
+    d255::UInt8
+    d256::UInt8
 end
 
-zero(::Type{Array_256_Uint8}) = Array_256_Uint8(fill(zero(Uint8),256)...)
+zero(::Type{Array_256_Uint8}) = Array_256_Uint8(fill(zero(UInt8),256)...)
 
 immutable Array_3_Cint
     d1::Cint
@@ -778,73 +778,73 @@ immutable cudaDeviceProp
 end
 
 immutable Array_64_Uint8
-    d1::Uint8
-    d2::Uint8
-    d3::Uint8
-    d4::Uint8
-    d5::Uint8
-    d6::Uint8
-    d7::Uint8
-    d8::Uint8
-    d9::Uint8
-    d10::Uint8
-    d11::Uint8
-    d12::Uint8
-    d13::Uint8
-    d14::Uint8
-    d15::Uint8
-    d16::Uint8
-    d17::Uint8
-    d18::Uint8
-    d19::Uint8
-    d20::Uint8
-    d21::Uint8
-    d22::Uint8
-    d23::Uint8
-    d24::Uint8
-    d25::Uint8
-    d26::Uint8
-    d27::Uint8
-    d28::Uint8
-    d29::Uint8
-    d30::Uint8
-    d31::Uint8
-    d32::Uint8
-    d33::Uint8
-    d34::Uint8
-    d35::Uint8
-    d36::Uint8
-    d37::Uint8
-    d38::Uint8
-    d39::Uint8
-    d40::Uint8
-    d41::Uint8
-    d42::Uint8
-    d43::Uint8
-    d44::Uint8
-    d45::Uint8
-    d46::Uint8
-    d47::Uint8
-    d48::Uint8
-    d49::Uint8
-    d50::Uint8
-    d51::Uint8
-    d52::Uint8
-    d53::Uint8
-    d54::Uint8
-    d55::Uint8
-    d56::Uint8
-    d57::Uint8
-    d58::Uint8
-    d59::Uint8
-    d60::Uint8
-    d61::Uint8
-    d62::Uint8
-    d63::Uint8
-    d64::Uint8
+    d1::UInt8
+    d2::UInt8
+    d3::UInt8
+    d4::UInt8
+    d5::UInt8
+    d6::UInt8
+    d7::UInt8
+    d8::UInt8
+    d9::UInt8
+    d10::UInt8
+    d11::UInt8
+    d12::UInt8
+    d13::UInt8
+    d14::UInt8
+    d15::UInt8
+    d16::UInt8
+    d17::UInt8
+    d18::UInt8
+    d19::UInt8
+    d20::UInt8
+    d21::UInt8
+    d22::UInt8
+    d23::UInt8
+    d24::UInt8
+    d25::UInt8
+    d26::UInt8
+    d27::UInt8
+    d28::UInt8
+    d29::UInt8
+    d30::UInt8
+    d31::UInt8
+    d32::UInt8
+    d33::UInt8
+    d34::UInt8
+    d35::UInt8
+    d36::UInt8
+    d37::UInt8
+    d38::UInt8
+    d39::UInt8
+    d40::UInt8
+    d41::UInt8
+    d42::UInt8
+    d43::UInt8
+    d44::UInt8
+    d45::UInt8
+    d46::UInt8
+    d47::UInt8
+    d48::UInt8
+    d49::UInt8
+    d50::UInt8
+    d51::UInt8
+    d52::UInt8
+    d53::UInt8
+    d54::UInt8
+    d55::UInt8
+    d56::UInt8
+    d57::UInt8
+    d58::UInt8
+    d59::UInt8
+    d60::UInt8
+    d61::UInt8
+    d62::UInt8
+    d63::UInt8
+    d64::UInt8
 end
 
-zero(::Type{Array_64_Uint8}) = Array_64_Uint8(fill(zero(Uint8),64)...)
+zero(::Type{Array_64_Uint8}) = Array_64_Uint8(fill(zero(UInt8),64)...)
 
 immutable cudaIpcEventHandle_st
     reserved::Array_64_Uint8
@@ -873,7 +873,7 @@ typealias cudaUUID_t Void
 typealias cudaOutputMode_t cudaOutputMode
 
 immutable char1
-    x::Uint8
+    x::UInt8
 end
 
 immutable uchar1
@@ -881,9 +881,9 @@ immutable uchar1
 end
 
 immutable char3
-    x::Uint8
-    y::Uint8
-    z::Uint8
+    x::UInt8
+    y::UInt8
+    z::UInt8
 end
 
 immutable uchar3
@@ -897,7 +897,7 @@ immutable short1
 end
 
 immutable ushort1
-    x::Uint16
+    x::UInt16
 end
 
 immutable short3
@@ -907,9 +907,9 @@ immutable short3
 end
 
 immutable ushort3
-    x::Uint16
-    y::Uint16
-    z::Uint16
+    x::UInt16
+    y::UInt16
+    z::UInt16
 end
 
 immutable int1
@@ -917,7 +917,7 @@ immutable int1
 end
 
 immutable uint1
-    x::Uint32
+    x::UInt32
 end
 
 immutable int3
@@ -927,9 +927,9 @@ immutable int3
 end
 
 immutable uint3
-    x::Uint32
-    y::Uint32
-    z::Uint32
+    x::UInt32
+    y::UInt32
+    z::UInt32
 end
 
 immutable long1
@@ -993,9 +993,9 @@ immutable double3
 end
 
 immutable dim3
-    x::Uint32
-    y::Uint32
-    z::Uint32
+    x::UInt32
+    y::UInt32
+    z::UInt32
 end
 
 const CUDART_VERSION = 6050

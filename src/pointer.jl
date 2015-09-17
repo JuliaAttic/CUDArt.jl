@@ -84,11 +84,11 @@ eltype{T}(::CudaPtr{T}) = T
 
 ## limited pointer arithmetic & comparison ##
 
-==(x::CudaPtr, y::CudaPtr) = @compat(UInt(x)) == @compat(UInt(y))
--(x::CudaPtr, y::CudaPtr) = @compat(UInt(x)) - @compat(UInt(y))
+==(x::CudaPtr, y::CudaPtr) = UInt(x) == UInt(y)
+-(x::CudaPtr, y::CudaPtr) = UInt(x) - UInt(y)
 
-+(x::CudaPtr, y::Integer) = oftype(x, @compat(UInt(@compat(UInt(x) + y))))
--(x::CudaPtr, y::Integer) = oftype(x, @compat(UInt(@compat(UInt(x) - y))))
++(x::CudaPtr, y::Integer) = oftype(x, UInt(UInt(x) + y))
+-(x::CudaPtr, y::Integer) = oftype(x, UInt(UInt(x) - y))
 +(x::Integer, y::CudaPtr) = y + x
 
 zero{T}(::Type{CudaPtr{T}}) = unsafe_convert(CudaPtr{T}, C_NULL)

@@ -3,7 +3,7 @@
 
 function checkdrv(code::Integer)
     if code != 0
-        error(driver_error_descriptions[@compat(Int(code))])
+        error(driver_error_descriptions[Int(code)])
     end
     nothing
 end
@@ -11,7 +11,7 @@ end
 function checkdrv(code::Integer, msg::String)
     if code != 0
         warn(msg)
-        error(driver_error_descriptions[@compat(Int(code))])
+        error(driver_error_descriptions[Int(code)])
     end
     nothing
 end
@@ -59,7 +59,7 @@ immutable CuFunction
     end
 end
 
-const driver_error_descriptions = @compat Dict{Int,String}(
+const driver_error_descriptions = Dict{Int,String}(
         0 => "Success",
         1 => "Invalid value",
         2 => "Out of memory",
