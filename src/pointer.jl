@@ -39,7 +39,7 @@ function malloc(T::Type, n::Integer)
     cuda_ptrs[WeakRef(cptr)] = device()
     cptr
 end
-malloc(nbytes::Integer) = malloc(Uint8, nbytes)
+malloc(nbytes::Integer) = malloc(UInt8, nbytes)
 
 function free{T}(p::CudaPtr{T})
     cnull = unsafe_convert(Ptr{T}, C_NULL)
@@ -50,8 +50,8 @@ function free{T}(p::CudaPtr{T})
     end
 end
 
-typealias Ptrs Union(Ptr, CudaPtr, rt.cudaPitchedPtr)
-typealias CudaPtrs Union(CudaPtr, rt.cudaPitchedPtr)
+typealias Ptrs Union{Ptr, CudaPtr, rt.cudaPitchedPtr}
+typealias CudaPtrs Union{CudaPtr, rt.cudaPitchedPtr}
 
 cudamemcpykind(dstp::Ptr, srcp::Ptr) = rt.cudaMemcpyHostToHost
 cudamemcpykind(dstp::CudaPtrs, srcp::Ptr) = rt.cudaMemcpyHostToDevice
@@ -67,7 +67,7 @@ cudamemcpykind(dst, src) = cudamemcpykind(pointer(dst), pointer(src))
 const CUDA_NULL = CudaPtr()
 
 # pointer to integer
-convert(::Type{Uint}, x::CudaPtr) = convert(Uint,x.ptr)
+convert(::Type{UInt}, x::CudaPtr) = convert(UInt,x.ptr)
 convert{T<:Integer}(::Type{T}, x::CudaPtr) = convert(T,unsigned(x))
 
 # integer to pointer
@@ -77,8 +77,8 @@ convert{T}(::Type{CudaPtr{T}}, x::Integer) = CudaPtr(convert(Ptr{T},x))
 convert{T}(::Type{CudaPtr{T}}, p::CudaPtr{T}) = p
 convert{T}(::Type{CudaPtr{T}}, p::CudaPtr) = CudaPtr(convert(Ptr{T},p.ptr))
 
-integer(x::CudaPtr) = convert(Uint, x.ptr)
-unsigned(x::CudaPtr) = convert(Uint, x.ptr)
+integer(x::CudaPtr) = convert(UInt, x.ptr)
+unsigned(x::CudaPtr) = convert(UInt, x.ptr)
 
 eltype{T}(::CudaPtr{T}) = T
 

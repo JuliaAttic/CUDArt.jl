@@ -8,7 +8,7 @@ function checkdrv(code::Integer)
     nothing
 end
 
-function checkdrv(code::Integer, msg::String)
+function checkdrv(code::Integer, msg::AbstractString)
     if code != 0
         warn(msg)
         error(driver_error_descriptions[Int(code)])
@@ -19,7 +19,7 @@ end
 immutable CuModule
     handle::Ptr{Void}
 
-    function CuModule(filename::String, finalize::Bool = true)
+    function CuModule(filename::AbstractString, finalize::Bool = true)
         a = Array(Ptr{Void}, 1)
         checkdrv(ccall((:cuModuleLoad, libcuda), Cint, (Ptr{Ptr{Void}}, Ptr{Cchar}), a, filename), filename)
         md = new(a[1])
@@ -32,7 +32,7 @@ immutable CuModule
 end
 
 # do syntax, f(module)
-function CuModule(f::Function, filename::String)
+function CuModule(f::Function, filename::AbstractString)
     md = CuModule(filename, false)
     local ret
     try
@@ -50,7 +50,7 @@ end
 immutable CuFunction
     handle::Ptr{Void}
 
-    function CuFunction(md::CuModule, name::String)
+    function CuFunction(md::CuModule, name::AbstractString)
         a = Array(Ptr{Void}, 1)
         checkdrv(ccall((:cuModuleGetFunction, libcuda), Cint,
                        (Ptr{Ptr{Void}}, Ptr{Void}, Ptr{Cchar}),
@@ -59,7 +59,7 @@ immutable CuFunction
     end
 end
 
-const driver_error_descriptions = Dict{Int,String}(
+const driver_error_descriptions = Dict{Int,AbstractString}(
         0 => "Success",
         1 => "Invalid value",
         2 => "Out of memory",

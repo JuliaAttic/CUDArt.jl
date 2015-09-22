@@ -55,7 +55,7 @@ isempty(libwrapcuda) && error("Cannot find libwrapcuda")
 function cudaMalloc3D(p::Array{cudaPitchedPtr,1}, ext::cudaExtent)
     checkerror(ccall((:wrapcudaMalloc3D, libwrapcuda), cudaError_t, (Ptr{cudaPitchedPtr}, Ptr{cudaExtent}), p, &ext))
 end
-function cudaMemset3D(pitchedDevPtr::cudaPitchedPtr, value::Uint8, extent::cudaExtent)
+function cudaMemset3D(pitchedDevPtr::cudaPitchedPtr, value::UInt8, extent::cudaExtent)
   checkerror(ccall( (:wrapcudaMemset3D, libwrapcuda), cudaError_t, (Ptr{cudaPitchedPtr}, Cint, Ptr{cudaExtent}), &pitchedDevPtr, value, &extent))
 end
 
