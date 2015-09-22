@@ -7,7 +7,7 @@ using Base.Test
 devlist = CUDArt.devices(dev->true)
 for dev in devlist
     CUDArt.device(dev)
-    p = CUDArt.malloc(Uint8, 1)
+    p = CUDArt.malloc(UInt8, 1)
     p2 = CUDArt.malloc(Uint16, 100)
     CUDArt.free(p)
     CUDArt.free(p2)
@@ -27,7 +27,7 @@ gc()  # check for finalizer errors
 # Test free when the allocated device is not the current device
 if length(devlist) > 1
     CUDArt.device(devlist[1])
-    p1a = CUDArt.malloc(Uint8, 1)
+    p1a = CUDArt.malloc(UInt8, 1)
     p1 = CUDArt.malloc(Uint16, 100)
     CUDArt.device(devlist[2])
     p2 = CUDArt.malloc(Uint16, 100)

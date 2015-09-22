@@ -34,7 +34,7 @@ attribute(dev::Integer, code::Integer) = (ret = Cint[0]; rt.cudaDeviceGetAttribu
 capability(dev::Integer) = (attribute(dev,rt.cudaDevAttrComputeCapabilityMajor),
                             attribute(dev,rt.cudaDevAttrComputeCapabilityMinor))
 
-name(p::rt.cudaDeviceProp) = bytestring(convert(Ptr{Uint8}, pointer([p.name])))
+name(p::rt.cudaDeviceProp) = bytestring(convert(Ptr{UInt8}, pointer([p.name])))
 
 # criteria = dev -> Bool
 function devices(criteria::Function; nmax::Integer = typemax(Int))
@@ -49,7 +49,7 @@ function devices(f::Function, criteria::Function; nmax::Integer = typemax(Int))
     devices(f, devlist)
 end
 
-function devices(f::Function, devlist::Union(Integer,AbstractVector))
+function devices(f::Function, devlist::Union{Integer,AbstractVector})
     local ret
     mdutils = [CuModule() for i = 1:length(devlist)]
     try
@@ -68,14 +68,14 @@ const global ptxdict = Dict()
 function init!(mdutils::Array{CuModule}, devlist)
     funcnames = ["fill_contiguous", "fill_pitched"]
     funcexts  = ["double","float","int64","uint64","int32","uint32","int16","uint16","int8","uint8"]
-    datatypes = [Float64,Float32,Int64,Uint64,Int32,Uint32,Int16,Uint16,Int8,Uint8]
+    datatypes = [Float64,Float32,Int64,UInt64,Int32,UInt32,Int16,UInt16,Int8,UInt8]
     utilfile  = joinpath(Pkg.dir(), "CUDArt/deps/utils.ptx")
     # initialize all devices
     for idev = 1:length(devlist)
         dev = devlist[idev]
         device(dev)
         # allocate and destroy memory to force initialization
-        free(malloc(Uint8, 1))
+        free(malloc(UInt8, 1))
         # Load the utility functions
         mdutils[idev] = CuModule(utilfile, false)
         for func in funcnames
