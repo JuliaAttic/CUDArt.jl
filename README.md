@@ -63,14 +63,16 @@ end
 ```
 
 The `do` block syntax initializes the devices and loads some utility functions (defined in `deps/utils.cu`) onto each GPU; it also ensures proper freeing of memory and unloading of code when the `do` block finishes.
+Should you want to initialize the utilities manually, you can do so by calling `CUDArt.init(devlist)` and `CUDArt.close(devlist)` where `devlist` is an integer device number or a list of them, e.g. `0` or `[0,1]`.
+This can be handy in case of trouble, because unfortunately the `do` syntax does not usually result in ideal backtraces.
+
 If your work doesn't require any of the utility functions, you can manually manage the device:
 ```julia
 device(dev)
 # Code that does GPU computations
 device_reset(dev)
 ```
-where `dev` is the integer device number. This can be handy in case of trouble, because unfortunately 
-the `do` syntax does not usually result in ideal backtraces.
+where `dev` is the integer device number.
 
 ## Choosing/querying the active device
 

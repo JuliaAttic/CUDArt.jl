@@ -51,47 +51,55 @@ end
 
 function devices(f::Function, devlist::Union{Integer,AbstractVector})
     local ret
-    mdutils = [CuModule() for i = 1:length(devlist)]
     try
-        init!(mdutils, devlist)
+        init(devlist)
         ret = f(devlist)
     finally
-        close!(mdutils, devlist)
+        close(devlist)
     end
     ret
 end
 
 # A cache of useful CUDA kernels that gets loaded and closed
 # by devices(f, devlist)
-const global ptxdict = Dict()
+const global mdutils = Dict{Integer,CuModule}()
+const global ptxdict = Dict{Integer,Dict{Any,CuFunction}}()
 
-function init!(mdutils::Array{CuModule}, devlist)
+function init(devlist::Union{Integer,AbstractVector})
     funcnames = ["fill_contiguous", "fill_pitched"]
     funcexts  = ["double","float","int64","uint64","int32","uint32","int16","uint16","int8","uint8"]
     datatypes = [Float64,Float32,Int64,UInt64,Int32,UInt32,Int16,UInt16,Int8,UInt8]
     utilfile  = joinpath(Pkg.dir(), "CUDArt/deps/utils.ptx")
+
     # initialize all devices
-    for idev = 1:length(devlist)
-        dev = devlist[idev]
+    for dev in devlist
+        # It has already been initialized.
+        if haskey(mdutils, dev)
+            continue
+        end
+
         device(dev)
         # allocate and destroy memory to force initialization
         free(malloc(UInt8, 1))
-        # Load the utility functions
-        mdutils[idev] = CuModule(utilfile, false)
+        # Load the utility functions.
+        md = mdutils[dev] = CuModule(utilfile, false)
+        ptxdict[dev] = Dict{Any,CuFunction}()
         for func in funcnames
-            for i = 1:length(funcexts)
-                ptxdict[(dev, func, datatypes[i])] = CuFunction(mdutils[idev], func*"_"*funcexts[i])
+            for (dtype,ext) in zip(datatypes, funcexts)
+                ptxdict[dev][(func, dtype)] = CuFunction(md, func*"_"*ext)
             end
         end
-        ptxdict[(dev, "clock_block")] = CuFunction(mdutils[idev], "clock_block")
+        ptxdict[dev]["clock_block"] = CuFunction(md, "clock_block")
     end
 end
 
-function close!(mdutils::Array{CuModule}, devlist)
-    for idev = 1:length(devlist)
-        if mdutils[idev].handle != C_NULL
-            unload(mdutils[idev])
+function close(devlist::Union{Integer,AbstractVector})
+    for dev in devlist
+        if haskey(mdutils, dev)
+            unload(mdutils[dev])
+            delete!(mdutils, dev)
+            delete!(ptxdict, dev)
         end
-        device_reset(devlist[idev])
+        device_reset(dev)
     end
 end
