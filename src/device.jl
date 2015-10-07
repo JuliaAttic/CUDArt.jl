@@ -52,20 +52,20 @@ end
 function devices(f::Function, devlist::Union{Integer,AbstractVector})
     local ret
     try
-        init!(devlist)
+        init(devlist)
         ret = f(devlist)
     finally
-        close!(devlist)
+        close(devlist)
     end
     ret
 end
 
 # A cache of useful CUDA kernels that gets loaded and closed
 # by devices(f, devlist)
-const global mdutils = Dict{Int64,CuModule}()
+const global mdutils = Dict{Integer,CuModule}()
 const global ptxdict = Dict{Integer,Dict{Any,CuFunction}}()
 
-function init!(devlist)
+function init(devlist::Union{Integer,AbstractVector})
     funcnames = ["fill_contiguous", "fill_pitched"]
     funcexts  = ["double","float","int64","uint64","int32","uint32","int16","uint16","int8","uint8"]
     datatypes = [Float64,Float32,Int64,UInt64,Int32,UInt32,Int16,UInt16,Int8,UInt8]
@@ -93,7 +93,7 @@ function init!(devlist)
     end
 end
 
-function close!(devlist)
+function close(devlist::Union{Integer,AbstractVector})
     for dev in devlist
         if haskey(mdutils, dev)
             unload(mdutils[dev])
