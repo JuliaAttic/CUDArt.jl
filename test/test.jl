@@ -5,13 +5,10 @@ using Compat
 #########################
 # Device init and close #
 #########################
-@test length(CUDArt.mdutils) == 0
 @test length(CUDArt.ptxdict) == 0
 CUDArt.init(0)
-@test in(0, keys(CUDArt.mdutils))
 @test in(0, keys(CUDArt.ptxdict))
 CUDArt.close(0)
-@test length(CUDArt.mdutils) == 0
 @test length(CUDArt.ptxdict) == 0
 
 #########################
