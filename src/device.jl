@@ -62,8 +62,11 @@ end
 
 # A cache of useful CUDA kernels that gets loaded and closed
 # by devices(f, devlist)
-const global mdutils = Dict{Integer,CuModule}()
-const global ptxdict = Dict{Integer,Dict{Any,CuFunction}}()
+immutable PtxUtils
+    mod::CuModule
+    fns::Dict{Any,CuFunction}
+end
+const global ptxdict = Dict{Integer,PtxUtils}()
 
 function init(devlist::Union{Integer,AbstractVector})
     funcnames = ["fill_contiguous", "fill_pitched"]
@@ -74,7 +77,7 @@ function init(devlist::Union{Integer,AbstractVector})
     # initialize all devices
     for dev in devlist
         # It has already been initialized.
-        if haskey(mdutils, dev)
+        if haskey(ptxdict, dev)
             continue
         end
 
@@ -82,22 +85,21 @@ function init(devlist::Union{Integer,AbstractVector})
         # allocate and destroy memory to force initialization
         free(malloc(UInt8, 1))
         # Load the utility functions.
-        md = mdutils[dev] = CuModule(utilfile, false)
-        ptxdict[dev] = Dict{Any,CuFunction}()
+        ptx = PtxUtils(CuModule(utilfile, false), Dict{Any,CuFunction}())
         for func in funcnames
             for (dtype,ext) in zip(datatypes, funcexts)
-                ptxdict[dev][(func, dtype)] = CuFunction(md, func*"_"*ext)
+                ptx.fns[(func, dtype)] = CuFunction(ptx.mod, func*"_"*ext)
             end
         end
-        ptxdict[dev]["clock_block"] = CuFunction(md, "clock_block")
+        ptx.fns["clock_block"] = CuFunction(ptx.mod, "clock_block")
+        ptxdict[dev] = ptx
     end
 end
 
 function close(devlist::Union{Integer,AbstractVector})
     for dev in devlist
-        if haskey(mdutils, dev)
-            unload(mdutils[dev])
-            delete!(mdutils, dev)
+        if haskey(ptxdict, dev)
+            unload(ptxdict[dev].mod)
             delete!(ptxdict, dev)
         end
         device_reset(dev)
