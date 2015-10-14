@@ -11,7 +11,7 @@ This has been tested on Linux, OSX, and Windows. With Windows, at least Visual S
 # Installation
 
 First, you need to have an NVIDIA GPU device in your computer (one that is available for computation, i.e., most likely not your graphics card), and the CUDA library installed.
-You have to perform these steps manually. **Choose either 32-bit or 64-bit versions to match your julia installation.** 
+You have to perform these steps manually. **Choose either 32-bit or 64-bit versions to match your julia installation.**
 
 Install the Julia package using
 ```julia
@@ -62,6 +62,15 @@ result = devices(func, nmax=1) do devlist
 end
 ```
 
+Finally, you can request only those devices that are not busy with other tasks using
+```jl
+result = devices(func, status=:free) do devlist
+    # Code that does GPU computations
+end
+You can wait for specific devices to become available with
+`wait_free(devlist)`.
+
+
 The `do` block syntax initializes the devices and loads some utility functions (defined in `deps/utils.cu`) onto each GPU; it also ensures proper freeing of memory and unloading of code when the `do` block finishes.
 Should you want to initialize the utilities manually, you can do so by calling `CUDArt.init(devlist)` and `CUDArt.close(devlist)` where `devlist` is an integer device number or a list of them, e.g. `0` or `[0,1]`.
 This can be handy in case of trouble, because unfortunately the `do` syntax does not usually result in ideal backtraces.
@@ -77,7 +86,7 @@ where `dev` is the integer device number.
 ## Choosing/querying the active device
 
 At any point in your code, the command `device(dev)` makes `dev` the active device.
-For example, commands that allocate device memory will be executed on whichever device is currently active. 
+For example, commands that allocate device memory will be executed on whichever device is currently active.
 
 Calling `dev = device()` will return the currently-active device
 
@@ -174,6 +183,8 @@ To easily make your kernels available, the recommended approach is to define som
 ```julia
 module MyCudaModule
 
+using CUDArt
+
 const ptxdict = Dict()
 const mdlist = Array(CuModule, 0)
 
@@ -183,7 +194,7 @@ function mdinit(devlist)
     isempty(mdlist) || error("mdlist is not empty")
     for dev in devlist
         device(dev)
-        md = CuModule("mycudamodule.ptx"), false)  # false means it will not be automatically finalized
+        md = CuModule("mycudamodule.ptx", false)  # false means it will not be automatically finalized
         ptxdict[(dev, "function1", Float32)] = CuFunction(md, "kernel_function1_float")
         ptxdict[(dev, "function1", Float64)] = CuFunction(md, "kernel_function1_double")
         ptxdict[(dev, "function2", Int32, Float32)] = CuFunction(md, "kernel_function2_int_float")
@@ -194,7 +205,7 @@ end
 
 mdclose() = (for md in mdlist; unload(md); end; empty!(mdlist); empty!(ptxdict))
 
-function init(f::function, devlist)
+function init(f::Function, devlist)
     local ret
     mdinit(devlist)
     try
