@@ -16,7 +16,7 @@ export
     pitchel, pitchbytes,
     launch, device_synchronize, synchronize,
     Stream, null_stream, cudasleep,
-    destroy, free, cudafinalizer
+    destroy, free, cudafinalizer, wait_free
 
 import Base: ==, -, +, getindex, setindex!
 import Base: length, size, ndims, eltype, similar, pointer, stride,
