@@ -37,15 +37,20 @@ capability(dev::Integer) = (attribute(dev,rt.cudaDevAttrComputeCapabilityMajor),
 name(p::rt.cudaDeviceProp) = bytestring(convert(Ptr{UInt8}, pointer([p.name])))
 
 # criteria = dev -> Bool
-function devices(criteria::Function; nmax::Integer = typemax(Int))
+function devices(criteria::Function; nmax::Integer = typemax(Int), status=:any)
     devlist = find(map(criteria, 0:devcount().-1)).-1
+    if status == :any
+    elseif status == :free
+        devlist = filter_free(devlist)
+    end
     isempty(devlist) && error("No suitable devices found")
     devlist[1:min(nmax, length(devlist))]
 end
 
 # do syntax, f(devlist)
-function devices(f::Function, criteria::Function; nmax::Integer = typemax(Int))
-    devlist = devices(criteria, nmax=nmax)
+function devices(f::Function, criteria::Function;
+                 nmax::Integer = typemax(Int), status = :any)
+    devlist = devices(criteria, nmax=nmax, status=status)
     devices(f, devlist)
 end
 
@@ -58,6 +63,35 @@ function devices(f::Function, devlist::Union{Integer,AbstractVector})
         close(devlist)
     end
     ret
+end
+
+function filter_free(devlist)
+    smi = readall(`nvidia-smi`)
+    if contains(smi, "No running compute processes")
+        return devlist
+    end
+    idx = search(smi, "Compute processes:")
+    isempty(idx) && error("Neither search string found")
+    lines = split(smi[last(idx):end], '\n')
+    free = Set(devlist)
+    for line in lines
+        m = match(r"^\| +([0-9]+)", line)
+        if m != nothing
+            length(m.captures) == 1 || error("Expected only a single capture")
+            dev = parse(Int, m.captures[1])
+            delete!(free, dev)
+        end
+    end
+    collect(free)
+end
+
+function wait_free(devlist; check_interval=10)
+    f = filter_free(devlist)
+    length(f) < length(devlist) && warn("Waiting for GPU devices ", devlist)
+    while length(f) < length(devlist)
+        sleep(check_interval)
+        f = filter_free(devlist)
+    end
 end
 
 # A cache of useful CUDA kernels that gets loaded and closed
