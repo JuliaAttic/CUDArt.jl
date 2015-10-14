@@ -67,6 +67,7 @@ Finally, you can request only those devices that are not busy with other tasks u
 result = devices(func, status=:free) do devlist
     # Code that does GPU computations
 end
+```
 You can wait for specific devices to become available with
 `wait_free(devlist)`.
 
@@ -148,11 +149,11 @@ You can find an example file in `deps/utils.cu`.
 You can write and use your own custom kernels, first writing a `.cu` file and compiling it as a `ptx` module.
 On Linux, compilation would look something like this:
 ```
-nvcc -ptx mymodule.cu
+nvcc -ptx mycudamodule.cu
 ```
 You can specify that the code should be compiled for compute capability 2.0 devices or higher using
 ```
-nvcc -ptx -gencode=arch=compute_20,code=sm_20 utils.cu
+nvcc -ptx -gencode=arch=compute_20,code=sm_20 mycudamodule.cu
 ```
 
 If you want to write code that will support multiple datatypes (e.g., `Float32` and `Float64`), it's recommended that you use C++ and write your code using templates.
@@ -184,6 +185,8 @@ To easily make your kernels available, the recommended approach is to define som
 module MyCudaModule
 
 using CUDArt
+
+export function1
 
 const ptxdict = Dict()
 const mdlist = Array(CuModule, 0)
@@ -235,7 +238,8 @@ using CUDArt, MyCudaModule
 A = rand(10,5)
 
 result = devices(dev->capability(dev)[1]>=2) do devlist
-    MyCudaModule.init(devlist) do
+    MyCudaModule.init(devlist) do dev
+        device(dev)
         function1(CudaArray(A))
     end
 end
