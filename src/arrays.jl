@@ -410,3 +410,6 @@ function checkstrides_pitched(A)
     stride(A, 1) == 1 || error("A must have a stride of 1 along the first dimension")
     stride(A, 3) == stride(A, 2) * size(A, 2) || error("A must be contiguous for dimension 2")
 end
+
+vec{T, N}(v::CudaArray{T,N}) = CudaArray{T, 1}(v.ptr, (length(v),), v.dev)
+vec{T}(v::CudaArray{T,1}) = v

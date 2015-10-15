@@ -21,7 +21,7 @@ export
 import Base: ==, -, +, getindex, setindex!
 import Base: length, size, ndims, eltype, similar, pointer, stride,
     copy, convert, reinterpret, show, summary,
-    copy!, get!, fill!, wait, unsafe_convert
+    copy!, get!, fill!, wait, unsafe_convert, vec
 
 # Prepare the CUDA runtime API bindings
 include("libcudart-6.5.jl")

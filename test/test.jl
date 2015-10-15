@@ -118,6 +118,19 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     copy!(S, GB)
     CUDArt.device_synchronize()
     @test A[:,3:4] == 2B
+    # test vec
+    let
+        m = 20
+        n = 5
+        Am = rand(m, n)
+        Av = rand(n)
+        d_Am = CudaArray(Am)
+        d_Av = CudaArray(Av)
+        d_Amvec = vec(d_Am)
+        d_Avvec = vec(d_Av)
+        @test to_host(d_Amvec) == vec(Am)
+        @test to_host(d_Avvec) == Av
+    end
 end
 
 #####################
