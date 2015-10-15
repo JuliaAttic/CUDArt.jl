@@ -1,6 +1,5 @@
 import CUDArt
 using Base.Test
-using Compat
 
 #########################
 # Device init and close #
@@ -85,7 +84,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     h_dest = CUDArt.to_host(d_dest)
     @test isequal(h_dest, [15 7.3])
     # Copies between CudaPitchedArrays and CudaArrays
-    A = rand(@compat(map(UInt16, 5:11)), 7, 2)
+    A = rand(map(UInt16, 5:11), 7, 2)
     GA = CUDArt.CudaArray(A)
     GP = CUDArt.CudaPitchedArray(eltype(A), size(A))
     copy!(GP, GA)
@@ -109,7 +108,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     CUDArt.device_synchronize()
     @test A[2,2] == 7
     S = pointer_to_array(pointer(A)+48, (6,2), false)  # a "SubArray"
-    B = rand(@compat(map(Int32, 1:15)), 6, 2)
+    B = rand(map(Int32, 1:15), 6, 2)
     GB = CUDArt.CudaArray(B)
     copy!(S, GB)
     CUDArt.device_synchronize()
@@ -124,12 +123,12 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         n = 5
         Am = rand(m, n)
         Av = rand(n)
-        d_Am = CudaArray(Am)
-        d_Av = CudaArray(Av)
+        d_Am = CUDArt.CudaArray(Am)
+        d_Av = CUDArt.CudaArray(Av)
         d_Amvec = vec(d_Am)
         d_Avvec = vec(d_Av)
-        @test to_host(d_Amvec) == vec(Am)
-        @test to_host(d_Avvec) == Av
+        @test CUDArt.to_host(d_Amvec) == vec(Am)
+        @test CUDArt.to_host(d_Avvec) == Av
     end
 end
 
