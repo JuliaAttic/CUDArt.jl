@@ -14,14 +14,14 @@ export
     driver_version, runtime_version,
     CuModule, CuFunction, unload,
     pitchel, pitchbytes,
-    launch, device_synchronize, synchronize,
+    device_synchronize, synchronize,
     Stream, null_stream, cudasleep,
     destroy, free, cudafinalizer, wait_free
 
 import Base: ==, -, +, getindex, setindex!
 import Base: length, size, ndims, eltype, similar, pointer, stride,
     copy, convert, reinterpret, show, summary,
-    copy!, get!, fill!, wait, unsafe_convert, vec
+    copy!, get!, fill!, launch, wait, unsafe_convert, vec
 
 # Prepare the CUDA runtime API bindings
 include("libcudart-6.5.jl")
