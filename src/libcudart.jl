@@ -51,11 +51,6 @@ function find_wrapper_ver(cudartver)
 end
 const (wrapver, wrapdir) = find_wrapper_ver(cudart_version())
 
-# In the runtime API, these are all used only inside Ptrs,
-# so these typealiases are safe (if you don't need access to
-# struct elements)
-typealias cudaUUID_t Void
-
 function checkerror(code::Cuint)
     if code == cudaSuccess
         return nothing
@@ -68,9 +63,6 @@ function checkerror(code::Cuint)
 end
 
 include("../$wrapdir/gen_libcudart_h.jl")
-
-typealias cudaError_t cudaError
-
 include("../$wrapdir/gen_libcudart.jl")
 
 # # Make cudaSetupArgument more convenient
