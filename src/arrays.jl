@@ -123,12 +123,12 @@ function reinterpret{R,S}(::Type{R}, g::CudaArray{S})
     end
     CudaArray{R,ndims(g)}(g.ptr, g.dims, g.dev)
 end
-function reinterpret{R,S}(::Type{R}, g::CudaArray{S}, dims::Dims)
+function reinterpret{R,S,N}(::Type{R}, g::CudaArray{S}, dims::NTuple{N,Int})
     lenR = div(sizeof(S)*length(g),sizeof(R))
     if prod(dims) != lenR
         throw(DimensionMismatch("New dimensions $dims must be consistent with array of length $lenR"))
     end
-    CudaArray{R,length(dims)}(g.ptr, dims, g.dev)
+    CudaArray{R,N}(g.ptr, dims, g.dev)
 end
 
 free(g::CudaArray) = free(pointer(g))

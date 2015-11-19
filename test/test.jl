@@ -13,6 +13,12 @@ CUDArt.close(0)
 #########################
 # Test CUDA array types #
 #########################
+# Test function for issue #41
+function func41(a, dims)
+    b = reinterpret(eltype(a), a, dims)
+    Cint[size(b)...]
+end
+
 result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     # Copying memory to and from device
     @test length(devlist) == 1
@@ -130,6 +136,9 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         @test CUDArt.to_host(d_Amvec) == vec(Am)
         @test CUDArt.to_host(d_Avvec) == Av
     end
+    # Issue #41
+    a = CUDArt.CudaArray(zeros(2))
+    @test func41(a, (2,1,1,1)) == Cint[2,1,1,1]
 end
 
 #####################
