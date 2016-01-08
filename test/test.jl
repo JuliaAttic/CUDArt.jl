@@ -75,6 +75,10 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         fill!(gbig, -17)
         hbig = CUDArt.to_host(gbig)
         @test all(hbig .== -17) && size(hbig) == (2000,1000)
+        # Element-type conversions
+        h32 = rand(Float32, (5,3))
+        g64 = AT(Float64, (5,3))
+        copy!(g64, h32)
     end
     # Getting portions of an array
     h_src = reshape(1.0:15.0, 3, 5)
