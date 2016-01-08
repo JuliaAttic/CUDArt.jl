@@ -7,6 +7,8 @@ abstract AbstractCudaArray{T,N}
 typealias AbstractCudaVector{T} AbstractCudaArray{T,1}
 typealias AbstractCudaMatrix{T} AbstractCudaArray{T,2}
 
+typealias HostOrDevArray{T,N} Union{AbstractArray{T,N}, AbstractCudaArray{T,N}}
+
 # copy method for AbstractCudaArray
 copy(a::AbstractCudaArray; stream=null_stream) = copy!(similar(a),a;stream=stream)
 
@@ -65,8 +67,8 @@ type HostArray{T,N} <: AbstractArray{T,N}
     data::Array{T,N}
 end
 
-typealias CdArray{T} Union{DenseArray{T},HostArray{T},AbstractCudaArray{T}}
-typealias ContiguousArray{T} Union{Array{T},HostArray{T},CudaArray{T}}
+typealias CdArray{T,N} Union{DenseArray{T,N},HostArray{T,N},AbstractCudaArray{T,N}}
+typealias ContiguousArray{T,N} Union{Array{T,N},HostArray{T,N},CudaArray{T,N}}
 
 ###################
 # Implementations #
@@ -144,7 +146,12 @@ if debugMemory
     end
 end
 
-function copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray{T}; stream=null_stream)
+# To limit the likelihood of ambiguity warnings with other packages,
+# these should be the only two-argument definitions of copy!
+copy!(dst::AbstractArray, src::HostOrDevArray; stream=null_stream) = _copy!(dst, src, stream)
+copy!(dst::HostOrDevArray, src::HostOrDevArray; stream=null_stream) = _copy!(dst, src, stream)
+
+function _copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray{T}, stream)
     if length(dst) != length(src)
         throw(ArgumentError("Inconsistent array length."))
     end
@@ -152,6 +159,7 @@ function copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray{T}; stream=null_
     rt.cudaMemcpyAsync(dst, src, nbytes, cudamemcpykind(dst, src), stream)
     return dst
 end
+_copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray, stream) = _copy!(dst, to_eltype(T, src), stream)
 
 function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
     valT = convert(T, val)
@@ -278,9 +286,10 @@ rawpointer(g::CudaPitchedArray) = g.ptr.ptr
 
 CudaExtent{T}(a::AbstractCudaArray{T}) = CudaExtent(pitchbytes(a), size(a,2), size(a,3))
 
-copy!{T}(dst::AbstractCudaArray{T}, src::AbstractCudaArray{T}; kwargs...) = cudacopy!(dst, src; kwargs...)
-copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}; kwargs...) = cudacopy!(dst, src; kwargs...)
-copy!{T}(dst::AbstractCudaArray{T}, src::CdArray{T}; kwargs...) = cudacopy!(dst, src; kwargs...)
+_copy!{T}(dst::AbstractCudaArray{T}, src::AbstractCudaArray{T}, stream) = cudacopy!(dst, src; stream=stream)
+_copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, stream) = cudacopy!(dst, src; stream=stream)
+_copy!{T}(dst::AbstractCudaArray{T}, src::CdArray{T}, stream) = cudacopy!(dst, src, stream=stream)
+_copy!{T}(dst::AbstractCudaArray{T}, src::CdArray, stream) = cudacopy!(dst, to_eltype(T, src), stream=stream)
 function cudacopy!{T}(dst::CdArray{T}, src::CdArray{T}; kwargs...)
     if size(dst) != size(src)
         throw(DimensionMismatch("Size $(size(dst)) of dst is not equal to $(size(src)) of src"))
@@ -413,3 +422,6 @@ end
 
 vec{T, N}(v::CudaArray{T,N}) = CudaArray{T, 1}(v.ptr, (length(v),), v.dev)
 vec{T}(v::CudaArray{T,1}) = v
+
+to_eltype{T}(::Type{T}, A::AbstractArray{T}) = A
+to_eltype{T,S,N}(::Type{T}, A::AbstractArray{S,N}) = convert(Array{T,N}, A)
