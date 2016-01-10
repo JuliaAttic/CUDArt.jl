@@ -160,6 +160,7 @@ function _copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray{T}, stream)
     return dst
 end
 _copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray, stream) = _copy!(dst, to_eltype(T, src), stream)
+_copy!{T}(dst::AbstractCudaArray{T}, src, stream) = _copy!(dst, copy!(Array(T, size(src)), src), stream)
 
 function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
     valT = convert(T, val)
@@ -290,6 +291,7 @@ _copy!{T}(dst::AbstractCudaArray{T}, src::AbstractCudaArray{T}, stream) = cudaco
 _copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, stream) = cudacopy!(dst, src; stream=stream)
 _copy!{T}(dst::AbstractCudaArray{T}, src::CdArray{T}, stream) = cudacopy!(dst, src, stream=stream)
 _copy!{T}(dst::AbstractCudaArray{T}, src::CdArray, stream) = cudacopy!(dst, to_eltype(T, src), stream=stream)
+
 function cudacopy!{T}(dst::CdArray{T}, src::CdArray{T}; kwargs...)
     if size(dst) != size(src)
         throw(DimensionMismatch("Size $(size(dst)) of dst is not equal to $(size(src)) of src"))

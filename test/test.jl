@@ -79,6 +79,9 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         h32 = rand(Float32, (5,3))
         g64 = AT(Float64, (5,3))
         copy!(g64, h32)
+        # AbstractArray fallbacks
+        s32 = sub(h32, 5:-1:1, :)
+        copy!(g64, s32)
     end
     # Getting portions of an array
     h_src = reshape(1.0:15.0, 3, 5)
