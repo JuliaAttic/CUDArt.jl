@@ -19,16 +19,27 @@ end
 immutable CuModule
     handle::Ptr{Void}
 
-    function CuModule(filename::AbstractString, finalize::Bool = true)
-        a = Array(Ptr{Void}, 1)
-        checkdrv(ccall((:cuModuleLoad, libcuda), Cint, (Ptr{Ptr{Void}}, Ptr{Cchar}), a, filename), filename)
-        md = new(a[1])
+    CuModule() = new(C_NULL)
+
+    function CuModule(handle::Ptr{Void}, finalize::Bool = true)
+        md = new(handle)
         if finalize
             finalizer(md, unload)
         end
         md
     end
-    CuModule() = new(C_NULL)
+end
+
+function CuModule(filename::AbstractString, finalize::Bool = true)
+    a = Array(Ptr{Void}, 1)
+    checkdrv(ccall((:cuModuleLoad, libcuda), Cint, (Ptr{Ptr{Void}}, Ptr{Cchar}), a, filename), filename)
+    md = CuModule(a[1], finalize)
+end
+
+function CuModule(moduledata::Vector{UInt8}, finalize::Bool = true)
+    a = Array(Ptr{Void}, 1)
+    checkdrv(ccall((:cuModuleLoadData, libcuda), Cint, (Ptr{Ptr{Void}}, Ptr{UInt8}), a, moduledata))
+    md = CuModule(a[1], finalize)
 end
 
 # do syntax, f(module)
