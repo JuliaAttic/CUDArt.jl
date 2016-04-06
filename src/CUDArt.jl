@@ -24,7 +24,7 @@ import Base: length, size, ndims, eltype, similar, pointer, stride,
     copy!, get!, fill!, launch, wait, unsafe_convert, vec
 
 # Prepare the CUDA runtime API bindings
-include("libcudart-6.5.jl")
+include("libcudart.jl")
 import .CUDArt_gen
 const rt = CUDArt_gen
 
