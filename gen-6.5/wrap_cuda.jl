@@ -5,8 +5,8 @@ includes = ["/usr/include",
             "/usr/lib/gcc/x86_64-redhat-linux/4.4.4/include",
             "/usr/lib/gcc/x86_64-linux-gnu/4.8/include",
             "/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed"]
-cudapath = "/usr/local/cuda-6.5/include"
-headers = ["cuda_runtime_api.h", "driver_types.h", "vector_types.h"]
+cudapath = "/usr/local/cuda-7.5/include"
+headers = ["cuda_runtime_api.h", "driver_types.h", "vector_types.h", "cuda_gl_interop.h"]
 headers = [joinpath(cudapath,h) for h in headers]
 
 # Customize how functions, constants, and structs are written
@@ -29,7 +29,7 @@ function rewriter(ex::Expr)
     # omit types from function prototypes
     for i = 2:length(decl.args)
         a = decl.args[i]
-        if a.head == :(::)
+        if isa(a, Expr) && a.head == :(::)
             decl.args[i] = a.args[1]
         end
     end

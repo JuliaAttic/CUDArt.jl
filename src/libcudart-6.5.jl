@@ -15,7 +15,8 @@ function checkerror(code::Cuint)
     Base.show_backtrace(STDOUT, backtrace())
     throw(bytestring(cudaGetErrorString(code)))
 end
-
+include("CEnum.jl")
+using .CEnum
 include("../gen-6.5/gen_libcudart_h.jl")
 
 typealias cudaError_t cudaError
