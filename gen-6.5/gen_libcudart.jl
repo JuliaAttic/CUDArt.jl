@@ -591,3 +591,8 @@ end
 function cudaGetExportTable(ppExportTable,pExportTableId)
     checkerror(ccall((:cudaGetExportTable,libcudart),cudaError_t,(Ptr{Ptr{Void}},Ptr{cudaUUID_t}),ppExportTable,pExportTableId))
 end
+
+
+function cudaGraphicsGLRegisterBuffer(resource, buffer, flags)
+    checkerror(ccall((:cudaGraphicsGLRegisterBuffer,libcudart),cudaError_t,(Ptr{cudaGraphicsResource_t}, Cuint, Cuint),resource, buffer, flags))
+end
