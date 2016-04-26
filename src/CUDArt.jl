@@ -53,8 +53,8 @@ include("arrays.jl")
 include("execute.jl")
 
 if isdefined(Base, :__precompile__)
-    include("precompile.jl")
-    _precompile_()
+    #include("precompile.jl")
+    #_precompile_()
 end
 
 function __init__()
