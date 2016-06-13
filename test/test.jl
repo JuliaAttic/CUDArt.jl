@@ -1,4 +1,4 @@
-import CUDArt
+import CUDArt, CUDAdrv
 using Base.Test
 
 #########################
@@ -159,12 +159,13 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     CUDArt.device(devlist[1])
     a = rand(Float32, 3, 4)
     b = rand(Float32, 3, 4)
-    c = CUDArt.CuModule(joinpath(Base.source_dir(), "vadd.ptx")) do md
-        vadd = CUDArt.CuFunction(md, "vadd")
+    c = CUDAdrv.CuModuleFile(joinpath(Base.source_dir(), "vadd.ptx")) do md
+        vadd = CUDAdrv.CuFunction(md, "vadd")
         ga = CUDArt.CudaArray(a)
         gb = CUDArt.CudaArray(b)
         gc = CUDArt.CudaArray(Float32, size(a))
-        CUDArt.launch(vadd, length(a), 1, (ga, gb, gc))
+        CUDAdrv.cudacall(vadd, length(a), 1, (Ptr{Float32}, Ptr{Float32}, Ptr{Float32}),
+                         ga, gb, gc)
         CUDArt.to_host(gc)
     end
     @test_approx_eq c (a+b)

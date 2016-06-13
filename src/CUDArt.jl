@@ -2,6 +2,8 @@ isdefined(Base, :__precompile__) && __precompile__()
 
 module CUDArt
 
+using CUDAdrv
+
 using Compat
 import Compat: UTF8String, ASCIIString
 
@@ -15,7 +17,6 @@ export
     # other symbols
     device, devices, device_reset, attribute, capability,
     driver_version, runtime_version,
-    CuModule, CuFunction, unload,
     pitchel, pitchbytes,
     device_synchronize, synchronize,
     Stream, null_stream, cudasleep,
@@ -44,7 +45,6 @@ end
 
 include("version.jl")
 include("types.jl")
-include("module.jl")
 include("device.jl")
 include("stream.jl")
 #include("event.jl")
