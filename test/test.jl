@@ -152,25 +152,6 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     @test func41(a, (2,1,1,1)) == Cint[2,1,1,1]
 end
 
-#####################
-# Executing kernels #
-#####################
-result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
-    CUDArt.device(devlist[1])
-    a = rand(Float32, 3, 4)
-    b = rand(Float32, 3, 4)
-    c = CUDAdrv.CuModuleFile(joinpath(Base.source_dir(), "vadd.ptx")) do md
-        vadd = CUDAdrv.CuFunction(md, "vadd")
-        ga = CUDArt.CudaArray(a)
-        gb = CUDArt.CudaArray(b)
-        gc = CUDArt.CudaArray(Float32, size(a))
-        CUDAdrv.cudacall(vadd, length(a), 1, (Ptr{Float32}, Ptr{Float32}, Ptr{Float32}),
-                         ga, gb, gc)
-        CUDArt.to_host(gc)
-    end
-    @test_approx_eq c (a+b)
-end
-
 gc()  # check for finalizer errors
 
 #########################################
