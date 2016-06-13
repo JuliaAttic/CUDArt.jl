@@ -2,6 +2,9 @@ isdefined(Base, :__precompile__) && __precompile__()
 
 module CUDArt
 
+using Compat
+import Compat: UTF8String, ASCIIString
+
 export
     # pointer symbols
     CudaPtr, rawpointer, CUDA_NULL,
@@ -29,14 +32,11 @@ import .CUDArt_gen
 const rt = CUDArt_gen
 
 # To load PTX code, we also need access to the driver API module utilities
-@windows? (
-begin
+if is_windows()
     const libcuda = Libdl.find_library(["nvcuda"], [""])
-end
-: # linux or mac
-begin
+else # linux or mac
     const libcuda = Libdl.find_library(["libcuda"], ["/usr/lib/", "/usr/local/cuda/lib"])
-end)
+end
 
 if isempty(libcuda)
     error("CUDA driver API library cannot be found")

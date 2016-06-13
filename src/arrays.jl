@@ -384,7 +384,11 @@ function HostArray{T}(::Type{T}, sz::Dims; flags::Integer=rt.cudaHostAllocDefaul
     p = Ptr{Void}[C_NULL]
     rt.cudaHostAlloc(p, prod(sz)*sizeof(T), flags)
     ptr = p[1]
-    data = pointer_to_array(unsafe_convert(Ptr{T}, ptr), sz, false)
+    if VERSION < v"0.5.0-dev+4597"
+        data = pointer_to_array(unsafe_convert(Ptr{T}, ptr), sz, false)
+    else
+        data = unsafe_wrap(Array, unsafe_convert(Ptr{T}, ptr), sz, false)
+    end
     ha = HostArray(ptr, data)
     finalizer(ha, free)
     cuda_ptrs[WeakRef(ptr)] = device()

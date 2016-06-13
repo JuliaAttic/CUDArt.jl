@@ -120,7 +120,11 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
 #     @test A[2,2] == 3  # asynchronous
     CUDArt.device_synchronize()
     @test A[2,2] == 7
-    S = pointer_to_array(pointer(A)+48, (6,2), false)  # a "SubArray"
+    if VERSION < v"0.5.0-dev+4597"
+        S = pointer_to_array(pointer(A)+48, (6,2), false)  # a "SubArray"
+    else
+        S = unsafe_wrap(Array, pointer(A)+48, (6,2), false)  # a "SubArray"
+    end
     B = rand(map(Int32, 1:15), 6, 2)
     GB = CUDArt.CudaArray(B)
     copy!(S, GB)
