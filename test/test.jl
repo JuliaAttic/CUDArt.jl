@@ -155,7 +155,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     CUDArt.device(devlist[1])
     a = rand(Float32, 3, 4)
     b = rand(Float32, 3, 4)
-    c = CUDArt.CuModule("vadd.ptx") do md
+    c = CUDArt.CuModule(joinpath(Base.source_dir(), "vadd.ptx")) do md
         vadd = CUDArt.CuFunction(md, "vadd")
         ga = CUDArt.CudaArray(a)
         gb = CUDArt.CudaArray(b)
