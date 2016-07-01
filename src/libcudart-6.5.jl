@@ -1,5 +1,7 @@
 module CUDArt_gen  # the generated module
 
+using Compat
+
 # In the runtime API, these are all used only inside Ptrs,
 # so these typealiases are safe (if you don't need access to
 # struct elements)
@@ -20,22 +22,19 @@ include("../gen-6.5/gen_libcudart_h.jl")
 
 typealias cudaError_t cudaError
 
-@windows? (
-begin
+if is_windows()
     # location of cudart64_xx.dll or cudart32_xx.dll have to be in PATH env var
     # ex: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin
     # (by default, it is done by CUDA toolkit installer)
 
-    const dllnames = (WORD_SIZE==64) ?
+    const dllnames = (Base.Sys.WORD_SIZE==64) ?
         ["cudart64_70", "cudart64_65", "cudart64_60", "cudart64_55", "cudart64_50", "cudart64_50_35"] :
         ["cudart32_70", "cudart32_65", "cudart32_60", "cudart32_55", "cudart32_50", "cudart32_50_35"]
     const libcudart = Libdl.find_library(dllnames, [""])
-end
-: # linux or mac
-begin
-    const libdir = (WORD_SIZE==64) ? "lib64" : "lib"
+else # linux or mac
+    const libdir = (Base.Sys.WORD_SIZE==64) ? "lib64" : "lib"
     const libcudart = Libdl.find_library(["libcudart", "cudart"], ["/usr/local/cuda/$libdir", "/usr/local/cuda-6.5/$libdir", "/usr/local/cuda-6.0/$libdir", "/usr/local/cuda-5.5/$libdir", "/usr/local/cuda-5.0/$libdir", "/usr/local/cuda-7.0/$libdir"])
-end)
+end
 
 if isempty(libcudart)
     error("CUDA runtime API library cannot be found")

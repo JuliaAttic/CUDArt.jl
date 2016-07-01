@@ -4,28 +4,24 @@
 # is that one Julia process can feed multiple devices, with the jobs
 # running asynchronously.
 
-immutable StreamHandle
-    handle::Ptr{Void}
-end
-
-unsafe_convert(::Type{Ptr{Void}}, shnd::StreamHandle) = shnd.handle
-
 abstract AbstractStream
 
 type Stream <: AbstractStream
-    handle::StreamHandle
+    inner::CuStream
     c::Condition
 end
 function Stream()
     p = Array(Ptr{Void}, 1)
     rt.cudaStreamCreate(p)
-    hnd = StreamHandle(p[1])
+    hnd = CuStream(p[1])
     Stream(hnd, Condition())
 end
-NullStream() = Stream(StreamHandle(C_NULL), Condition())
+NullStream() = Stream(CuStream(C_NULL), Condition())
 
-unsafe_convert(::Type{Ptr{Void}}, s::Stream) = unsafe_convert(Ptr{Void}, s.handle)
-unsafe_convert(::Type{Ptr}, s::Stream) = unsafe_convert(Ptr{Void}, s.handle)
+convert(::Type{CuStream}, s::Stream) = s.inner
+
+unsafe_convert(::Type{Ptr{Void}}, s::Stream) = unsafe_convert(Ptr{Void}, s.inner)
+unsafe_convert(::Type{Ptr}, s::Stream) = unsafe_convert(Ptr{Void}, s.inner)
 
 const null_stream = NullStream()
 
@@ -36,7 +32,7 @@ synchronize(s::Stream) = rt.cudaStreamSynchronize(s)
 function wait(s::Stream)
     runnotify = data -> notify(s.c)
     notifyasync = Base.SingleAsyncWork(runnotify)
-    rt.cudaStreamAddCallback(s, c_async_send_cudastream[], notifyasync.handle, 0)
+    rt.cudaStreamAddCallback(s, c_async_send_cudastream[], notifyasync.inner, 0)
     wait(s.c)
     rt.checkerror(rt.cudaGetLastError())
 end
