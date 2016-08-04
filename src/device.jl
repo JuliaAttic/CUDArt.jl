@@ -106,7 +106,7 @@ function init(devlist::Union{Integer,AbstractVector})
     funcnames = ["fill_contiguous", "fill_pitched"]
     funcexts  = ["double","float","int64","uint64","int32","uint32","int16","uint16","int8","uint8"]
     datatypes = [Float64,Float32,Int64,UInt64,Int32,UInt32,Int16,UInt16,Int8,UInt8]
-    utilfile  = joinpath(Pkg.dir(), "CUDArt/deps/utils.ptx")
+    utilfile  = joinpath(dirname(@__FILE__), "..", "deps", "utils.ptx")
 
     # initialize all devices
     for dev in devlist
