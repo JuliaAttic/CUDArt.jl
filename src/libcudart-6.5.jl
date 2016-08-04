@@ -48,7 +48,7 @@ include("../gen-6.5/gen_libcudart.jl")
 # end
 
 # Fix issues stemming from the inability to pass structs as args
-const libwrapcuda = Libdl.find_library(["libwrapcuda"],[joinpath(Pkg.dir(), "CUDArt", "deps")])
+const libwrapcuda = Libdl.find_library(["libwrapcuda"],[joinpath(dirname(@__FILE__), "..", "deps")])
 isempty(libwrapcuda) && error("Cannot find libwrapcuda")
 
 function cudaMalloc3D(p::Array{cudaPitchedPtr,1}, ext::cudaExtent)
