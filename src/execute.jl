@@ -7,6 +7,6 @@ function cudasleep(secs; dev::Integer=device(), stream=null_stream)
     while secs > 0
         tics = round(Int64, 1000*rate*min(twatchdog, secs))  # rate is in kHz
         secs -= twatchdog
-        cudacall(func, 1, 1, (Int64,), tics; stream=stream)
+        cudacall(func, 1, 1, (Int64,), tics; stream=convert(CuStream, stream))
     end
 end

@@ -150,6 +150,8 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     # Issue #41
     a = CUDArt.CudaArray(zeros(2))
     @test func41(a, (2,1,1,1)) == Cint[2,1,1,1]
+    # Comment in PR #50
+    CUDArt.cudasleep(1)
 end
 
 gc()  # check for finalizer errors
