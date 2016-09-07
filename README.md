@@ -1,8 +1,8 @@
 # CUDArt
 
-This is a wrapper of the CUDA Runtime API.
-It also implements some elements from the Driver API for working with CUDA modules and launching kernels.
-It borrows heavily from the [CUDA.jl](https://github.com/JuliaGPU/CUDA.jl) repository created by Dahua Lin.
+This package wraps the [CUDA runtime API](http://docs.nvidia.com/cuda/cuda-runtime-api/).
+For a wrapper of the lower-level [driver API](http://docs.nvidia.com/cuda/cuda-driver-api/),
+see [CUDAdrv](https://github.com/JuliaGPU/CUDAdrv.jl).
 
 # Platform support
 
