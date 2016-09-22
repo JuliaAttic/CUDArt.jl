@@ -596,3 +596,8 @@ end
 function cudaGraphicsGLRegisterBuffer(resource, buffer, flags)
     checkerror(ccall((:cudaGraphicsGLRegisterBuffer,libcudart),cudaError_t,(Ptr{cudaGraphicsResource_t}, Cuint, Cuint),resource, buffer, flags))
 end
+
+
+function cudaGraphicsGLRegisterImage(resource, texid, textype, flags)
+    checkerror(ccall((:cudaGraphicsGLRegisterImage,libcudart),cudaError_t,(Ptr{cudaGraphicsResource_t}, Cuint, UInt32, Cuint), resource, texid, textype, flags))
+end
