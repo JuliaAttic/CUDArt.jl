@@ -6,7 +6,7 @@ see [CUDAdrv](https://github.com/JuliaGPU/CUDAdrv.jl).
 
 # Platform support
 
-This has been tested on Linux, OSX, and Windows. With Windows, at least Visual Studio 2010/2012/2013 are supported.
+This has been tested on Linux, OSX, and Windows. With Windows, at least Visual Studio 2010/2012/2013/2015 are supported.
 
 # Installation
 

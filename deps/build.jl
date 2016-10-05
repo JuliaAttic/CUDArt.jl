@@ -1,14 +1,17 @@
 if is_windows()
-    if haskey(ENV, "VS120COMNTOOLS")
-        vs_cmd_prompt = string(ENV["VS120COMNTOOLS"], "..\\..\\VC\\vcvarsall.bat")
+    if haskey(ENV, "VS140COMNTOOLS")
+        vs_cmd_tools_dir = ENV["VS140COMNTOOLS"]
+    elseif haskey(ENV, "VS120COMNTOOLS")
+        vs_cmd_tools_dir = ENV["VS120COMNTOOLS"]
     elseif haskey(ENV, "VS110COMNTOOLS")
-        vs_cmd_prompt = string(ENV["VS110COMNTOOLS"], "..\\..\\VC\\vcvarsall.bat")
+        vs_cmd_tools_dir = ENV["VS110COMNTOOLS"]
     elseif haskey(ENV, "VS100COMNTOOLS")
-        vs_cmd_prompt = string(ENV["VS100COMNTOOLS"], "..\\..\\VC\\vcvarsall.bat")
+        vs_cmd_tools_dir = ENV["VS100COMNTOOLS"]
     else
-        error("Cannot find proper Visual Studio installation. VS 2013, 2012, or 2010 is required.")
+        error("Cannot find proper Visual Studio installation. VS 2015, 2013, 2012, or 2010 is required.")
     end
-
+    vs_cmd_prompt =joinpath(dirname(vs_cmd_tools_dir),"..","..","VC","vcvarsall.bat")
+    
     # check whether 32 or 64 bit archtecture
     # NOTE: Actually, nvcc in x86 visual studio command prompt doesn't make 32-bit binary
     #       It depends on whether CUDA toolkit is 32bit or 64bit
