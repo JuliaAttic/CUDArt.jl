@@ -33,12 +33,22 @@ destroy(s::Stream) = rt.cudaStreamDestroy(s.ptr)
 
 synchronize(s::Stream) = rt.cudaStreamSynchronize(s)
 
-function wait(s::Stream)
-    runnotify = data -> notify(s.c)
-    notifyasync = Base.SingleAsyncWork(runnotify)
-    rt.cudaStreamAddCallback(s, c_async_send_cudastream[], notifyasync.handle, 0)
-    wait(s.c)
-    rt.checkerror(rt.cudaGetLastError())
+if VERSION < v"0.5.0"
+    function wait(s::Stream)
+        runnotify = data -> notify(s.c)
+        notifyasync = Base.SingleAsyncWork(runnotify)
+        rt.cudaStreamAddCallback(s, c_async_send_cudastream[], notifyasync.handle, 0)
+        wait(s.c)
+        rt.checkerror(rt.cudaGetLastError())
+    end
+else
+    function wait(s::Stream)
+        runnotify = data -> notify(s.c)
+        notifyasync = Base.AsyncCondition(runnotify)
+        rt.cudaStreamAddCallback(s, c_async_send_cudastream[], notifyasync.handle, 0)
+        wait(s.c)
+        rt.checkerror(rt.cudaGetLastError())
+    end
 end
 
 async_send_cudastream(hnd, status, data) = (ccall(:uv_async_send,Cint,(Ptr{Void},),data); nothing)

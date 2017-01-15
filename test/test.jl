@@ -1,5 +1,5 @@
 import CUDArt
-using Base.Test
+using Base.Test, Compat
 
 #########################
 # Device init and close #
@@ -80,7 +80,7 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         g64 = AT(Float64, (5,3))
         copy!(g64, h32)
         # AbstractArray fallbacks
-        s32 = sub(h32, 5:-1:1, :)
+        s32 = Compat.view(h32, 5:-1:1, :)
         copy!(g64, s32)
     end
     # Getting portions of an array
