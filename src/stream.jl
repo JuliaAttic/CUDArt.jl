@@ -16,7 +16,7 @@ function Stream()
     hnd = CuStream(p[1])
     Stream(hnd, Condition())
 end
-NullStream() = Stream(CuStream(C_NULL), Condition())
+NullStream() = Stream(CUDAdrv.CuDefaultStream(), Condition())
 
 convert(::Type{CuStream}, s::Stream) = s.inner
 

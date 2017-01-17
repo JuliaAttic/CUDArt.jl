@@ -133,7 +133,7 @@ end
 function close(devlist::Union{Integer,AbstractVector})
     for dev in devlist
         if haskey(ptxdict, dev)
-            unload(ptxdict[dev].mod)
+            # CUDAdrv unloads the module using a finalizer
             delete!(ptxdict, dev)
         end
         device_reset(dev)
