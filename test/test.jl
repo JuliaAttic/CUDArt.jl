@@ -163,7 +163,7 @@ gc()  # check for finalizer errors
 if CUDArt.devcount() > 1
     CUDArt.devices(dev->true, nmax=2) do devlist
         sleeptime = 0.5
-        results = Array(Any, ceil(Int, 2.5*length(devlist)))
+        results = Array{Any}(ceil(Int, 2.5*length(devlist)))
         streams = [(CUDArt.device(dev); CUDArt.Stream()) for dev in devlist]
         # Force one run to precompile
         CUDArt.cudasleep(sleeptime; dev=devlist[1], stream=streams[1])

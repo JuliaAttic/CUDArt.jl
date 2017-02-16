@@ -11,7 +11,7 @@ type Stream <: AbstractStream
     c::Condition
 end
 function Stream()
-    p = Array(Ptr{Void}, 1)
+    p = Array{Ptr{Void}}(1)
     rt.cudaStreamCreate(p)
     hnd = CuStream(p[1])
     Stream(hnd, Condition())

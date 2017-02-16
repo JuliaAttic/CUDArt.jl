@@ -86,7 +86,7 @@ device(A::AbstractArray) = -1  # for host
 
 pointer(g::AbstractCudaArray) = g.ptr
 
-to_host{T}(g::AbstractCudaArray{T}) = copy!(Array(T, size(g)), g)
+to_host{T}(g::AbstractCudaArray{T}) = copy!(Array{T}(size(g)), g)
 
 summary(g::AbstractCudaArray) = string(g)
 
@@ -160,7 +160,7 @@ function _copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray{T}, stream)
     return dst
 end
 _copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray, stream) = _copy!(dst, to_eltype(T, src), stream)
-_copy!{T}(dst::AbstractCudaArray{T}, src, stream) = _copy!(dst, copy!(Array(T, size(src)), src), stream)
+_copy!{T}(dst::AbstractCudaArray{T}, src, stream) = _copy!(dst, copy!(Array{T}(size(src)), src), stream)
 
 function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
     valT = convert(T, val)
@@ -181,7 +181,7 @@ CudaPitchedArray(T::Type, dims::Integer...) = CudaPitchedArray(T, dims)
 function CudaPitchedArray(T::Type, dims::Dims)
     nd = length(dims)
     1 <= nd <= 3 || error("Supports only dimensions 1, 2, or 3")
-    p = Array(rt.cudaPitchedPtr, 1)
+    p = Array{rt.cudaPitchedPtr}(1)
     ext = CudaExtent(T, dims)
     rt.cudaMalloc3D(p, ext)
     pp = p[1]
@@ -402,7 +402,7 @@ function free(ha::HostArray)
     if ha.ptr != C_NULL && haskey(cuda_ptrs, ha.ptr)
         rt.cudaFreeHost(ha.ptr)
         ha.ptr = C_NULL
-        ha.data = Array(eltype(ha), ntuple(d->0, ndims(ha)))
+        ha.data = Array{eltype(ha)}(ntuple(d->0, ndims(ha)))
     end
 end
 

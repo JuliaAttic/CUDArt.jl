@@ -27,7 +27,7 @@ end
 
 device_synchronize() = rt.cudaDeviceSynchronize()
 
-device_properties(dev::Integer) = (aprop = Array(rt.cudaDeviceProp, 1); rt.cudaGetDeviceProperties(aprop, dev); aprop[1])
+device_properties(dev::Integer) = (aprop = Array{rt.cudaDeviceProp}(1); rt.cudaGetDeviceProperties(aprop, dev); aprop[1])
 
 attribute(dev::Integer, code::Integer) = (ret = Cint[0]; rt.cudaDeviceGetAttribute(ret, code, dev); Int(ret[1]))
 
