@@ -9,7 +9,7 @@ type CudaPtr{T}
 end
 
 # Type alias for previous name
-typealias CudaDevicePtr CudaPtr
+const CudaDevicePtr = CudaPtr
 
 #############################
 # Low-level memory handling #
@@ -50,8 +50,8 @@ function free{T}(p::CudaPtr{T})
     end
 end
 
-typealias Ptrs Union{Ptr, CudaPtr, rt.cudaPitchedPtr}
-typealias CudaPtrs Union{CudaPtr, rt.cudaPitchedPtr}
+const Ptrs = Union{Ptr, CudaPtr, rt.cudaPitchedPtr}
+const CudaPtrs = Union{CudaPtr, rt.cudaPitchedPtr}
 
 cudamemcpykind(dstp::Ptr, srcp::Ptr) = rt.cudaMemcpyHostToHost
 cudamemcpykind(dstp::CudaPtrs, srcp::Ptr) = rt.cudaMemcpyHostToDevice

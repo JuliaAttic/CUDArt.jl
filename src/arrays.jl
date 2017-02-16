@@ -4,10 +4,10 @@
 
 # Abstract CUDA array types
 abstract AbstractCudaArray{T,N}
-typealias AbstractCudaVector{T} AbstractCudaArray{T,1}
-typealias AbstractCudaMatrix{T} AbstractCudaArray{T,2}
+@compat const AbstractCudaVector{T} = AbstractCudaArray{T,1}
+@compat const AbstractCudaMatrix{T} = AbstractCudaArray{T,2}
 
-typealias HostOrDevArray{T,N} Union{AbstractArray{T,N}, AbstractCudaArray{T,N}}
+@compat const HostOrDevArray{T,N} = Union{AbstractArray{T,N}, AbstractCudaArray{T,N}}
 
 # copy method for AbstractCudaArray
 copy(a::AbstractCudaArray; stream=null_stream) = copy!(similar(a),a;stream=stream)
@@ -37,9 +37,9 @@ else
 end
 
 # Vector and matrix aliases
-typealias CudaVector{T} CudaArray{T,1}
-typealias CudaMatrix{T} CudaArray{T,2}
-typealias CudaVecOrMat{T} Union{CudaVector{T}, CudaMatrix{T}}
+@compat const CudaVector{T} = CudaArray{T,1}
+@compat const CudaMatrix{T} = CudaArray{T,2}
+@compat const CudaVecOrMat{T} = Union{CudaVector{T}, CudaMatrix{T}}
 
 # Layout-optimized 1-, 2-, and 3-dimensional arrays
 if !debugMemory
@@ -67,8 +67,8 @@ type HostArray{T,N} <: AbstractArray{T,N}
     data::Array{T,N}
 end
 
-typealias CdArray{T,N} Union{DenseArray{T,N},HostArray{T,N},AbstractCudaArray{T,N}}
-typealias ContiguousArray{T,N} Union{Array{T,N},HostArray{T,N},CudaArray{T,N}}
+@compat const CdArray{T,N} = Union{DenseArray{T,N},HostArray{T,N},AbstractCudaArray{T,N}}
+@compat const ContiguousArray{T,N} = Union{Array{T,N},HostArray{T,N},CudaArray{T,N}}
 
 ###################
 # Implementations #
