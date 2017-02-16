@@ -4,7 +4,7 @@
 # is that one Julia process can feed multiple devices, with the jobs
 # running asynchronously.
 
-abstract AbstractStream
+@compat abstract type AbstractStream end
 
 type Stream <: AbstractStream
     inner::CuStream
