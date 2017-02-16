@@ -3,7 +3,7 @@
 ###############################
 
 # Abstract CUDA array types
-abstract AbstractCudaArray{T,N}
+@compat abstract type AbstractCudaArray{T,N} end
 @compat const AbstractCudaVector{T} = AbstractCudaArray{T,1}
 @compat const AbstractCudaMatrix{T} = AbstractCudaArray{T,2}
 
