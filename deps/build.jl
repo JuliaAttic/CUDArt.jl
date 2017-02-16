@@ -25,13 +25,13 @@ if is_windows()
 
     # Run nmake -f Windows.mk under visual studio command prompt
     cd(@__DIR__) do
-        run(`cmd /C "$vs_cmd_prompt" $arch & nmake -f Windows.mk clean`)
-        run(`cmd /C "$vs_cmd_prompt" $arch & nmake -f Windows.mk`)
+        run(`cmd /C "$vs_cmd_prompt" $arch \& nmake -f Windows.mk clean`)
+        run(`cmd /C "$vs_cmd_prompt" $arch \& nmake -f Windows.mk`)
     end
 
     cd(joinpath(@__DIR__, "..", "test")) do
-        run(`cmd /C "$vs_cmd_prompt" $arch & nmake -f Windows.mk clean`)
-        run(`cmd /C "$vs_cmd_prompt" $arch & nmake -f Windows.mk`)
+        run(`cmd /C "$vs_cmd_prompt" $arch \& nmake -f Windows.mk clean`)
+        run(`cmd /C "$vs_cmd_prompt" $arch \& nmake -f Windows.mk`)
     end
 else # for linux or mac
     cd(@__DIR__) do
