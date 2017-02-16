@@ -24,14 +24,14 @@ if !debugMemory
         dev::Int
     end
 else
-    type CudaArray{T,N} <: AbstractCudaArray{T,N}
+    @compat type CudaArray{T,N} <: AbstractCudaArray{T,N}
         ptr::CudaPtr{T}
         dims::NTuple{N,Int}
         dev::Int
         bt
 
-        function CudaArray(ptr::CudaPtr{T}, dims::NTuple{N,Int}, dev::Integer)
-            new(ptr, dims, dev, backtrace())
+        function (::Type{CudaArray{T,N}}){T,N}(ptr::CudaPtr{T}, dims::NTuple{N,Int}, dev::Integer)
+            new{T,N}(ptr, dims, dev, backtrace())
         end
     end
 end
@@ -49,14 +49,14 @@ if !debugMemory
         dev::Int
     end
 else
-    type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
+    @compat type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
         ptr::rt.cudaPitchedPtr
         dims::NTuple{N,Int}
         dev::Int
         bt
 
-        function CudaPitchedArray(ptr::rt.cudaPitchedPtr, dims::NTuple{N,Int}, dev::Integer)
-            new(ptr, dims, dev, backtrace())
+        function (::Type{CudaPitchedArray{T,N}}){T,N}(ptr::rt.cudaPitchedPtr, dims::NTuple{N,Int}, dev::Integer)
+            new{T,N}(ptr, dims, dev, backtrace())
         end
     end
 end
