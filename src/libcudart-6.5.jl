@@ -5,7 +5,7 @@ using Compat
 # In the runtime API, these are all used only inside Ptrs,
 # so these typealiases are safe (if you don't need access to
 # struct elements)
-typealias cudaUUID_t Void
+const cudaUUID_t = Void
 
 function checkerror(code::Cuint)
     if code == cudaSuccess
@@ -20,7 +20,7 @@ end
 
 include("../gen-6.5/gen_libcudart_h.jl")
 
-typealias cudaError_t cudaError
+const cudaError_t = cudaError
 
 if is_windows()
     # location of cudart64_xx.dll or cudart32_xx.dll have to be in PATH env var
