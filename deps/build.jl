@@ -1,3 +1,5 @@
+using Compat
+
 if is_windows()
     if haskey(ENV, "VS140COMNTOOLS")
         vs_cmd_tools_dir = ENV["VS140COMNTOOLS"]
@@ -22,13 +24,22 @@ if is_windows()
     end
 
     # Run nmake -f Windows.mk under visual studio command prompt
-    run(`cmd /C "$vs_cmd_prompt" $arch & nmake -f Windows.mk`)
-    cd("../test") do
+    cd(@__DIR__) do
+        run(`cmd /C "$vs_cmd_prompt" $arch & nmake -f Windows.mk clean`)
+        run(`cmd /C "$vs_cmd_prompt" $arch & nmake -f Windows.mk`)
+    end
+
+    cd(joinpath(@__DIR__, "..", "test")) do
+        run(`cmd /C "$vs_cmd_prompt" $arch & nmake -f Windows.mk clean`)
         run(`cmd /C "$vs_cmd_prompt" $arch & nmake -f Windows.mk`)
     end
 else # for linux or mac
-    run(`make`)
-    cd("../test") do
+    cd(@__DIR__) do
+        run(`make clean`)
+        run(`make`)
+    end
+    cd(joinpath(@__DIR__, "..", "test")) do
+        run(`make clean`)
         run(`make`)
     end
 end

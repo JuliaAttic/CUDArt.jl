@@ -6,6 +6,7 @@ else
 	libflag := fPIC
 endif
 
+.PHONY: all
 all: $(libfile) utils.ptx
 
 $(libfile): wrapcuda.c
