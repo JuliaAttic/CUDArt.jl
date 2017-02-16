@@ -1,4 +1,4 @@
-typealias CudaDims Union{Integer, Tuple{Integer}, Tuple{Integer, Integer}, Tuple{Integer, Integer, Integer}}
+const CudaDims = Union{Integer, Tuple{Integer}, Tuple{Integer, Integer}, Tuple{Integer, Integer, Integer}}
 
 const CudaExtent = rt.cudaExtent
 CudaExtent(dims::CudaDims) = CudaExtent(get_size_x(dims), get_size_y(dims), get_size_z(dims))

@@ -512,73 +512,81 @@ function cudaCreateChannelDesc(x,y,z,w,f)
     ccall((:cudaCreateChannelDesc,libcudart),cudaChannelFormatDesc,(Cint,Cint,Cint,Cint,cudaChannelFormatKind),x,y,z,w,f)
 end
 
-function cudaBindTexture(offset,texref,devPtr,desc,size)
-    checkerror(ccall((:cudaBindTexture,libcudart),cudaError_t,(Ptr{Csize_t},Ptr{textureReference},Ptr{Void},Ptr{cudaChannelFormatDesc},Csize_t),offset,texref,devPtr,desc,size))
-end
+# NOTE: disabled due to lack of textureReference wrapper
 
-function cudaBindTexture2D(offset,texref,devPtr,desc,width,height,pitch)
-    checkerror(ccall((:cudaBindTexture2D,libcudart),cudaError_t,(Ptr{Csize_t},Ptr{textureReference},Ptr{Void},Ptr{cudaChannelFormatDesc},Csize_t,Csize_t,Csize_t),offset,texref,devPtr,desc,width,height,pitch))
-end
+# function cudaBindTexture(offset,texref,devPtr,desc,size)
+#     checkerror(ccall((:cudaBindTexture,libcudart),cudaError_t,(Ptr{Csize_t},Ptr{textureReference},Ptr{Void},Ptr{cudaChannelFormatDesc},Csize_t),offset,texref,devPtr,desc,size))
+# end
 
-function cudaBindTextureToArray(texref,array,desc)
-    checkerror(ccall((:cudaBindTextureToArray,libcudart),cudaError_t,(Ptr{textureReference},cudaArray_const_t,Ptr{cudaChannelFormatDesc}),texref,array,desc))
-end
+# function cudaBindTexture2D(offset,texref,devPtr,desc,width,height,pitch)
+#     checkerror(ccall((:cudaBindTexture2D,libcudart),cudaError_t,(Ptr{Csize_t},Ptr{textureReference},Ptr{Void},Ptr{cudaChannelFormatDesc},Csize_t,Csize_t,Csize_t),offset,texref,devPtr,desc,width,height,pitch))
+# end
 
-function cudaBindTextureToMipmappedArray(texref,mipmappedArray,desc)
-    checkerror(ccall((:cudaBindTextureToMipmappedArray,libcudart),cudaError_t,(Ptr{textureReference},cudaMipmappedArray_const_t,Ptr{cudaChannelFormatDesc}),texref,mipmappedArray,desc))
-end
+# function cudaBindTextureToArray(texref,array,desc)
+#     checkerror(ccall((:cudaBindTextureToArray,libcudart),cudaError_t,(Ptr{textureReference},cudaArray_const_t,Ptr{cudaChannelFormatDesc}),texref,array,desc))
+# end
 
-function cudaUnbindTexture(texref)
-    checkerror(ccall((:cudaUnbindTexture,libcudart),cudaError_t,(Ptr{textureReference},),texref))
-end
+# function cudaBindTextureToMipmappedArray(texref,mipmappedArray,desc)
+#     checkerror(ccall((:cudaBindTextureToMipmappedArray,libcudart),cudaError_t,(Ptr{textureReference},cudaMipmappedArray_const_t,Ptr{cudaChannelFormatDesc}),texref,mipmappedArray,desc))
+# end
 
-function cudaGetTextureAlignmentOffset(offset,texref)
-    checkerror(ccall((:cudaGetTextureAlignmentOffset,libcudart),cudaError_t,(Ptr{Csize_t},Ptr{textureReference}),offset,texref))
-end
+# function cudaUnbindTexture(texref)
+#     checkerror(ccall((:cudaUnbindTexture,libcudart),cudaError_t,(Ptr{textureReference},),texref))
+# end
 
-function cudaGetTextureReference(texref,symbol)
-    checkerror(ccall((:cudaGetTextureReference,libcudart),cudaError_t,(Ptr{Ptr{textureReference}},Ptr{Void}),texref,symbol))
-end
+# function cudaGetTextureAlignmentOffset(offset,texref)
+#     checkerror(ccall((:cudaGetTextureAlignmentOffset,libcudart),cudaError_t,(Ptr{Csize_t},Ptr{textureReference}),offset,texref))
+# end
 
-function cudaBindSurfaceToArray(surfref,array,desc)
-    checkerror(ccall((:cudaBindSurfaceToArray,libcudart),cudaError_t,(Ptr{surfaceReference},cudaArray_const_t,Ptr{cudaChannelFormatDesc}),surfref,array,desc))
-end
+# function cudaGetTextureReference(texref,symbol)
+#     checkerror(ccall((:cudaGetTextureReference,libcudart),cudaError_t,(Ptr{Ptr{textureReference}},Ptr{Void}),texref,symbol))
+# end
 
-function cudaGetSurfaceReference(surfref,symbol)
-    checkerror(ccall((:cudaGetSurfaceReference,libcudart),cudaError_t,(Ptr{Ptr{surfaceReference}},Ptr{Void}),surfref,symbol))
-end
+# NOTE: disabled due to lack of surfaceReference wrapper
 
-function cudaCreateTextureObject(pTexObject,pResDesc,pTexDesc,pResViewDesc)
-    checkerror(ccall((:cudaCreateTextureObject,libcudart),cudaError_t,(Ptr{cudaTextureObject_t},Ptr{cudaResourceDesc},Ptr{cudaTextureDesc},Ptr{cudaResourceViewDesc}),pTexObject,pResDesc,pTexDesc,pResViewDesc))
-end
+# function cudaBindSurfaceToArray(surfref,array,desc)
+#     checkerror(ccall((:cudaBindSurfaceToArray,libcudart),cudaError_t,(Ptr{surfaceReference},cudaArray_const_t,Ptr{cudaChannelFormatDesc}),surfref,array,desc))
+# end
 
-function cudaDestroyTextureObject(texObject)
-    checkerror(ccall((:cudaDestroyTextureObject,libcudart),cudaError_t,(cudaTextureObject_t,),texObject))
-end
+# function cudaGetSurfaceReference(surfref,symbol)
+#     checkerror(ccall((:cudaGetSurfaceReference,libcudart),cudaError_t,(Ptr{Ptr{surfaceReference}},Ptr{Void}),surfref,symbol))
+# end
 
-function cudaGetTextureObjectResourceDesc(pResDesc,texObject)
-    checkerror(ccall((:cudaGetTextureObjectResourceDesc,libcudart),cudaError_t,(Ptr{cudaResourceDesc},cudaTextureObject_t),pResDesc,texObject))
-end
+# NOTE: disabled due to lack of cudaTextureObject_t wrapper
 
-function cudaGetTextureObjectTextureDesc(pTexDesc,texObject)
-    checkerror(ccall((:cudaGetTextureObjectTextureDesc,libcudart),cudaError_t,(Ptr{cudaTextureDesc},cudaTextureObject_t),pTexDesc,texObject))
-end
+# function cudaCreateTextureObject(pTexObject,pResDesc,pTexDesc,pResViewDesc)
+#     checkerror(ccall((:cudaCreateTextureObject,libcudart),cudaError_t,(Ptr{cudaTextureObject_t},Ptr{cudaResourceDesc},Ptr{cudaTextureDesc},Ptr{cudaResourceViewDesc}),pTexObject,pResDesc,pTexDesc,pResViewDesc))
+# end
 
-function cudaGetTextureObjectResourceViewDesc(pResViewDesc,texObject)
-    checkerror(ccall((:cudaGetTextureObjectResourceViewDesc,libcudart),cudaError_t,(Ptr{cudaResourceViewDesc},cudaTextureObject_t),pResViewDesc,texObject))
-end
+# function cudaDestroyTextureObject(texObject)
+#     checkerror(ccall((:cudaDestroyTextureObject,libcudart),cudaError_t,(cudaTextureObject_t,),texObject))
+# end
 
-function cudaCreateSurfaceObject(pSurfObject,pResDesc)
-    checkerror(ccall((:cudaCreateSurfaceObject,libcudart),cudaError_t,(Ptr{cudaSurfaceObject_t},Ptr{cudaResourceDesc}),pSurfObject,pResDesc))
-end
+# function cudaGetTextureObjectResourceDesc(pResDesc,texObject)
+#     checkerror(ccall((:cudaGetTextureObjectResourceDesc,libcudart),cudaError_t,(Ptr{cudaResourceDesc},cudaTextureObject_t),pResDesc,texObject))
+# end
 
-function cudaDestroySurfaceObject(surfObject)
-    checkerror(ccall((:cudaDestroySurfaceObject,libcudart),cudaError_t,(cudaSurfaceObject_t,),surfObject))
-end
+# function cudaGetTextureObjectTextureDesc(pTexDesc,texObject)
+#     checkerror(ccall((:cudaGetTextureObjectTextureDesc,libcudart),cudaError_t,(Ptr{cudaTextureDesc},cudaTextureObject_t),pTexDesc,texObject))
+# end
 
-function cudaGetSurfaceObjectResourceDesc(pResDesc,surfObject)
-    checkerror(ccall((:cudaGetSurfaceObjectResourceDesc,libcudart),cudaError_t,(Ptr{cudaResourceDesc},cudaSurfaceObject_t),pResDesc,surfObject))
-end
+# function cudaGetTextureObjectResourceViewDesc(pResViewDesc,texObject)
+#     checkerror(ccall((:cudaGetTextureObjectResourceViewDesc,libcudart),cudaError_t,(Ptr{cudaResourceViewDesc},cudaTextureObject_t),pResViewDesc,texObject))
+# end
+
+# NOTE: disabled due to lack of cudaSurfaceObject_t wrapper
+
+# function cudaCreateSurfaceObject(pSurfObject,pResDesc)
+#     checkerror(ccall((:cudaCreateSurfaceObject,libcudart),cudaError_t,(Ptr{cudaSurfaceObject_t},Ptr{cudaResourceDesc}),pSurfObject,pResDesc))
+# end
+
+# function cudaDestroySurfaceObject(surfObject)
+#     checkerror(ccall((:cudaDestroySurfaceObject,libcudart),cudaError_t,(cudaSurfaceObject_t,),surfObject))
+# end
+
+# function cudaGetSurfaceObjectResourceDesc(pResDesc,surfObject)
+#     checkerror(ccall((:cudaGetSurfaceObjectResourceDesc,libcudart),cudaError_t,(Ptr{cudaResourceDesc},cudaSurfaceObject_t),pResDesc,surfObject))
+# end
 
 function cudaDriverGetVersion(driverVersion)
     checkerror(ccall((:cudaDriverGetVersion,libcudart),cudaError_t,(Ptr{Cint},),driverVersion))

@@ -245,7 +245,7 @@ using CUDArt
 export function1
 
 const ptxdict = Dict()
-const mdlist = Array(CuModule, 0)
+const mdlist = Array{CuModule}(0)
 
 function mdinit(devlist)
     global ptxdict
@@ -317,7 +317,7 @@ demonstration that activates processing on multiple devices:
 ```
 measured_sleep_time = CUDArt.devices(dev->true, nmax=2) do devlist
     sleeptime = 0.5
-    results = Array(Float64, 3*length(devlist))
+    results = Array{Float64}(3*length(devlist))
     streams = [(device(dev); Stream()) for dev in devlist]
     # Force one run to precompile
     cudasleep(sleeptime; dev=devlist[1], stream=streams[1])

@@ -3,11 +3,11 @@
 ###############################
 
 # Abstract CUDA array types
-abstract AbstractCudaArray{T,N}
-typealias AbstractCudaVector{T} AbstractCudaArray{T,1}
-typealias AbstractCudaMatrix{T} AbstractCudaArray{T,2}
+@compat abstract type AbstractCudaArray{T,N} end
+@compat const AbstractCudaVector{T} = AbstractCudaArray{T,1}
+@compat const AbstractCudaMatrix{T} = AbstractCudaArray{T,2}
 
-typealias HostOrDevArray{T,N} Union{AbstractArray{T,N}, AbstractCudaArray{T,N}}
+@compat const HostOrDevArray{T,N} = Union{AbstractArray{T,N}, AbstractCudaArray{T,N}}
 
 # copy method for AbstractCudaArray
 copy(a::AbstractCudaArray; stream=null_stream) = copy!(similar(a),a;stream=stream)
@@ -24,22 +24,22 @@ if !debugMemory
         dev::Int
     end
 else
-    type CudaArray{T,N} <: AbstractCudaArray{T,N}
+    @compat type CudaArray{T,N} <: AbstractCudaArray{T,N}
         ptr::CudaPtr{T}
         dims::NTuple{N,Int}
         dev::Int
         bt
 
-        function CudaArray(ptr::CudaPtr{T}, dims::NTuple{N,Int}, dev::Integer)
-            new(ptr, dims, dev, backtrace())
+        function (::Type{CudaArray{T,N}}){T,N}(ptr::CudaPtr{T}, dims::NTuple{N,Int}, dev::Integer)
+            new{T,N}(ptr, dims, dev, backtrace())
         end
     end
 end
 
 # Vector and matrix aliases
-typealias CudaVector{T} CudaArray{T,1}
-typealias CudaMatrix{T} CudaArray{T,2}
-typealias CudaVecOrMat{T} Union{CudaVector{T}, CudaMatrix{T}}
+@compat const CudaVector{T} = CudaArray{T,1}
+@compat const CudaMatrix{T} = CudaArray{T,2}
+@compat const CudaVecOrMat{T} = Union{CudaVector{T}, CudaMatrix{T}}
 
 # Layout-optimized 1-, 2-, and 3-dimensional arrays
 if !debugMemory
@@ -49,14 +49,14 @@ if !debugMemory
         dev::Int
     end
 else
-    type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
+    @compat type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
         ptr::rt.cudaPitchedPtr
         dims::NTuple{N,Int}
         dev::Int
         bt
 
-        function CudaPitchedArray(ptr::rt.cudaPitchedPtr, dims::NTuple{N,Int}, dev::Integer)
-            new(ptr, dims, dev, backtrace())
+        function (::Type{CudaPitchedArray{T,N}}){T,N}(ptr::rt.cudaPitchedPtr, dims::NTuple{N,Int}, dev::Integer)
+            new{T,N}(ptr, dims, dev, backtrace())
         end
     end
 end
@@ -67,8 +67,8 @@ type HostArray{T,N} <: AbstractArray{T,N}
     data::Array{T,N}
 end
 
-typealias CdArray{T,N} Union{DenseArray{T,N},HostArray{T,N},AbstractCudaArray{T,N}}
-typealias ContiguousArray{T,N} Union{Array{T,N},HostArray{T,N},CudaArray{T,N}}
+@compat const CdArray{T,N} = Union{DenseArray{T,N},HostArray{T,N},AbstractCudaArray{T,N}}
+@compat const ContiguousArray{T,N} = Union{Array{T,N},HostArray{T,N},CudaArray{T,N}}
 
 ###################
 # Implementations #
@@ -86,7 +86,7 @@ device(A::AbstractArray) = -1  # for host
 
 pointer(g::AbstractCudaArray) = g.ptr
 
-to_host{T}(g::AbstractCudaArray{T}) = copy!(Array(T, size(g)), g)
+to_host{T}(g::AbstractCudaArray{T}) = copy!(Array{T}(size(g)), g)
 
 summary(g::AbstractCudaArray) = string(g)
 
@@ -160,7 +160,7 @@ function _copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray{T}, stream)
     return dst
 end
 _copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray, stream) = _copy!(dst, to_eltype(T, src), stream)
-_copy!{T}(dst::AbstractCudaArray{T}, src, stream) = _copy!(dst, copy!(Array(T, size(src)), src), stream)
+_copy!{T}(dst::AbstractCudaArray{T}, src, stream) = _copy!(dst, copy!(Array{T}(size(src)), src), stream)
 
 function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
     valT = convert(T, val)
@@ -181,7 +181,7 @@ CudaPitchedArray(T::Type, dims::Integer...) = CudaPitchedArray(T, dims)
 function CudaPitchedArray(T::Type, dims::Dims)
     nd = length(dims)
     1 <= nd <= 3 || error("Supports only dimensions 1, 2, or 3")
-    p = Array(rt.cudaPitchedPtr, 1)
+    p = Array{rt.cudaPitchedPtr}(1)
     ext = CudaExtent(T, dims)
     rt.cudaMalloc3D(p, ext)
     pp = p[1]
@@ -402,7 +402,7 @@ function free(ha::HostArray)
     if ha.ptr != C_NULL && haskey(cuda_ptrs, ha.ptr)
         rt.cudaFreeHost(ha.ptr)
         ha.ptr = C_NULL
-        ha.data = Array(eltype(ha), ntuple(d->0, ndims(ha)))
+        ha.data = Array{eltype(ha)}(ntuple(d->0, ndims(ha)))
     end
 end
 

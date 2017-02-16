@@ -4,14 +4,14 @@
 # is that one Julia process can feed multiple devices, with the jobs
 # running asynchronously.
 
-abstract AbstractStream
+@compat abstract type AbstractStream end
 
 type Stream <: AbstractStream
     inner::CuStream
     c::Condition
 end
 function Stream()
-    p = Array(Ptr{Void}, 1)
+    p = Array{Ptr{Void}}(1)
     rt.cudaStreamCreate(p)
     hnd = CuStream(p[1])
     Stream(hnd, Condition())

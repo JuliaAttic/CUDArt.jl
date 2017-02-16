@@ -37,7 +37,7 @@ const cudaMemAttachSingle = 0x04
 const CUDA_IPC_HANDLE_SIZE = 64
 
 # begin enum cudaError
-typealias cudaError UInt32
+const cudaError = UInt32
 const cudaSuccess = (UInt32)(0)
 const cudaErrorMissingConfiguration = (UInt32)(1)
 const cudaErrorMemoryAllocation = (UInt32)(2)
@@ -121,7 +121,7 @@ const cudaErrorApiFailureBase = (UInt32)(10000)
 # end enum cudaError
 
 # begin enum cudaChannelFormatKind
-typealias cudaChannelFormatKind UInt32
+const cudaChannelFormatKind = UInt32
 const cudaChannelFormatKindSigned = (UInt32)(0)
 const cudaChannelFormatKindUnsigned = (UInt32)(1)
 const cudaChannelFormatKindFloat = (UInt32)(2)
@@ -136,21 +136,21 @@ immutable cudaChannelFormatDesc
     f::cudaChannelFormatKind
 end
 
-typealias cudaArray Void
-typealias cudaArray_t Ptr{cudaArray}
-typealias cudaArray_const_t Ptr{cudaArray}
-typealias cudaMipmappedArray Void
-typealias cudaMipmappedArray_t Ptr{cudaMipmappedArray}
-typealias cudaMipmappedArray_const_t Ptr{cudaMipmappedArray}
+const cudaArray = Void
+const cudaArray_t = Ptr{cudaArray}
+const cudaArray_const_t = Ptr{cudaArray}
+const cudaMipmappedArray = Void
+const cudaMipmappedArray_t = Ptr{cudaMipmappedArray}
+const cudaMipmappedArray_const_t = Ptr{cudaMipmappedArray}
 
 # begin enum cudaMemoryType
-typealias cudaMemoryType UInt32
+const cudaMemoryType = UInt32
 const cudaMemoryTypeHost = (UInt32)(1)
 const cudaMemoryTypeDevice = (UInt32)(2)
 # end enum cudaMemoryType
 
 # begin enum cudaMemcpyKind
-typealias cudaMemcpyKind UInt32
+const cudaMemcpyKind = UInt32
 const cudaMemcpyHostToHost = (UInt32)(0)
 const cudaMemcpyHostToDevice = (UInt32)(1)
 const cudaMemcpyDeviceToHost = (UInt32)(2)
@@ -200,10 +200,10 @@ immutable cudaMemcpy3DPeerParms
     extent::cudaExtent
 end
 
-typealias cudaGraphicsResource Void
+const cudaGraphicsResource = Void
 
 # begin enum cudaGraphicsRegisterFlags
-typealias cudaGraphicsRegisterFlags UInt32
+const cudaGraphicsRegisterFlags = UInt32
 const cudaGraphicsRegisterFlagsNone = (UInt32)(0)
 const cudaGraphicsRegisterFlagsReadOnly = (UInt32)(1)
 const cudaGraphicsRegisterFlagsWriteDiscard = (UInt32)(2)
@@ -212,14 +212,14 @@ const cudaGraphicsRegisterFlagsTextureGather = (UInt32)(8)
 # end enum cudaGraphicsRegisterFlags
 
 # begin enum cudaGraphicsMapFlags
-typealias cudaGraphicsMapFlags UInt32
+const cudaGraphicsMapFlags = UInt32
 const cudaGraphicsMapFlagsNone = (UInt32)(0)
 const cudaGraphicsMapFlagsReadOnly = (UInt32)(1)
 const cudaGraphicsMapFlagsWriteDiscard = (UInt32)(2)
 # end enum cudaGraphicsMapFlags
 
 # begin enum cudaGraphicsCubeFace
-typealias cudaGraphicsCubeFace UInt32
+const cudaGraphicsCubeFace = UInt32
 const cudaGraphicsCubeFacePositiveX = (UInt32)(0)
 const cudaGraphicsCubeFaceNegativeX = (UInt32)(1)
 const cudaGraphicsCubeFacePositiveY = (UInt32)(2)
@@ -229,7 +229,7 @@ const cudaGraphicsCubeFaceNegativeZ = (UInt32)(5)
 # end enum cudaGraphicsCubeFace
 
 # begin enum cudaResourceType
-typealias cudaResourceType UInt32
+const cudaResourceType = UInt32
 const cudaResourceTypeArray = (UInt32)(0)
 const cudaResourceTypeMipmappedArray = (UInt32)(1)
 const cudaResourceTypeLinear = (UInt32)(2)
@@ -237,7 +237,7 @@ const cudaResourceTypePitch2D = (UInt32)(3)
 # end enum cudaResourceType
 
 # begin enum cudaResourceViewFormat
-typealias cudaResourceViewFormat UInt32
+const cudaResourceViewFormat = UInt32
 const cudaResViewFormatNone = (UInt32)(0)
 const cudaResViewFormatUnsignedChar1 = (UInt32)(1)
 const cudaResViewFormatUnsignedChar2 = (UInt32)(2)
@@ -311,7 +311,7 @@ immutable cudaFuncAttributes
 end
 
 # begin enum cudaFuncCache
-typealias cudaFuncCache UInt32
+const cudaFuncCache = UInt32
 const cudaFuncCachePreferNone = (UInt32)(0)
 const cudaFuncCachePreferShared = (UInt32)(1)
 const cudaFuncCachePreferL1 = (UInt32)(2)
@@ -319,14 +319,14 @@ const cudaFuncCachePreferEqual = (UInt32)(3)
 # end enum cudaFuncCache
 
 # begin enum cudaSharedMemConfig
-typealias cudaSharedMemConfig UInt32
+const cudaSharedMemConfig = UInt32
 const cudaSharedMemBankSizeDefault = (UInt32)(0)
 const cudaSharedMemBankSizeFourByte = (UInt32)(1)
 const cudaSharedMemBankSizeEightByte = (UInt32)(2)
 # end enum cudaSharedMemConfig
 
 # begin enum cudaComputeMode
-typealias cudaComputeMode UInt32
+const cudaComputeMode = UInt32
 const cudaComputeModeDefault = (UInt32)(0)
 const cudaComputeModeExclusive = (UInt32)(1)
 const cudaComputeModeProhibited = (UInt32)(2)
@@ -334,7 +334,7 @@ const cudaComputeModeExclusiveProcess = (UInt32)(3)
 # end enum cudaComputeMode
 
 # begin enum cudaLimit
-typealias cudaLimit UInt32
+const cudaLimit = UInt32
 const cudaLimitStackSize = (UInt32)(0)
 const cudaLimitPrintfFifoSize = (UInt32)(1)
 const cudaLimitMallocHeapSize = (UInt32)(2)
@@ -343,13 +343,13 @@ const cudaLimitDevRuntimePendingLaunchCount = (UInt32)(4)
 # end enum cudaLimit
 
 # begin enum cudaOutputMode
-typealias cudaOutputMode UInt32
+const cudaOutputMode = UInt32
 const cudaKeyValuePair = (UInt32)(0)
 const cudaCSV = (UInt32)(1)
 # end enum cudaOutputMode
 
 # begin enum cudaDeviceAttr
-typealias cudaDeviceAttr UInt32
+const cudaDeviceAttr = UInt32
 const cudaDevAttrMaxThreadsPerBlock = (UInt32)(1)
 const cudaDevAttrMaxBlockDimX = (UInt32)(2)
 const cudaDevAttrMaxBlockDimY = (UInt32)(3)
@@ -862,15 +862,15 @@ immutable cudaIpcMemHandle_t
     reserved::Array_64_Uint8
 end
 
-typealias cudaError_t cudaError
-typealias CUstream_st Void
-typealias cudaStream_t Ptr{CUstream_st}
-typealias CUevent_st Void
-typealias cudaEvent_t Ptr{CUevent_st}
-typealias cudaGraphicsResource_t Ptr{cudaGraphicsResource}
-typealias CUuuid_st Void
-typealias cudaUUID_t Void
-typealias cudaOutputMode_t cudaOutputMode
+const cudaError_t = cudaError
+const CUstream_st = Void
+const cudaStream_t = Ptr{CUstream_st}
+const CUevent_st = Void
+const cudaEvent_t = Ptr{CUevent_st}
+const cudaGraphicsResource_t = Ptr{cudaGraphicsResource}
+const CUuuid_st = Void
+const cudaUUID_t = Void
+const cudaOutputMode_t = cudaOutputMode
 
 immutable char1
     x::UInt8
@@ -1002,4 +1002,4 @@ const CUDART_VERSION = 6050
 
 ()
 
-typealias cudaStreamCallback_t Ptr{Void}
+const cudaStreamCallback_t = Ptr{Void}
