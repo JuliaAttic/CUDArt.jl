@@ -4,9 +4,7 @@ device() = (ret = Cint[0]; rt.cudaGetDevice(ret); Int(ret[1]))
 device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
 device_reset() = device_reset(device())
-if VERSION < v"0.4.0-dev"
-    finalize(x) = nothing
-end
+
 function device_reset(dev::Integer)
     # Clear all items on this device from cuda_ptrs, so they don't get
     # freed later
@@ -34,7 +32,7 @@ attribute(dev::Integer, code::Integer) = (ret = Cint[0]; rt.cudaDeviceGetAttribu
 capability(dev::Integer) = (attribute(dev,rt.cudaDevAttrComputeCapabilityMajor),
                             attribute(dev,rt.cudaDevAttrComputeCapabilityMinor))
 
-name(p::rt.cudaDeviceProp) = bytestring(convert(Ptr{UInt8}, pointer([p.name])))
+name(p::rt.cudaDeviceProp) = unsafe_string(convert(Ptr{UInt8}, pointer([p.name])))
 
 # criteria = dev -> Bool
 function devices(criteria::Function; nmax::Integer = typemax(Int), status=:any)
