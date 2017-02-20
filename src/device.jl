@@ -1,30 +1,19 @@
 devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); Int(ret[1]))
+device() = (ret = Cint[0]; rt.cudaGetDevice(ret); Int(ret[1]))
+device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
+
 
 const pctxs = Array{CuContext}(devcount())
 for dev in 1:devcount()
   handle = CUDAdrv.retain_pctx(dev-1)
   pctxs[dev] = CuContext(handle)
+  device(dev-1)
 end
 
-
-device() = (ret = Cint[0]; rt.cudaGetDevice(ret); Int(ret[1]))
-device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
 device_reset() = device_reset(device())
 
 function device_reset(dev::Integer)
-    # Clear all items on this device from cuda_ptrs, so they don't get
-    # freed later
-    todelete = Any[]
-    for (p,pdev) in cuda_ptrs
-        if pdev == dev
-            finalize(p)
-            push!(todelete, p)
-        end
-    end
-    for p in todelete
-        delete!(cuda_ptrs, p)
-    end
     # Reset the device
     device(dev)
     rt.cudaDeviceReset()

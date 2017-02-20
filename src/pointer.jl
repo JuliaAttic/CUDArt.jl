@@ -23,28 +23,19 @@ copy(p::CudaPtr) = CudaPtr(p.ptr)
 
 rawpointer(p::CudaPtr) = p
 
-# Enable both manual and garbage-collected memory management.
-# If you need to free resources, you can call free manually.
-# cuda_ptrs keeps track of all memory that needs to be freed,
-# and prevents double-free (which otherwise causes serious problems).
-# key = ptr, val = device id
-const cuda_ptrs = Dict{Any,Int}()
-
 function malloc(T::Type, n::Integer)
     p = Ptr{Void}[C_NULL]
     nbytes = sizeof(T)*n
     rt.cudaMalloc(p, nbytes)
     cptr = CudaPtr(unsafe_convert(Ptr{T},p[1]))
     finalizer(cptr, free)
-    cuda_ptrs[WeakRef(cptr)] = device()
     cptr
 end
 malloc(nbytes::Integer) = malloc(UInt8, nbytes)
 
 function free{T}(p::CudaPtr{T})
     cnull = unsafe_convert(Ptr{T}, C_NULL)
-    if p.ptr != cnull && haskey(cuda_ptrs, p)
-        delete!(cuda_ptrs, p)
+    if p.ptr != cnull
         rt.cudaFree(p)
         p.ptr = cnull
     end
