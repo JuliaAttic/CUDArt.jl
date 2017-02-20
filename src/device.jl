@@ -1,5 +1,12 @@
 devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); Int(ret[1]))
 
+const pctxs = Array{CuContext}(devcount())
+for dev in 1:devcount()
+  handle = CUDAdrv.retain_pctx(dev-1)
+  pctxs[dev] = CuContext(handle)
+end
+
+
 device() = (ret = Cint[0]; rt.cudaGetDevice(ret); Int(ret[1]))
 device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
