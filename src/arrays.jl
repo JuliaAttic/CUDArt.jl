@@ -18,7 +18,7 @@ const debugMemory = false
 
 # Contiguous arrays on the GPU
 if !debugMemory
-    type CudaArray{T,N} <: AbstractCudaArray{T,N}
+    type CudaArray{T, N} <: AbstractCudaArray{T, N}
         ptr::CudaPtr{T}
         dims::NTuple{N,Int}
         dev::Int
@@ -151,7 +151,7 @@ end
 copy!(dst::AbstractArray, src::HostOrDevArray; stream=null_stream) = _copy!(dst, src, stream)
 copy!(dst::HostOrDevArray, src::HostOrDevArray; stream=null_stream) = _copy!(dst, src, stream)
 
-function _copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray{T}, stream)
+function _copy!{T, N1, N2}(dst::ContiguousArray{T, N1}, src::ContiguousArray{T, N2}, stream)
     if length(dst) != length(src)
         throw(ArgumentError("Inconsistent array length."))
     end
@@ -159,8 +159,8 @@ function _copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray{T}, stream)
     rt.cudaMemcpyAsync(dst, src, nbytes, cudamemcpykind(dst, src), stream)
     return dst
 end
-_copy!{T}(dst::ContiguousArray{T}, src::ContiguousArray, stream) = _copy!(dst, to_eltype(T, src), stream)
-_copy!{T}(dst::AbstractCudaArray{T}, src, stream) = _copy!(dst, copy!(Array{T}(size(src)), src), stream)
+_copy!{T, N, T2, N2}(dst::ContiguousArray{T, N}, src::ContiguousArray{T2, N2}, stream) = _copy!(dst, to_eltype(T, src), stream)
+_copy!{T, N}(dst::AbstractCudaArray{T, N}, src, stream) = _copy!(dst, copy!(Array{T}(size(src)), src), stream)
 
 function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
     valT = convert(T, val)
@@ -288,10 +288,36 @@ rawpointer(g::CudaPitchedArray) = g.ptr.ptr
 
 CudaExtent{T}(a::AbstractCudaArray{T}) = CudaExtent(pitchbytes(a), size(a,2), size(a,3))
 
-_copy!{T}(dst::AbstractCudaArray{T}, src::AbstractCudaArray{T}, stream) = cudacopy!(dst, src; stream=stream)
-_copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, stream) = cudacopy!(dst, src; stream=stream)
-_copy!{T}(dst::AbstractCudaArray{T}, src::CdArray{T}, stream) = cudacopy!(dst, src, stream=stream)
-_copy!{T}(dst::AbstractCudaArray{T}, src::CdArray, stream) = cudacopy!(dst, to_eltype(T, src), stream=stream)
+function _copy!{T, N1, N2}(
+        dst::AbstractCudaArray{T, N1},
+        src::AbstractCudaArray{T, N2},
+        stream
+    )
+    cudacopy!(dst, src; stream=stream)
+end
+function _copy!{T, N1, N2}(
+        dst::CdArray{T, N1}, src::AbstractCudaArray{T, N2}, stream
+    )
+    cudacopy!(dst, src; stream=stream)
+end
+function _copy!{T1, T2, N1, N2}(
+        dst::CdArray{T1, N1}, src::AbstractCudaArray{T2, N2}, stream
+    )
+    dsttmp = similar(dst, T2, size(src))
+    copy!(dsttmp, src)
+    copy!(dst, dsttmp)
+end
+function _copy!{T, N1, N2}(
+        dst::AbstractCudaArray{T, N1}, src::CdArray{T, N2}, stream
+    )
+    cudacopy!(dst, src, stream=stream)
+end
+function _copy!{T, N1, T2, N2}(
+        dst::AbstractCudaArray{T, N1}, src::CdArray{T2, N2}, stream
+    )
+    cudacopy!(dst, to_eltype(T, src), stream=stream)
+end
+
 
 function cudacopy!{T}(dst::CdArray{T}, src::CdArray{T}; kwargs...)
     if size(dst) != size(src)
@@ -300,12 +326,27 @@ function cudacopy!{T}(dst::CdArray{T}, src::CdArray{T}; kwargs...)
     copy!(dst, map(d->1:d, size(dst)), src, map(d->1:d, size(src)); kwargs...)
 end
 
-copy!{T}(dst::AbstractCudaArray{T}, dstI::Tuple{Vararg{Union{Int,UnitRange{Int}}}}, src::AbstractCudaArray{T}, srcI::Tuple{Vararg{Union{Int,UnitRange{Int}}}}; stream=null_stream) =
+function copy!{T}(
+        dst::AbstractCudaArray{T}, dstI::Tuple{Vararg{Union{Int,UnitRange{Int}}}},
+        src::AbstractCudaArray{T}, srcI::Tuple{Vararg{Union{Int,UnitRange{Int}}}};
+        stream = null_stream
+    )
     cudacopy!(dst, dstI, src, srcI, stream=stream)
-copy!{T}(dst::CdArray{T}, dstI::Tuple{Vararg{Union{Int,UnitRange{Int}}}}, src::AbstractCudaArray{T}, srcI::Tuple{Vararg{Union{Int,UnitRange{Int}}}}; stream=null_stream) =
+end
+function copy!{T}(
+        dst::CdArray{T}, dstI::Tuple{Vararg{Union{Int,UnitRange{Int}}}},
+        src::AbstractCudaArray{T}, srcI::Tuple{Vararg{Union{Int,UnitRange{Int}}}};
+        stream=null_stream
+    )
     cudacopy!(dst, dstI, src, srcI, stream=stream)
-copy!{T}(dst::AbstractCudaArray{T}, dstI::Tuple{Vararg{Union{Int,UnitRange{Int}}}}, src::CdArray{T}, srcI::Tuple{Vararg{Union{Int,UnitRange{Int}}}}; stream=null_stream) =
+end
+function copy!{T}(
+        dst::AbstractCudaArray{T}, dstI::Tuple{Vararg{Union{Int,UnitRange{Int}}}},
+        src::CdArray{T}, srcI::Tuple{Vararg{Union{Int,UnitRange{Int}}}};
+        stream=null_stream
+    )
     cudacopy!(dst, dstI, src, srcI, stream=stream)
+end
 function cudacopy!{T}(dst::CdArray{T}, dstI::Tuple{Vararg{Union{Int,UnitRange{Int}}}}, src::CdArray{T}, srcI::Tuple{Vararg{Union{Int,UnitRange{Int}}}}; stream=null_stream)
     nd = length(srcI)
     if length(dstI) != nd
@@ -326,7 +367,11 @@ function cudacopy!{T}(dst::CdArray{T}, dstI::Tuple{Vararg{Union{Int,UnitRange{In
     dst
 end
 
-function copy!{T}(dst::CdArray{T}, src::AbstractCudaArray{T}, srcI::Tuple{Vararg{Union{Int,UnitRange{Int}}}}; stream=null_stream)
+function copy!{T}(
+        dst::CdArray{T}, src::AbstractCudaArray{T},
+        srcI::Tuple{Vararg{Union{Int,UnitRange{Int}}}};
+        stream=null_stream
+    )
     nd = length(srcI)
     for i = 1:nd
         first(srcI[i]) >= 1 && last(srcI[i]) <= size(src, i) || throw(DimensionMismatch("In dimension $i, source range of $(srcI[i]) is not within array dimension of $(size(src,i))"))
