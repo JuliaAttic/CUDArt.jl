@@ -51,7 +51,7 @@ CUDArt.device(0)
 g = CUDArt.CudaArray(a)
 # In case the next gc() test yields an error, the next two lines let
 # us do some archaeology
-dictcopy = deepcopy(CUDArt.cuda_ptrs)
+#dictcopy = deepcopy(CUDArt.cuda_ptrs)
 gptrcopy = copy(pointer(g))
 gc()   # Check that this doesn't delete the new g
 @test !isempty(CUDArt.cuda_ptrs)

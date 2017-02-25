@@ -6,6 +6,7 @@
 # A raw CUDA pointer
 type CudaPtr{T}
     ptr::Ptr{T}
+    ctx::CuContext
 end
 
 # Type alias for previous name
@@ -15,11 +16,12 @@ const CudaDevicePtr = CudaPtr
 # Low-level memory handling #
 #############################
 
-CudaPtr() = CudaPtr(C_NULL)
-CudaPtr(T::Type) = CudaPtr(unsafe_convert(Ptr{T},C_NULL))
+CudaPtr() = CudaPtr(C_NULL, CuContext(C_NULL))
+CudaPtr(T::Type) = CudaPtr(unsafe_convert(Ptr{T},C_NULL), CuContext(C_NULL))
 unsafe_convert{P<:Ptr}(::Type{P}, p::CudaPtr) = unsafe_convert(P, p.ptr)
 convert{P<:Ptr}(::Type{P}, p::CudaPtr) = unsafe_convert(P, p.ptr)
-copy(p::CudaPtr) = CudaPtr(p.ptr)
+copy(p::CudaPtr) = CudaPtr(p.ptr, p.ctx)
+#Base.deepcopy_internal(ptr::CudaPtr)
 
 rawpointer(p::CudaPtr) = p
 
@@ -29,13 +31,27 @@ rawpointer(p::CudaPtr) = p
 # and prevents double-free (which otherwise causes serious problems).
 # key = ptr, val = device id
 const cuda_ptrs = Dict{Any,Int}()
+const cuda_pctxs = Dict{Int, CuContext}()
+function get_pctx(dev::Int)
+    get!(cuda_pctxs, dev) do
+        CuContext(CUDAdrv.retain_pctx(dev), true)
+    end
+end
+
+function delete_pctx!(dev::Int)
+    if haskey(cuda_pctxs, dev)
+        delete!(cuda_pctxs, dev)
+        CUDAdrv.release_pctx(dev)
+    end
+end
 
 function malloc(T::Type, n::Integer)
-    p = Ptr{Void}[C_NULL]
+    p = Ref{Ptr{Void}}(C_NULL)
     nbytes = sizeof(T)*n
     rt.cudaMalloc(p, nbytes)
-    cptr = CudaPtr(unsafe_convert(Ptr{T},p[1]))
+    cptr = CudaPtr(unsafe_convert(Ptr{T},p[]), get_pctx(device()))
     finalizer(cptr, free)
+
     cuda_ptrs[WeakRef(cptr)] = device()
     cptr
 end

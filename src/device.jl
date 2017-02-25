@@ -18,6 +18,18 @@ function device_reset(dev::Integer)
     for p in todelete
         delete!(cuda_ptrs, p)
     end
+
+    pctx = get_pctx(dev)
+    # Cleanup CUDAdrv gc
+    if !CUDAdrv.can_finalize(pctx)
+        warn("Can't cleanly finalize pctx")
+        for obj in keys(filter((owner, ctx) -> ctx == pctx, CUDAdrv.finalizer_blocks))
+            CUDAdrv.finalize(Base.unsafe_pointer_to_objref(obj))
+        end
+    end
+
+    destroy(pctx)
+    delete_pctx!(dev)
     # Reset the device
     device(dev)
     rt.cudaDeviceReset()
