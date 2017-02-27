@@ -36,7 +36,7 @@ function malloc(T::Type, n::Integer)
     p = Ref{Ptr{Void}}(C_NULL)
     nbytes = sizeof(T)*n
     rt.cudaMalloc(p, nbytes)
-    cptr = CudaPtr{T}(unsafe_convert(Ptr{T}, p[]), CUDAdrv.get_pctx(device()))
+    cptr = CudaPtr{T}(unsafe_convert(Ptr{T}, p[]), contexts[device()])
     finalizer(cptr, free)
     cuda_ptrs[WeakRef(cptr)] = device()
     cptr

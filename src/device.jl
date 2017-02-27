@@ -3,6 +3,13 @@ devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); Int(ret[1]))
 device() = (ret = Cint[0]; rt.cudaGetDevice(ret); Int(ret[1]))
 device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
+# instantiate the primary contexts
+const contexts = Dict{Int,CuContext}()
+for dev in 0:devcount()-1
+    pctx = CuPrimaryContext(dev)
+    contexts[dev] = CuContext(pctx)
+end
+
 device_reset() = device_reset(device())
 
 function device_reset(dev::Integer)
@@ -19,20 +26,10 @@ function device_reset(dev::Integer)
         delete!(cuda_ptrs, p)
     end
 
-    pctx = CUDAdrv.get_pctx(dev)
-    # Cleanup CUDAdrv gc
-    if !CUDAdrv.can_finalize(pctx)
-        CUDAdrv.@debug("CUDArt: Forcefully finalizing objects for device_reset")
-        for obj_ptr in keys(filter((owner, ctx) -> ctx == pctx, CUDAdrv.finalizer_blocks))
-            obj = Base.unsafe_pointer_to_objref(obj_ptr)
-            finalize(obj)
-        end
-    end
-
-    CUDAdrv.delete_pctx!(dev)
-    # Reset the device
-    device(dev)
-    rt.cudaDeviceReset()
+    # no need to reset the entire device, just reset the primary context
+    pctx = CuPrimaryContext(dev)
+    CUDAdrv.reset(pctx)
+    contexts[dev] = CuContext(pctx)
 end
 
 device_synchronize() = rt.cudaDeviceSynchronize()
@@ -129,7 +126,7 @@ function init(devlist::Union{Integer,AbstractVector})
         # allocate and destroy memory to force initialization
         free(malloc(UInt8, 1))
         # Load the utility functions.
-        ptx = PtxUtils(CuModuleFile(utilfile, CUDAdrv.get_pctx(dev)), Dict{Any,CuFunction}())
+        ptx = PtxUtils(CuModuleFile(utilfile, contexts[dev]), Dict{Any,CuFunction}())
         for func in funcnames
             for (dtype,ext) in zip(datatypes, funcexts)
                 ptx.fns[(func, dtype)] = CuFunction(ptx.mod, func*"_"*ext)
