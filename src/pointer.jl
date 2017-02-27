@@ -31,25 +31,12 @@ rawpointer(p::CudaPtr) = p
 # and prevents double-free (which otherwise causes serious problems).
 # key = ptr, val = device id
 const cuda_ptrs = Dict{Any,Int}()
-const cuda_pctxs = Dict{Int, CuContext}()
-function get_pctx(dev::Int)
-    get!(cuda_pctxs, dev) do
-        CuContext(CUDAdrv.retain_pctx(dev), true)
-    end
-end
-
-function delete_pctx!(dev::Int)
-    if haskey(cuda_pctxs, dev)
-        delete!(cuda_pctxs, dev)
-        CUDAdrv.release_pctx(dev)
-    end
-end
 
 function malloc(T::Type, n::Integer)
     p = Ref{Ptr{Void}}(C_NULL)
     nbytes = sizeof(T)*n
     rt.cudaMalloc(p, nbytes)
-    cptr = CudaPtr{T}(unsafe_convert(Ptr{T}, p[]), get_pctx(device()))
+    cptr = CudaPtr{T}(unsafe_convert(Ptr{T}, p[]), CUDAdrv.get_pctx(device()))
     finalizer(cptr, free)
     cuda_ptrs[WeakRef(cptr)] = device()
     cptr

@@ -19,17 +19,17 @@ function device_reset(dev::Integer)
         delete!(cuda_ptrs, p)
     end
 
-    pctx = get_pctx(dev)
+    pctx = CUDAdrv.get_pctx(dev)
     # Cleanup CUDAdrv gc
     if !CUDAdrv.can_finalize(pctx)
         warn("Can't cleanly finalize pctx")
-        for obj in keys(filter((owner, ctx) -> ctx == pctx, CUDAdrv.finalizer_blocks))
-            CUDAdrv.finalize(Base.unsafe_pointer_to_objref(obj))
+        for obj_ptr in keys(filter((owner, ctx) -> ctx == pctx, CUDAdrv.finalizer_blocks))
+            obj = Base.unsafe_pointer_to_objref(obj_ptr)
+            finalize(obj)
         end
     end
 
-    destroy(pctx)
-    delete_pctx!(dev)
+    CUDAdrv.delete_pctx!(dev)
     # Reset the device
     device(dev)
     rt.cudaDeviceReset()
@@ -129,7 +129,7 @@ function init(devlist::Union{Integer,AbstractVector})
         # allocate and destroy memory to force initialization
         free(malloc(UInt8, 1))
         # Load the utility functions.
-        ptx = PtxUtils(CuModuleFile(utilfile), Dict{Any,CuFunction}())
+        ptx = PtxUtils(CuModuleFile(utilfile, CUDAdrv.get_pctx(dev)), Dict{Any,CuFunction}())
         for func in funcnames
             for (dtype,ext) in zip(datatypes, funcexts)
                 ptx.fns[(func, dtype)] = CuFunction(ptx.mod, func*"_"*ext)
