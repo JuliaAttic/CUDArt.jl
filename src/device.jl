@@ -22,7 +22,7 @@ function device_reset(dev::Integer)
     pctx = CUDAdrv.get_pctx(dev)
     # Cleanup CUDAdrv gc
     if !CUDAdrv.can_finalize(pctx)
-        warn("Can't cleanly finalize pctx")
+        CUDAdrv.@debug("CUDArt: Forcefully finalizing objects for device_reset")
         for obj_ptr in keys(filter((owner, ctx) -> ctx == pctx, CUDAdrv.finalizer_blocks))
             obj = Base.unsafe_pointer_to_objref(obj_ptr)
             finalize(obj)
