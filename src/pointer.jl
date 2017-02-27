@@ -21,7 +21,7 @@ CudaPtr(T::Type) = CudaPtr(unsafe_convert(Ptr{T},C_NULL), CuContext(C_NULL))
 unsafe_convert{P<:Ptr}(::Type{P}, p::CudaPtr) = unsafe_convert(P, p.ptr)
 convert{P<:Ptr}(::Type{P}, p::CudaPtr) = unsafe_convert(P, p.ptr)
 copy(p::CudaPtr) = CudaPtr(p.ptr, p.ctx)
-#Base.deepcopy_internal(ptr::CudaPtr)
+Base.deepcopy_internal(ptr::CudaPtr, ::ObjectIdDict) = copy(ptr)
 
 rawpointer(p::CudaPtr) = p
 
