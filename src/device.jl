@@ -28,6 +28,10 @@ function device_reset(dev::Integer)
 
     # no need to reset the entire device, just reset the primary context
     pctx = CuPrimaryContext(dev)
+    let ctx = contexts[dev]
+        CUDAdrv.invalidate!(ctx)
+        CUDAdrv.destroy(ctx)
+    end
     CUDAdrv.reset(pctx)
     contexts[dev] = CuContext(pctx)
 end
