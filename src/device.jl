@@ -130,7 +130,7 @@ function init(devlist::Union{Integer,AbstractVector})
         # allocate and destroy memory to force initialization
         free(malloc(UInt8, 1))
         # Load the utility functions.
-        ptx = PtxUtils(CuModuleFile(utilfile, contexts[dev]), Dict{Any,CuFunction}())
+        ptx = PtxUtils(CuModuleFile(utilfile), Dict{Any,CuFunction}())
         for func in funcnames
             for (dtype,ext) in zip(datatypes, funcexts)
                 ptx.fns[(func, dtype)] = CuFunction(ptx.mod, func*"_"*ext)
