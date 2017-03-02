@@ -77,23 +77,47 @@ function devices(f::Function, devlist::Union{Integer,AbstractVector})
 end
 
 function filter_free(devlist)
-    smi = readall(`nvidia-smi`)
-    if contains(smi, "No running compute processes")
-        return devlist
+    usenvml = true
+    if Libdl.find_library(["libnvidia-ml"], []) == ""
+        warning("NVML not found, resorting to nvidia-smi")
+        usenvml = false
     end
-    idx = search(smi, "Compute processes:")
-    isempty(idx) && error("Neither search string found")
-    lines = split(smi[last(idx):end], '\n')
-    free = Set(devlist)
-    for line in lines
-        m = match(r"^\| +([0-9]+)", line)
-        if m != nothing
-            length(m.captures) == 1 || error("Expected only a single capture")
-            dev = parse(Int, m.captures[1])
-            delete!(free, dev)
+
+    if usenvml
+        ccall(("nvmlInit", "libnvidia-ml"), UInt32, ())
+        freelist = Int[]
+        for i in devlist
+            dev = Ref{Ptr{Void}}(0)
+            ccall(("nvmlDeviceGetHandleByIndex", "libnvidia-ml"),
+                  UInt32, (UInt32, Ref{Ptr{Void}}), i, dev)
+            status = ccall(("nvmlDeviceGetComputeRunningProcesses", "libnvidia-ml"),
+                           UInt32, (Ptr{Void}, Ref{UInt32}, Ref{Ptr{Void}}),
+                           dev[], Ref{UInt32}(0), C_NULL)
+            if status == 0
+                push!(freelist, i)
+            end
         end
+        ccall(("nvmlShutdown", "libnvidia-ml"), UInt32, ())
+        freelist
+    else
+        smi = readstring(`nvidia-smi`)
+        if contains(smi, "No running")
+            return devlist
+        end
+        idx = search(smi, r"[Pp]rocesses:")
+        isempty(idx) && error("Neither search string found")
+        lines = split(smi[last(idx):end], '\n')
+        freeset = Set(devlist)
+        for line in lines
+            m = match(r"^\| +([0-9]+)", line)
+            if m != nothing
+                length(m.captures) == 1 || error("Expected only a single capture")
+                dev = parse(Int, m.captures[1])
+                delete!(freeset, dev)
+            end
+        end
+        collect(freeset)
     end
-    collect(free)
 end
 
 function wait_free(devlist; check_interval=10)
