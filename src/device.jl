@@ -3,6 +3,13 @@ devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); Int(ret[1]))
 device() = (ret = Cint[0]; rt.cudaGetDevice(ret); Int(ret[1]))
 device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
+# instantiate the primary contexts
+const contexts = Dict{Int,CuContext}()
+for dev in 0:devcount()-1
+    pctx = CuPrimaryContext(dev)
+    contexts[dev] = CuContext(pctx)
+end
+
 device_reset() = device_reset(device())
 
 function device_reset(dev::Integer)
@@ -18,9 +25,15 @@ function device_reset(dev::Integer)
     for p in todelete
         delete!(cuda_ptrs, p)
     end
-    # Reset the device
-    device(dev)
-    rt.cudaDeviceReset()
+
+    # no need to reset the entire device, just reset the primary context
+    pctx = CuPrimaryContext(dev)
+    let ctx = contexts[dev]
+        CUDAdrv.invalidate!(ctx)
+        CUDAdrv.destroy(ctx)
+    end
+    CUDAdrv.reset(pctx)
+    contexts[dev] = CuContext(pctx)
 end
 
 device_synchronize() = rt.cudaDeviceSynchronize()
