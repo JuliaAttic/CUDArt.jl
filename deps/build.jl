@@ -10,18 +10,14 @@ if is_windows()
     elseif haskey(ENV, "VS100COMNTOOLS")
         vs_cmd_tools_dir = ENV["VS100COMNTOOLS"]
     else
-        error("Cannot find proper Visual Studio installation. VS 2015, 2013, 2012, or 2010 is required.")
+        error("Cannot find proper Visual Studio installation; Visual Studio 2015, 2013, 2012, or 2010 is required.")
     end
-    vs_cmd_prompt =joinpath(dirname(vs_cmd_tools_dir),"..","..","VC","vcvarsall.bat")
+    vs_cmd_prompt = joinpath(dirname(vs_cmd_tools_dir), "..", "..", "VC", "vcvarsall.bat")
     
     # check whether 32 or 64 bit archtecture
     # NOTE: Actually, nvcc in x86 visual studio command prompt doesn't make 32-bit binary
-    #       It depends on whether CUDA toolkit is 32bit or 64bit
-    if Int == Int64
-        arch = "amd64"
-    else
-        arch = "x86"
-    end
+    # It depends on whether CUDA toolkit is 32bit or 64bit
+    arch = Sys.WORD_SIZE == 64 ? "amd64" : "x86"
 
     # Run nmake -f Windows.mk under visual studio command prompt
     cd(@__DIR__) do
@@ -33,7 +29,7 @@ if is_windows()
         run(`cmd /C "$vs_cmd_prompt" $arch \& nmake -f Windows.mk clean`)
         run(`cmd /C "$vs_cmd_prompt" $arch \& nmake -f Windows.mk`)
     end
-else # for linux or mac
+else # linux or mac
     cd(@__DIR__) do
         run(`make clean`)
         run(`make`)
