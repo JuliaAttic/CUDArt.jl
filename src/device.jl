@@ -77,30 +77,40 @@ function devices(f::Function, devlist::Union{Integer,AbstractVector})
 end
 
 function filter_free(devlist)
-    usenvml = true
-    if Libdl.find_library(["libnvidia-ml"], []) == ""
-        warning("NVML not found, resorting to nvidia-smi")
+    nvml_libdir = is_windows() ? joinpath(ENV["ProgramFiles"], "NVIDIA Corporation", "NVSMI") : ""
+    if is_windows() && !isdir(nvml_libdir)
+        error("Could not determine Nvidia driver installation location.")
+    end
+    const libnvml = Libdl.find_library(["libnvidia-ml", "nvml"], [nvml_libdir])
+
+    if isempty(libnvml)
+        warn("NVML not found, resorting to nvidia-smi")
         usenvml = false
+    else
+        usenvml = true
     end
 
     if usenvml
-        ccall(("nvmlInit", "libnvidia-ml"), UInt32, ())
+        ccall(("nvmlInit", libnvml), UInt32, ())
         freelist = Int[]
         for i in devlist
             dev = Ref{Ptr{Void}}(0)
-            ccall(("nvmlDeviceGetHandleByIndex", "libnvidia-ml"),
+            ccall(("nvmlDeviceGetHandleByIndex", libnvml),
                   UInt32, (UInt32, Ref{Ptr{Void}}), i, dev)
-            status = ccall(("nvmlDeviceGetComputeRunningProcesses", "libnvidia-ml"),
+            status = ccall(("nvmlDeviceGetComputeRunningProcesses", libnvml),
                            UInt32, (Ptr{Void}, Ref{UInt32}, Ref{Ptr{Void}}),
                            dev[], Ref{UInt32}(0), C_NULL)
             if status == 0
                 push!(freelist, i)
             end
         end
-        ccall(("nvmlShutdown", "libnvidia-ml"), UInt32, ())
+        ccall(("nvmlShutdown", libnvml), UInt32, ())
         freelist
     else
-        smi = readstring(`nvidia-smi`)
+        nvidia_smi = is_windows() ? joinpath(nvml_libdir, "nvidia-smi.exe") : "nvidia-smi"
+        !success(`$nvidia_smi`) && error("nvidia-smi failure")
+
+        smi = readstring(`$nvidia_smi`)
         if contains(smi, "No running")
             return devlist
         end
