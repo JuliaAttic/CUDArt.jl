@@ -107,11 +107,7 @@ function filter_free(devlist)
         ccall(("nvmlShutdown", libnvml), UInt32, ())
         freelist
     else
-        if is_windows()
-            nvidia_smi = joinpath(nvml_libdir, "nvidia-smi.exe")
-        else
-            nvidia_smi = "nvidia-smi"
-        end
+        nvidia_smi = is_windows() ? joinpath(nvml_libdir, "nvidia-smi.exe") : "nvidia-smi"
         !success(`$nvidia_smi`) && error("nvidia-smi failure")
 
         smi = readstring(`$nvidia_smi`)
