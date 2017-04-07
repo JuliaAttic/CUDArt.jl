@@ -18,7 +18,7 @@ function checkerror(code::Cuint)
     throw(unsafe_string(cudaGetErrorString(code)))
 end
 
-include(joinpath(dirname(@__FILE__), "..", "gen-6.5", "gen_libcudart_h.jl")
+include(joinpath(dirname(@__FILE__), "..", "gen-6.5", "gen_libcudart_h.jl"))
 
 const cudaError_t = cudaError
 
@@ -40,7 +40,7 @@ if isempty(libcudart)
     error("CUDA runtime API library cannot be found")
 end
 
-include(joinpath(dirname(@__FILE__), "..", "gen-6.5", "gen_libcudart.jl")
+include(joinpath(dirname(@__FILE__), "..", "gen-6.5", "gen_libcudart.jl"))
 
 # # Make cudaSetupArgument more convenient
 # function cudaSetupArgument(arg, size, offset)
