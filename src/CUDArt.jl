@@ -1,11 +1,9 @@
-isdefined(Base, :__precompile__) && __precompile__()
+__precompile__()
 
 module CUDArt
 
 using CUDAdrv
-
 using Compat
-import Compat: UTF8String, ASCIIString
 
 export
     # pointer symbols
@@ -22,8 +20,8 @@ export
     Stream, null_stream, cudasleep,
     destroy, free, cudafinalizer, wait_free
 
-import Base: ==, -, +, getindex, setindex!
-import Base: length, size, ndims, eltype, similar, pointer, stride,
+import Base: ==, -, +, getindex, setindex!,
+    length, size, ndims, eltype, similar, pointer, stride,
     copy, convert, reinterpret, show, summary,
     copy!, get!, fill!, launch, wait, unsafe_convert, vec
 
@@ -32,30 +30,26 @@ include("libcudart-6.5.jl")
 import .CUDArt_gen
 const rt = CUDArt_gen
 
-# To load PTX code, we also need access to the driver API module utilities
-if is_windows()
-    const libcuda = Libdl.find_library(["nvcuda"], [""])
-else # linux or mac
-    const libcuda = Libdl.find_library(["libcuda"], ["/usr/lib/", "/usr/local/cuda/lib"])
+const ext = joinpath(dirname(@__DIR__), "deps", "ext.jl")
+if isfile(ext)
+    include(ext)
+else
+    error("Unable to load dependency file $ext.\nPlease run Pkg.build(\"CUDAdrv\") and restart Julia.")
 end
-
-if isempty(libcuda)
-    error("CUDA driver API library cannot be found")
-end
+const libcuda = libcuda_path
+const libcudart = libcudart_path
+const libnvml = libnvml_path
+const nvidia_smi = nvidiasmi_path
 
 include("version.jl")
 include("types.jl")
 include("device.jl")
 include("stream.jl")
-#include("event.jl")
 include("pointer.jl")
 include("arrays.jl")
 include("execute.jl")
 
-if isdefined(Base, :__precompile__)
-    include("precompile.jl")
-    _precompile_()
-end
+include("precompile.jl")
 
 function __init__()
     c_async_send_cudastream[] = cfunction(async_send_cudastream, Void, (rt.cudaStream_t, rt.cudaError_t, Ptr{Void}))

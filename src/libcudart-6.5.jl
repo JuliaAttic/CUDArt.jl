@@ -2,10 +2,19 @@ module CUDArt_gen  # the generated module
 
 using Compat
 
+const ext = joinpath(dirname(@__DIR__), "deps", "ext.jl")
+if isfile(ext)
+    include(ext)
+else
+    error("Unable to load dependency file $ext.\nPlease run Pkg.build(\"CUDAdrv\") and restart Julia.")
+end
+const libcudart = libcudart_path
+
 # In the runtime API, these are all used only inside Ptrs,
 # so these typealiases are safe (if you don't need access to
 # struct elements)
-const cudaUUID_t = Void
+include(joinpath(dirname(@__DIR__), "gen-6.5", "gen_libcudart_h.jl"))
+include(joinpath(dirname(@__DIR__), "gen-6.5", "gen_libcudart.jl"))
 
 function checkerror(code::Cuint)
     if code == cudaSuccess
@@ -15,32 +24,9 @@ function checkerror(code::Cuint)
     # let's show a backtrace here
     warn("CUDA error triggered from:")
     Base.show_backtrace(STDOUT, backtrace())
+    print("\n\n")
     throw(unsafe_string(cudaGetErrorString(code)))
 end
-
-include("../gen-6.5/gen_libcudart_h.jl")
-
-const cudaError_t = cudaError
-
-if is_windows()
-    # location of cudart64_xx.dll or cudart32_xx.dll have to be in PATH env var
-    # ex: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin
-    # (by default, it is done by CUDA toolkit installer)
-
-    const dllnames = (Base.Sys.WORD_SIZE==64) ?
-        ["cudart64_70", "cudart64_65", "cudart64_60", "cudart64_55", "cudart64_50", "cudart64_50_35"] :
-        ["cudart32_70", "cudart32_65", "cudart32_60", "cudart32_55", "cudart32_50", "cudart32_50_35"]
-    const libcudart = Libdl.find_library(dllnames, [""])
-else # linux or mac
-    const libdir = (Base.Sys.WORD_SIZE==64) ? "lib64" : "lib"
-    const libcudart = Libdl.find_library(["libcudart", "cudart"], ["/usr/local/cuda/$libdir", "/usr/local/cuda-6.5/$libdir", "/usr/local/cuda-6.0/$libdir", "/usr/local/cuda-5.5/$libdir", "/usr/local/cuda-5.0/$libdir", "/usr/local/cuda-7.0/$libdir"])
-end
-
-if isempty(libcudart)
-    error("CUDA runtime API library cannot be found")
-end
-
-include("../gen-6.5/gen_libcudart.jl")
 
 # # Make cudaSetupArgument more convenient
 # function cudaSetupArgument(arg, size, offset)
@@ -48,7 +34,7 @@ include("../gen-6.5/gen_libcudart.jl")
 # end
 
 # Fix issues stemming from the inability to pass structs as args
-const libwrapcuda = Libdl.find_library(["libwrapcuda"],[joinpath(dirname(@__FILE__), "..", "deps")])
+const libwrapcuda = Libdl.find_library("libwrapcuda", [joinpath(dirname(@__DIR__), "deps")])
 isempty(libwrapcuda) && error("Cannot find libwrapcuda")
 
 function cudaMalloc3D(p::Array{cudaPitchedPtr,1}, ext::cudaExtent)

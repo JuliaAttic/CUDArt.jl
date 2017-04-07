@@ -1,5 +1,6 @@
 *.ptx
 *.so
+deps/ext.jl
 
 # Windows
 libwrapcuda.dll

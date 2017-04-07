@@ -1,6 +1,5 @@
-import CUDArt, CUDAdrv
+using CUDArt, CUDAdrv
 using Base.Test
-import Compat.view
 
 #########################
 # Device init and close #

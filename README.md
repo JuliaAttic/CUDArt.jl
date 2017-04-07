@@ -1,5 +1,13 @@
 # CUDArt
 
+**[Build status](https://ci.maleadt.net/buildbot/julia/waterfall?tag=CUDArt)** (Linux x86-64):
+
+| Julia 0.5 | Julia 0.6 |
+|:---------:|:---------:|
+| [![](https://ci.maleadt.net/buildbot/julia/png?builder=CUDArt.jl:%20Julia%200.5%20(x86-64))](https://ci.maleadt.net/buildbot/julia/builders/CUDArt.jl%3A%20Julia%200.5%20%28x86-64%29) | [![](https://ci.maleadt.net/buildbot/julia/png?builder=CUDArt.jl:%20Julia%20master%20(x86-64))](https://ci.maleadt.net/buildbot/julia/builders/CUDArt.jl%3A%20Julia%20master%20%28x86-64%29) |
+
+<!-- **Code coverage**: [![Coverage Status](https://codecov.io/gh/JuliaGPU/CUDArt.jl/coverage.svg)](https://codecov.io/gh/JuliaGPU/CUDArt.jl) -->
+
 This package wraps the [CUDA runtime API](http://docs.nvidia.com/cuda/cuda-runtime-api/).
 For a wrapper of the lower-level [driver API](http://docs.nvidia.com/cuda/cuda-driver-api/),
 see [CUDAdrv](https://github.com/JuliaGPU/CUDAdrv.jl).
@@ -92,7 +100,7 @@ end
 
 Finally, you can request only those devices that are not busy with other tasks using:
 
-```jl
+```julia
 result = devices(func, status=:free) do devlist
     # Code that does GPU computations
 end

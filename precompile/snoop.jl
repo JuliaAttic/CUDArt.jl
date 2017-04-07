@@ -4,7 +4,7 @@ using SnoopCompile
 # This only needs to be run once (to generate "/tmp/images_compiles.csv")
 
 SnoopCompile.@snoop "/tmp/cudart_compiles.csv" begin
-    include(joinpath(dirname(@__FILE__), "..", "test","runtests.jl"))
+    include(joinpath(dirname(@__DIR__), "test", "runtests.jl"))
 end
 
 ### Parse the compiles and generate precompilation scripts
