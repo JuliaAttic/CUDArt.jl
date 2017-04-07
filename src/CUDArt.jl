@@ -1,4 +1,4 @@
-isdefined(Base, :__precompile__) && __precompile__()
+__precompile__()
 
 module CUDArt
 
@@ -52,10 +52,8 @@ include("pointer.jl")
 include("arrays.jl")
 include("execute.jl")
 
-if isdefined(Base, :__precompile__)
-    include("precompile.jl")
-    _precompile_()
-end
+include("precompile.jl")
+_precompile_()
 
 function __init__()
     c_async_send_cudastream[] = cfunction(async_send_cudastream, Void, (rt.cudaStream_t, rt.cudaError_t, Ptr{Void}))
