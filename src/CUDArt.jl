@@ -5,7 +5,6 @@ module CUDArt
 using CUDAdrv
 
 using Compat
-import Compat: UTF8String, ASCIIString
 
 export
     # pointer symbols
