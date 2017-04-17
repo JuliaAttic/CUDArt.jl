@@ -137,4 +137,7 @@ function _precompile_()
     precompile(CUDArt.to_host, (CUDArt.CudaArray{UInt16, 2},))
     precompile(CUDArt.to_host, (CUDArt.CudaArray{Float64, 1},))
     precompile(CUDArt.free, (CUDArt.CudaArray{Float64, 2},))
+    nothing
 end
+
+_precompile_()

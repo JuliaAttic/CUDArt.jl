@@ -1,5 +1,5 @@
 function driver_version()
-    ver = Ref{Cint}();
+    ver = Ref{Cint}()
     rt.cudaDriverGetVersion(ver)
     return Int(ver[])
 end

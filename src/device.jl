@@ -1,6 +1,15 @@
-devcount() = (ret = Cint[0]; rt.cudaGetDeviceCount(ret); Int(ret[1]))
+function devcount()
+    ret = Ref{Cint}()
+    rt.cudaGetDeviceCount(ret)
+    Int(ret[])
+end
 
-device() = (ret = Cint[0]; rt.cudaGetDevice(ret); Int(ret[1]))
+function device()
+    ret = Ref{Cint}()
+    rt.cudaGetDevice(ret)
+    Int(ret[])
+end
+
 device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
 # instantiate the primary contexts
@@ -16,7 +25,7 @@ function device_reset(dev::Integer)
     # Clear all items on this device from cuda_ptrs, so they don't get
     # freed later
     todelete = Any[]
-    for (p,pdev) in cuda_ptrs
+    for (p, pdev) in cuda_ptrs
         if pdev == dev
             finalize(p)
             push!(todelete, p)
@@ -42,8 +51,9 @@ device_properties(dev::Integer) = (aprop = Array{rt.cudaDeviceProp}(1); rt.cudaG
 
 attribute(dev::Integer, code::Integer) = (ret = Cint[0]; rt.cudaDeviceGetAttribute(ret, code, dev); Int(ret[1]))
 
-capability(dev::Integer) = (attribute(dev,rt.cudaDevAttrComputeCapabilityMajor),
-                            attribute(dev,rt.cudaDevAttrComputeCapabilityMinor))
+function capability(dev::Integer)
+    (attribute(dev,rt.cudaDevAttrComputeCapabilityMajor), attribute(dev,rt.cudaDevAttrComputeCapabilityMinor))
+end
 
 name(p::rt.cudaDeviceProp) = unsafe_string(convert(Ptr{UInt8}, pointer([p.name])))
 
@@ -77,30 +87,24 @@ function devices(f::Function, devlist::Union{Integer,AbstractVector})
 end
 
 function filter_free(devlist)
-    usenvml = true
-    if Libdl.find_library(["libnvidia-ml"], []) == ""
-        warning("NVML not found, resorting to nvidia-smi")
-        usenvml = false
-    end
-
-    if usenvml
-        ccall(("nvmlInit", "libnvidia-ml"), UInt32, ())
+    if !isempty(libnvml)
+        ccall(("nvmlInit", libnvml), UInt32, ())
         freelist = Int[]
         for i in devlist
-            dev = Ref{Ptr{Void}}(0)
-            ccall(("nvmlDeviceGetHandleByIndex", "libnvidia-ml"),
-                  UInt32, (UInt32, Ref{Ptr{Void}}), i, dev)
-            status = ccall(("nvmlDeviceGetComputeRunningProcesses", "libnvidia-ml"),
-                           UInt32, (Ptr{Void}, Ref{UInt32}, Ref{Ptr{Void}}),
-                           dev[], Ref{UInt32}(0), C_NULL)
+            devref = Ref{Ptr{Void}}(0)
+            ccall(("nvmlDeviceGetHandleByIndex", libnvml),
+                  UInt32, (UInt32, Ptr{Void}), i, devref)
+            status = ccall(("nvmlDeviceGetComputeRunningProcesses", libnvml),
+                           UInt32, (Ptr{Void}, UInt32, Ptr{Void}),
+                           devref, Ref{UInt32}(0), C_NULL)
             if status == 0
                 push!(freelist, i)
             end
         end
-        ccall(("nvmlShutdown", "libnvidia-ml"), UInt32, ())
-        freelist
+        ccall(("nvmlShutdown", libnvml), UInt32, ())
+        return freelist
     else
-        smi = readstring(`nvidia-smi`)
+        smi = readstring(`$nvidia_smi`)
         if contains(smi, "No running")
             return devlist
         end
@@ -110,13 +114,13 @@ function filter_free(devlist)
         freeset = Set(devlist)
         for line in lines
             m = match(r"^\| +([0-9]+)", line)
-            if m != nothing
+            if m !== nothing
                 length(m.captures) == 1 || error("Expected only a single capture")
                 dev = parse(Int, m.captures[1])
                 delete!(freeset, dev)
             end
         end
-        collect(freeset)
+        return collect(freeset)
     end
 end
 
@@ -141,7 +145,7 @@ function init(devlist::Union{Integer,AbstractVector})
     funcnames = ["fill_contiguous", "fill_pitched"]
     funcexts  = ["double","float","int64","uint64","int32","uint32","int16","uint16","int8","uint8"]
     datatypes = [Float64,Float32,Int64,UInt64,Int32,UInt32,Int16,UInt16,Int8,UInt8]
-    utilfile  = joinpath(dirname(@__FILE__), "..", "deps", "utils.ptx")
+    utilfile  = joinpath(dirname(@__DIR__), "deps", "utils.ptx")
 
     # initialize all devices
     for dev in devlist
@@ -156,8 +160,8 @@ function init(devlist::Union{Integer,AbstractVector})
         # Load the utility functions.
         ptx = PtxUtils(CuModuleFile(utilfile), Dict{Any,CuFunction}())
         for func in funcnames
-            for (dtype,ext) in zip(datatypes, funcexts)
-                ptx.fns[(func, dtype)] = CuFunction(ptx.mod, func*"_"*ext)
+            for (dtype, ext) in zip(datatypes, funcexts)
+                ptx.fns[(func, dtype)] = CuFunction(ptx.mod, func * "_" * ext)
             end
         end
         ptx.fns["clock_block"] = CuFunction(ptx.mod, "clock_block")

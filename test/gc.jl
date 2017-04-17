@@ -1,4 +1,4 @@
-import CUDArt
+using CUDArt
 using Base.Test
 
 ##########################
