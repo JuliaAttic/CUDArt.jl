@@ -8,9 +8,9 @@ function find_libraries()
     if any(x -> haskey(ENV, x), cudapath_envs)
         cudapath_envs = cudapath_envs[map(x -> haskey(ENV, x), cudapath_envs)]
         if !all(i -> i == cudapath_envs[1], cudapath_envs)
-            warn("Multiple CUDA home paths set via environment variables and are not equivalent.")
+            warn("Multiple, non-equivalent CUDA path variables found in environment.")
             cudapath = ENV[first(cudapath_envs)]
-            warn("Arbitrarily selecting CUDA home path: $(cudapath). To ensure a consistent path ensure only one CUDA path is in path.")
+            warn("Arbitrarily selecting CUDA at $(cudapath). To ensure a consistent path, ensure only one CUDA path environment variable is set.")
         else
             cudapath = ENV[first(cudapath_envs)]
         end
