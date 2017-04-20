@@ -5,20 +5,22 @@ const ext = joinpath(@__DIR__, "ext.jl")
 "Return paths of CUDA driver and runtime libraries."
 function find_libraries()
     cudapath_envs = ["CUDA_PATH", "CUDA_HOME", "CUDA_ROOT"] 
+    cudapath = Nullable{String}()
     if any(x -> haskey(ENV, x), cudapath_envs)
         cudapath_envs = cudapath_envs[map(x -> haskey(ENV, x), cudapath_envs)]
         if !all(i -> i == cudapath_envs[1], cudapath_envs)
             warn("Multiple, non-equivalent CUDA path variables found in environment.")
-            cudapath = ENV[first(cudapath_envs)]
-            warn("Arbitrarily selecting CUDA at $(cudapath). To ensure a consistent path, ensure only one CUDA path environment variable is set.")
+            cudapath = Nullable(ENV[first(cudapath_envs)])
+            warn("Arbitrarily selecting CUDA at $(get(cudapath)). To ensure a consistent path, ensure only one CUDA path environment variable is set.")
         else
-            cudapath = ENV[first(cudapath_envs)]
+            cudapath = Nullable(ENV[first(cudapath_envs)])
         end
     end
+    cudapaths = isnull(cudapath) ? [] : [get(cudapath)]
 
     libcuda_name = is_windows() ? "nvcuda.dll" : "libcuda"
 
-    libcuda = Libdl.find_library(libcuda_name, [cudapath])
+    libcuda = Libdl.find_library(libcuda_name, cudapaths)
 
     if isempty(libcuda) && !is_windows()
         # NOTE: we don't immediately call `find_library` on a set of (popular) locations,
@@ -29,7 +31,7 @@ function find_libraries()
     isempty(libcuda) && error("CUDA driver library cannot be found; is the CUDA driver installed?")
 
     libcudart_names = ["libcudart", "cudart"]
-    libcudart = Libdl.find_library(libcudart_names, [cudapath])
+    libcudart = Libdl.find_library(libcudart_names, cudapaths)
     if isempty(libcudart)
         if is_windows()
             # location of cudart64_xx.dll or cudart32_xx.dll have to be in PATH env var
