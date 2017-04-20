@@ -1,49 +1,14 @@
 using CUDAdrv
 using Compat
 
+
+## discover
+
 type Toolchain
     version::VersionNumber
     nvcc::String
     flags::Vector{String}
 end
-
-"Database of compute capabilities with matching shader model, and initial version of the CUDA toolkit supporting this architecture."
-const architectures = [
-    # cap       SM          CUDA
-    # NOTE: CUDA versions only checked starting with v4.0
-    (v"1.0",    "sm_10",    v"4.0"),
-    (v"1.1",    "sm_11",    v"4.0"),
-    (v"1.2",    "sm_12",    v"4.0"),
-    (v"1.3",    "sm_13",    v"4.0"),
-    (v"2.0",    "sm_20",    v"4.0"),
-    (v"2.1",    "sm_21",    v"4.0"),
-    (v"3.0",    "sm_30",    v"4.2"),
-    (v"3.2",    "sm_32",    v"6.0"),
-    (v"3.5",    "sm_35",    v"5.0"),
-    (v"3.7",    "sm_37",    v"6.5"),
-    (v"5.0",    "sm_50",    v"6.0"),
-    (v"5.2",    "sm_52",    v"7.0"),
-    (v"5.3",    "sm_53",    v"7.5"),
-    (v"6.0",    "sm_60",    v"8.0"),
-    (v"6.1",    "sm_61",    v"8.0"),
-    (v"6.2",    "sm_62",    v"8.0") ]
-
-
-"Return the most recent supported architecture for a CUDA device."
-function architecture(dev::CuDevice=CuDevice(0); cuda=nothing)
-    cap = capability(dev)
-    # Devices are compatible with code generated for lower compute models
-    compat_architectures = filter(x -> x[1] <= cap, architectures)
-    if cuda !== nothing
-        compat_architectures = filter(x -> cuda >= x[3], compat_architectures)
-    end
-    if length(compat_architectures) == 0
-        error("No support for requested device or software (compute model <= $cap" *
-              cuda === nothing ? "" : ", CUDA >= $cuda).")
-    end
-    return compat_architectures[length(compat_architectures)][2]
-end
-
 
 function discover_toolchain()
     # Check availability NVCC
@@ -172,13 +137,54 @@ function discover_toolchain()
     return Toolchain(version, nvcc, flags)
 end
 
+"Database of compute capabilities with matching shader model, and initial version of the
+CUDA toolkit supporting this architecture."
+const architectures = [
+    # cap       SM          CUDA
+    # NOTE: CUDA versions only checked starting with v4.0
+    (v"1.0",    "sm_10",    v"4.0"),
+    (v"1.1",    "sm_11",    v"4.0"),
+    (v"1.2",    "sm_12",    v"4.0"),
+    (v"1.3",    "sm_13",    v"4.0"),
+    (v"2.0",    "sm_20",    v"4.0"),
+    (v"2.1",    "sm_21",    v"4.0"),
+    (v"3.0",    "sm_30",    v"4.2"),
+    (v"3.2",    "sm_32",    v"6.0"),
+    (v"3.5",    "sm_35",    v"5.0"),
+    (v"3.7",    "sm_37",    v"6.5"),
+    (v"5.0",    "sm_50",    v"6.0"),
+    (v"5.2",    "sm_52",    v"7.0"),
+    (v"5.3",    "sm_53",    v"7.5"),
+    (v"6.0",    "sm_60",    v"8.0"),
+    (v"6.1",    "sm_61",    v"8.0"),
+    (v"6.2",    "sm_62",    v"8.0") ]
+
+
+"Return the most recent supported architecture for a CUDA device's capability."
+function select_architecture(cap::VersionNumber; cuda=nothing)
+    # devices are compatible with code generated for lower compute models
+    compat_architectures = filter(x -> x[1] <= cap, architectures)
+    if cuda !== nothing
+        compat_architectures = filter(x -> cuda >= x[3], compat_architectures)
+    end
+    if length(compat_architectures) == 0
+        error("No support for requested device or software (compute model <= $cap" *
+              cuda === nothing ? "" : ", CUDA >= $cuda).")
+    end
+    return compat_architectures[length(compat_architectures)][2]
+end
+
 const toolchain = discover_toolchain()
+const cap = reduce((a,b)->a<b?a:b, [capability(CuDevice(i)) for i in 0:devcount()-1])
+const arch = select_architecture(cap; cuda=toolchain.version)
+
+
+## build
 
 const utilsfile = "utils"
 const libfile = "libwrapcuda"
 
-function build(dev::CuDevice=CuDevice(0))
-    arch = architecture(dev; cuda=toolchain.version)
+function build(arch)
     compile_flags = vcat(toolchain.flags, ["--gpu-architecture", arch])
 
     cd(@__DIR__) do
@@ -198,4 +204,4 @@ function build(dev::CuDevice=CuDevice(0))
     nothing
 end
 
-build()
+build(arch)
