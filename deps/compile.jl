@@ -106,10 +106,15 @@ function discover_toolchain()
         end
         isnull(hostcc_maxver) && error("Unknown NVIDIA CUDA compiler version $version.")
 
+        # enumerate all possible gcc binary names
+        # NOTE: this is coarse, and might list invalid, non-existing versions
         hostcc_names = [ "gcc" ]
-        for ver in (v"4.4", v"4.5", v"4.6", v"4.7", v"4.8", v"4.9")
-            push!(hostcc_names, "gcc-$(ver.major).$(ver.minor)")
-            push!(hostcc_names, "gcc$(ver.major)$(ver.minor)")
+        for major in 3:7
+            push!(hostcc_names, "gcc-$major")
+            for minor in 0:9
+                push!(hostcc_names, "gcc-$major.$minor")
+                push!(hostcc_names, "gcc$major$minor")
+            end
         end
 
         # Check availability host compiler
