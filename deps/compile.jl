@@ -1,7 +1,3 @@
-using CUDAdrv
-using Compat
-
-
 ## discover
 
 type Toolchain
@@ -164,8 +160,9 @@ function select_architecture(cap::VersionNumber; cuda=nothing)
 end
 
 const toolchain = discover_toolchain()
-const cap = reduce((a,b)->a<b?a:b, [capability(CuDevice(i)) for i in 0:devcount()-1])
-const arch = select_architecture(cap; cuda=toolchain.version)
+const caps = [capability(libcudart_path, i) for i in 0:devcount(libcudart_path)-1]
+const compat_cap = reduce((a,b)->a<b?a:b, caps)
+const compat_arch = select_architecture(compat_cap; cuda=toolchain.version)
 
 
 ## build
@@ -193,4 +190,4 @@ function build(arch)
     nothing
 end
 
-build(arch)
+build(compat_arch)

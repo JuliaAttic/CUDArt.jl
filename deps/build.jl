@@ -1,5 +1,50 @@
 using Compat
 
+
+## API routines
+
+# these routines are the bare minimum we need from the API during build;
+# keep in sync with the actual implementations in src/
+
+macro apicall(libpath, fn, types, args...)
+    quote
+        lib = Libdl.dlopen($(esc(libpath)))
+        sym = Libdl.dlsym(lib, $(esc(fn)))
+
+        status = ccall(sym, Cint, $(esc(types)), $(map(esc, args)...))
+        status != 0 && error("error $status calling $fn")
+    end
+end
+
+function version(libpath)
+    ref = Ref{Cint}()
+    @apicall(libpath, :cudaRuntimeGetVersion, (Ptr{Cint}, ), ref)
+    return VersionNumber(ref[] ÷ 1000, mod(ref[], 100) ÷ 10)
+end
+
+function devcount(libpath)
+    ref = Ref{Cint}()
+    @apicall(libpath, :cudaGetDeviceCount, (Ptr{Cint},), ref)
+    return ref[]
+end
+
+function attribute(libpath, attr, dev)
+    ref = Ref{Cint}()
+    @apicall(libpath, :cudaDeviceGetAttribute, (Ptr{Cint}, Cint, Cint), ref, attr, dev)
+    return ref[]
+end
+
+const cudaDevAttrComputeCapabilityMajor = 75
+const cudaDevAttrComputeCapabilityMinor = 76
+function capability(libpath, dev)
+    major = attribute(libpath, cudaDevAttrComputeCapabilityMajor, dev)
+    minor = attribute(libpath, cudaDevAttrComputeCapabilityMinor, dev)
+    return VersionNumber(major, minor)
+end
+
+
+## discovery routines
+
 const ext = joinpath(@__DIR__, "ext.jl")
 
 "Return path of CUDA toolkit and the runtime library."
@@ -76,18 +121,14 @@ function find_nvml_smi()
     libnvml, nvidiasmi
 end
 
+
+## main build
+
 function setup_ext()
     cudapath, libcudart_path = find_cuda()
     libnvml_path, nvidiasmi_path = find_nvml_smi()
 
-    # find the library version; should be kept in sync with src/version.jl::version()
-    version_ref = Ref{Cint}()
-
-    lib = Libdl.dlopen(libcudart_path)
-    sym = Libdl.dlsym(lib, :cudaRuntimeGetVersion)
-    status = ccall(sym, Cint, (Ptr{Cint},), version_ref)
-    status != 0 && error("could not get CUDA runtime library version")
-    libcudart_version = VersionNumber(version_ref[] ÷ 1000, mod(version_ref[], 100) ÷ 10)
+    libcudart_version = version(libcudart_path)
 
     # check if we need to rebuild
     if isfile(ext)
