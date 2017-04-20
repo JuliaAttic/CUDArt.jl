@@ -12,28 +12,17 @@ end
 
 function discover_toolchain()
     # Check availability NVCC
-    cudapath_envs = ["CUDA_PATH", "CUDA_HOME", "CUDA_ROOT"] 
-    if haskey(ENV, "NVCC")
-        nvcc = ENV["NVCC"]
-    elseif any(x -> haskey(ENV, x), cudapath_envs)
-        cudapath_envs = cudapath_envs[map(x -> haskey(ENV, x), cudapath_envs)]
-        if !all(i -> i == cudapath_envs[1], cudapath_envs)
-            warn("Multiple CUDA home paths set via environment variables, which are unique.")
-            cudapath = ENV[first(cudapath_envs)]
-            warn("selecting CUDA home path: $(cudapath).")
-        else
-            cudapath = ENV[first(cudapath_envs)]
-        end
-        nvcc = joinpath(cudapath, "bin", "nvcc") * (is_windows() ? ".exe" : "")
+    if length(home) > 0
+        nvcc = joinpath(home, "bin", "nvcc") * (is_windows() ? ".exe" : "")
     elseif !is_windows()
         try
             nvcc = chomp(readstring(pipeline(`which nvcc`, stderr=DevNull)))
         catch ex
-            !isa(ex, ErrorException) && rethrow(ex)
-            rethrow(ErrorException("Could not find NVIDIA CUDA compiler (nvcc); consider setting the NVCC or the CUDA_PATH environment variable."))
+            isa(ex, ErrorException) || rethrow(ex)
+            error("Could not find NVIDIA CUDA compiler (nvcc); consider setting the CUDA_PATH environment variable.")
         end
     else
-        throw(ErrorException("Could not find NVIDIA CUDA compiler (nvcc); consider setting the NVCC or the CUDA_PATH environment variable."))
+        error("Could not find NVIDIA CUDA compiler (nvcc); consider setting the CUDA_PATH environment variable.")
     end
 
     nvcc_ver = Nullable{VersionNumber}()

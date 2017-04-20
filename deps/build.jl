@@ -2,7 +2,7 @@ using Compat
 
 const ext = joinpath(@__DIR__, "ext.jl")
 
-"Return path of CUDA runtime library."
+"Return path of CUDA toolkit and the runtime library."
 function find_cuda()
     cudapath_envs = ["CUDA_PATH", "CUDA_HOME", "CUDA_ROOT"] 
     cudapath = Nullable{String}()
@@ -44,7 +44,7 @@ function find_cuda()
     # so we save the full path in order to always be able to load the correct library
     libcudart_path = Libdl.dlpath(libcudart)
 
-    return libcudart
+    return cudapath, libcudart
 end
 
 "Return paths of libnvml library and nvidia-smi executable."
@@ -77,7 +77,7 @@ function find_nvml_smi()
 end
 
 function setup_ext()
-    libcudart_path = find_cuda()
+    cudapath, libcudart_path = find_cuda()
     libnvml_path, nvidiasmi_path = find_nvml_smi()
 
     # find the library version; should be kept in sync with src/version.jl::version()
@@ -93,7 +93,8 @@ function setup_ext()
     if isfile(ext)
         info("Checking validity of existing ext.jl.")
         @eval module Previous; include($ext); end
-        if isdefined(Previous, :libcudart_version) && Previous.libcudart_version == libcudart_version &&
+        if isdefined(Previous, :home) && Previous.cudapath == cudapath &&
+        isdefined(Previous, :libcudart_version) && Previous.libcudart_version == libcudart_version &&
         isdefined(Previous, :libcudart_path)  && Previous.libcudart_path == libcudart_path &&
         isdefined(Previous, :libnvml_path)  && Previous.libnvml_path == libnvml_path
         isdefined(Previous, :nvidiasmi_path)  && Previous.nvidiasmi_path == nvidiasmi_path
@@ -102,8 +103,10 @@ function setup_ext()
     end
 
     # write ext.jl
+    home = isnull(cudapath) ? "" : escape_string(get(cudapath))
     open(ext, "w") do fh
         write(fh, """
+            const home = "$home"
             const libcudart_path = "$(escape_string(libcudart_path))"
             const libcudart_version = v"$libcudart_version"
 
@@ -122,4 +125,5 @@ catch ex
     rethrow(ex)
 end
 
+include(ext)
 include("compile.jl")
