@@ -2,8 +2,8 @@ using Compat
 
 const ext = joinpath(@__DIR__, "ext.jl")
 
-"Return paths of CUDA driver and runtime libraries."
-function find_libraries()
+"Return path of CUDA runtime library."
+function find_cuda()
     cudapath_envs = ["CUDA_PATH", "CUDA_HOME", "CUDA_ROOT"] 
     cudapath = Nullable{String}()
     if any(x -> haskey(ENV, x), cudapath_envs)
@@ -17,18 +17,6 @@ function find_libraries()
         end
     end
     cudapaths = isnull(cudapath) ? [] : [get(cudapath)]
-
-    libcuda_name = is_windows() ? "nvcuda.dll" : "libcuda"
-
-    libcuda = Libdl.find_library(libcuda_name, cudapaths)
-
-    if isempty(libcuda) && !is_windows()
-        # NOTE: we don't immediately call `find_library` on a set of (popular) locations,
-        # because those arbitrary locations might then take precedence over the system configuration
-        # (e.g. ld.so.conf) or user preferences (LD_LIBRARY_PATH)
-        libcuda = Libdl.find_library(libcuda_name, ["/opt/cuda/lib", "/usr/local/cuda/lib", "/usr/lib"])
-    end
-    isempty(libcuda) && error("CUDA driver library cannot be found; is the CUDA driver installed?")
 
     libcudart_names = ["libcudart", "cudart"]
     libcudart = Libdl.find_library(libcudart_names, cudapaths)
@@ -54,10 +42,9 @@ function find_libraries()
     # NOTE: we could just as well use the result of `find_library,
     # but the user might have run this script with eg. LD_LIBRARY_PATH set
     # so we save the full path in order to always be able to load the correct library
-    libcuda_path = Libdl.dlpath(libcuda)
     libcudart_path = Libdl.dlpath(libcudart)
 
-    return libcuda, libcudart
+    return libcudart
 end
 
 "Return paths of libnvml library and nvidia-smi executable."
@@ -90,20 +77,11 @@ function find_nvml_smi()
 end
 
 function setup_ext()
-    libcuda_path, libcudart_path = find_libraries()
+    libcudart_path = find_cuda()
     libnvml_path, nvidiasmi_path = find_nvml_smi()
 
-    # find the library vendor
-    libcuda_vendor = "NVIDIA"
-
-    # find the library version; NOTE: should be kept in sync with src/version.jl::version()
+    # find the library version; should be kept in sync with src/version.jl::version()
     version_ref = Ref{Cint}()
-
-    lib = Libdl.dlopen(libcuda_path)
-    sym = Libdl.dlsym(lib, :cuDriverGetVersion)
-    status = ccall(sym, Cint, (Ptr{Cint},), version_ref)
-    status != 0 && error("could not get CUDA driver library version")
-    libcuda_version = VersionNumber(version_ref[] ÷ 1000, mod(version_ref[], 100) ÷ 10)
 
     lib = Libdl.dlopen(libcudart_path)
     sym = Libdl.dlsym(lib, :cudaRuntimeGetVersion)
@@ -115,11 +93,8 @@ function setup_ext()
     if isfile(ext)
         info("Checking validity of existing ext.jl.")
         @eval module Previous; include($ext); end
-        if isdefined(Previous, :libcuda_version) && Previous.libcuda_version == libcuda_version &&
-        isdefined(Previous, :libcuda_path)    && Previous.libcuda_path == libcuda_path &&
-        isdefined(Previous, :libcudart_version) && Previous.libcudart_version == libcudart_version &&
+        if isdefined(Previous, :libcudart_version) && Previous.libcudart_version == libcudart_version &&
         isdefined(Previous, :libcudart_path)  && Previous.libcudart_path == libcudart_path &&
-        isdefined(Previous, :libcuda_vendor)  && Previous.libcuda_vendor == libcuda_vendor
         isdefined(Previous, :libnvml_path)  && Previous.libnvml_path == libnvml_path
         isdefined(Previous, :nvidiasmi_path)  && Previous.nvidiasmi_path == nvidiasmi_path
             info("CUDArt.jl has already been built for this CUDA library, no need to rebuild.")
@@ -129,9 +104,6 @@ function setup_ext()
     # write ext.jl
     open(ext, "w") do fh
         write(fh, """
-            const libcuda_vendor = "$libcuda_vendor"
-            const libcuda_path = "$(escape_string(libcuda_path))"
-            const libcuda_version = v"$libcuda_version"
             const libcudart_path = "$(escape_string(libcudart_path))"
             const libcudart_version = v"$libcudart_version"
 
