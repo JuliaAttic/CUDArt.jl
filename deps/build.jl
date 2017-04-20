@@ -125,8 +125,19 @@ type Toolchain
     flags::Vector{String}
 end
 
-function find_toolchain(cudapath)
-    # Check availability NVCC
+
+"""Database of maximally supported version of GCC for each version of CUDA."""
+const gcc_support = (
+    (v"5.0", v"4.6.4"),
+    (v"5.5", v"4.7.3"),
+    (v"6.0", v"4.8.1"),
+    (v"6.5", v"4.8.2"),
+    (v"7.0", v"4.9.2"),
+    (v"7.5", v"4.9.2"),
+    (v"8.0", v"5.3.1") )
+
+function find_toolchain(version, cudapath)
+    # check availability NVCC
     if !isnull(cudapath)
         nvcc = joinpath(get(cudapath), "bin", "nvcc") * (is_windows() ? ".exe" : "")
     elseif !is_windows()
@@ -140,82 +151,69 @@ function find_toolchain(cudapath)
         error("Could not find NVIDIA CUDA compiler (nvcc); consider setting the CUDA_PATH environment variable.")
     end
 
-    nvcc_ver = Nullable{VersionNumber}()
-    for line in readlines(`$nvcc --version`)
-        m = match(r"release ([0-9.]+)", line)
-        if m !== nothing
-            nvcc_ver = Nullable(VersionNumber(m.captures[1]))
-        end
-    end
-    isnull(nvcc_ver) && error("Could not parse NVIDIA CUDA compiler version info.")
-    version = get(nvcc_ver)
-
     flags = [ "--compiler-bindir" ]
 
-    # collect possible hostcc executable names
+    # find a suitable host compiler
     if !is_windows()
-        # Determine host compiler version requirements; Source: "CUDA Getting Started Guide for Linux".
-        hostcc_support = (
-            (v"5.0", v"4.6.4"),
-            (v"5.5", v"4.7.3"),
-            (v"6.0", v"4.8.1"),
-            (v"6.5", v"4.8.2"),
-            (v"7.0", v"4.9.2"),
-            (v"7.5", v"4.9.2"),
-            (v"8.0", v"5.3.1") )
-        if version < hostcc_support[1][1]
-            error("no support for CUDA < $(hostcc_req[1][1])")
+        # Unix-like platforms: find compatible GCC binary
+
+        # find the maximally supported version of gcc
+        if version < gcc_support[1][1]
+            error("no support for CUDA < $(gcc_support[1][1])")
         end
-        hostcc_maxver = Nullable{VersionNumber}()
-        for hostcc in hostcc_support
-            if version == hostcc[1]
-                hostcc_maxver = Nullable(hostcc[2])
+        gcc_maxver = Nullable{VersionNumber}()
+        for versions in gcc_support
+            if version == versions[1]
+                gcc_maxver = Nullable(versions[2])
                 break
             end
         end
-        isnull(hostcc_maxver) && error("Unknown NVIDIA CUDA compiler version $version.")
+        isnull(gcc_maxver) && error("Unsupported CUDA version $version.")
 
-        # enumerate all possible gcc binary names
+        # enumerate possible names for the gcc binary
         # NOTE: this is coarse, and might list invalid, non-existing versions
-        hostcc_names = [ "gcc" ]
+        gcc_names = [ "gcc" ]
         for major in 3:7
-            push!(hostcc_names, "gcc-$major")
+            push!(gcc_names, "gcc-$major")
             for minor in 0:9
-                push!(hostcc_names, "gcc-$major.$minor")
-                push!(hostcc_names, "gcc$major$minor")
+                push!(gcc_names, "gcc-$major.$minor")
+                push!(gcc_names, "gcc$major$minor")
             end
         end
 
-        # Check availability host compiler
-        hostcc_possibilities = []
-        for hostcc in hostcc_names
-            hostcc_path = try
-                chomp(readstring(pipeline(`which $hostcc`, stderr=DevNull)))
+        # find the binary
+        gcc_possibilities = []
+        for gcc in gcc_names
+            # check if the binary exists
+            gcc_path = try
+                chomp(readstring(pipeline(`which $gcc`, stderr=DevNull)))
             catch ex
-                !isa(ex, ErrorException) && rethrow(ex)
+                isa(ex, ErrorException) || rethrow(ex)
                 continue
             end
 
-            verstring = chomp(readlines(`$hostcc_path --version`)[1])
-            m = match(Regex("^$hostcc \\(.*\\) ([0-9.]+)"), verstring)
+            # parse the GCC version string
+            verstring = chomp(readlines(`$gcc_path --version`)[1])
+            m = match(Regex("^$gcc \\(.*\\) ([0-9.]+)"), verstring)
             if m === nothing
                 warn("Could not parse GCC version info (\"$verstring\"), skipping this compiler.")
                 continue
             end
-            hostcc_ver = VersionNumber(m.captures[1])
+            gcc_ver = VersionNumber(m.captures[1])
 
-            if hostcc_ver <= get(hostcc_maxver)
-                push!(hostcc_possibilities, (hostcc_path, hostcc_ver))
+            if gcc_ver <= get(gcc_maxver)
+                push!(gcc_possibilities, (gcc_path, gcc_ver))
             end
         end
-        if length(hostcc_possibilities) == 0
-            error("Could not find a suitable host compiler (your NVCC $version needs GCC <= $(get(hostcc_maxver))).")
-        end
-        sort!(hostcc_possibilities; rev=true, lt=(a, b) -> a[2]<b[2])
-        hostcc = hostcc_possibilities[1]
 
-        push!(flags, hostcc[1])
-    else # Windows
+        if length(gcc_possibilities) == 0
+            error("Could not find a suitable host compiler (your CUDA v$version needs GCC <= $(get(gcc_maxver))).")
+        end
+        sort!(gcc_possibilities; rev=true, lt=(a, b) -> a[2]<b[2])
+        push!(flags, gcc_possibilities[1][1])
+    else
+        # Windows: just use cl.exe
+
         vc_versions = ["VS140COMNTOOLS", "VS120COMNTOOLS", "VS110COMNTOOLS", "VS100COMNTOOLS"]
         !any(x -> haskey(ENV, x), vc_versions) && error("Compatible Visual Studio installation cannot be found; Visual Studio 2015, 2013, 2012, or 2010 is required.")
         vs_cmd_tools_dir = ENV[vc_versions[first(find(x -> haskey(ENV, x), vc_versions))]]
@@ -309,17 +307,15 @@ const ext = joinpath(@__DIR__, "ext.jl")
 function main()
     # discover stuff
     cudapath, libcudart_path = find_cuda()
+    libcudart_version = version(libcudart_path)
     libnvml_path, nvidiasmi_path = find_nvml_smi()
-    toolchain = find_toolchain(cudapath)
+    toolchain = find_toolchain(libcudart_version, cudapath)
 
     # select a compatible architecture and build code for it
     caps = [capability(libcudart_path, i) for i in 0:devcount(libcudart_path)-1]
     compat_cap = reduce((a,b)->a<b?a:b, caps)
     compat_arch = select_architecture(compat_cap; cuda=toolchain.version)
     build(toolchain, compat_arch)
-
-    # gather some additional info
-    libcudart_version = version(libcudart_path)
 
     # check if we need to rebuild
     if isfile(ext)
