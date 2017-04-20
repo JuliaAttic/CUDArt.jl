@@ -340,6 +340,12 @@ function main()
             const libcudart_path = "$(escape_string(libcudart_path))"
             const libcudart_version = v"$libcudart_version"
 
+            const toolchain_version = v"$(toolchain.version)"
+            const toolchain_nvcc = "$(escape_string(toolchain.nvcc))"
+            const toolchain_flags = $(toolchain.flags)
+
+            const architecture = "$compat_arch"
+
             const libnvml_path = "$(escape_string(libnvml_path))"
             const nvidiasmi_path =  "$(escape_string(nvidiasmi_path))"
             """)
