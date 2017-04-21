@@ -34,9 +34,8 @@ const ext = joinpath(dirname(@__DIR__), "deps", "ext.jl")
 if isfile(ext)
     include(ext)
 else
-    error("Unable to load dependency file $ext.\nPlease run Pkg.build(\"CUDAdrv\") and restart Julia.")
+    error("Unable to load dependency file $ext.\nPlease run Pkg.build(\"CUDArt\") and restart Julia.")
 end
-const libcuda = libcuda_path
 const libcudart = libcudart_path
 const libnvml = libnvml_path
 const nvidia_smi = nvidiasmi_path
