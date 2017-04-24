@@ -12,7 +12,7 @@ macro apicall(libpath, fn, types, args...)
         sym = Libdl.dlsym(lib, $(esc(fn)))
 
         status = ccall(sym, Cint, $(esc(types)), $(map(esc, args)...))
-        status != 0 && error("error $status calling $fn")
+        status != 0 && error("CUDA error $status calling ", $fn)
     end
 end
 
@@ -45,41 +45,48 @@ end
 
 ## discovery routines
 
-"Return path of CUDA toolkit and the runtime library."
+# find CUDA toolkit
 function find_cuda()
-    cudapath_envs = ["CUDA_PATH", "CUDA_HOME", "CUDA_ROOT"] 
-    cudapath = Nullable{String}()
-    if any(x -> haskey(ENV, x), cudapath_envs)
-        cudapath_envs = cudapath_envs[map(x -> haskey(ENV, x), cudapath_envs)]
-        if !all(i -> i == cudapath_envs[1], cudapath_envs)
-            warn("Multiple, non-equivalent CUDA path variables found in environment.")
-            cudapath = Nullable(ENV[first(cudapath_envs)])
-            warn("Arbitrarily selecting CUDA at $(get(cudapath)). To ensure a consistent path, ensure only one CUDA path environment variable is set.")
-        else
-            cudapath = Nullable(ENV[first(cudapath_envs)])
+    cuda_envvars = ["CUDA_PATH", "CUDA_HOME", "CUDA_ROOT"]
+    cuda_envvars_set = filter(var -> haskey(ENV, var), cuda_envvars)
+    if length(cuda_envvars_set) > 0
+        cuda_paths = unique(map(var->ENV[var], cuda_envvars_set))
+        if length(unique(cuda_paths)) > 1
+            warn("Multiple CUDA path environment variables set: $(join(cuda_envvars_set, ", ", " and ")). ",
+                 "Arbitrarily selecting CUDA at $(first(cuda_paths)). ",
+                 "To ensure a consistent path, ensure only a single unique CUDA path is set.")
         end
+        cuda_path = Nullable(first(cuda_paths))
+    else
+        cuda_path = Nullable{String}()
     end
-    cudapaths = isnull(cudapath) ? [] : [get(cudapath)]
 
+    return cuda_path
+end
+
+# database of CUDA versions
+const cuda_db = [v"4.0", v"4.2", v"5.0", v"6.0", v"6.5", v"7.0", v"7.5", v"8.0"]
+
+# find CUDA runtime library
+function find_libcudart(cuda_path)
     libcudart_names = ["libcudart", "cudart"]
-    libcudart = Libdl.find_library(libcudart_names, cudapaths)
+    libcudart = Libdl.find_library(libcudart_names, isnull(cuda_path) ? [] : [get(cuda_path)])
     if isempty(libcudart)
+        # take a guess at where CUDA is installed
         if is_windows()
-            # location of cudart64_xx.dll or cudart32_xx.dll have to be in PATH env var
-            # ex: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin (by default, it is done by CUDA toolkit installer)
-            dllnames = Sys.WORD_SIZE == 64 ?
-                ["cudart64_70", "cudart64_65", "cudart64_60", "cudart64_55", "cudart64_50", "cudart64_50_35"] :
-                ["cudart32_70", "cudart32_65", "cudart32_60", "cudart32_55", "cudart32_50", "cudart32_50_35"]
+            # location of cudart64_xx.dll or cudart32_xx.dll has to be in PATH env var
+            # eg. C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin
+            # (by default, it is set by CUDA toolkit installer)
+            postfix = Sys.WORD_SIZE == 64 ? "64" : "32"
+            dllnames = map(ver->"cudart$(postfix)_$(ver.major)$(ver.minor)", cuda_db)
             libcudart = Libdl.find_library(dllnames)
         else # linux or mac
             libdir = Sys.WORD_SIZE == 64 ? "lib64" : "lib"
             libcudart = Libdl.find_library(libcudart_names,
-                                ["/usr/local/cuda/$libdir", "/usr/local/cuda-6.5/$libdir", "/usr/local/cuda-6.0/$libdir",
-                                 "/usr/local/cuda-5.5/$libdir", "/usr/local/cuda-5.0/$libdir", "/usr/local/cuda-7.0/$libdir"])
+                                           ["/opt/cuda/$libdir", "/usr/local/cuda/$libdir"])
         end
     end
     isempty(libcudart) && error("CUDA runtime library cannot be found.")
-
 
     # find the full path of the library
     # NOTE: we could just as well use the result of `find_library,
@@ -87,14 +94,14 @@ function find_cuda()
     # so we save the full path in order to always be able to load the correct library
     libcudart_path = Libdl.dlpath(libcudart)
 
-    return cudapath, libcudart
+    return libcudart_path
 end
 
-"Return paths of libnvml library and nvidia-smi executable."
+# find NVML library and SMI executable
 function find_nvml_smi()
     nvml_libdir = is_windows() ? joinpath(ENV["ProgramFiles"], "NVIDIA Corporation", "NVSMI") : ""
     if is_windows() && !isdir(nvml_libdir)
-        error("Could not determine Nvidia driver installation location.")
+        error("Could not determine NVIDIA driver installation location.")
     end
     libnvml = Libdl.find_library(["libnvidia-ml", "nvml"], [nvml_libdir])
 
@@ -136,10 +143,11 @@ const gcc_support = (
     (v"7.5", v"4.9.2"),
     (v"8.0", v"5.3.1") )
 
-function find_toolchain(version, cudapath)
+# find CUDA C toolchain
+function find_toolchain(version, cuda_path)
     # check availability NVCC
-    if !isnull(cudapath)
-        nvcc = joinpath(get(cudapath), "bin", "nvcc") * (is_windows() ? ".exe" : "")
+    if !isnull(cuda_path)
+        nvcc = joinpath(get(cuda_path), "bin", "nvcc") * (is_windows() ? ".exe" : "")
     elseif !is_windows()
         try
             nvcc = chomp(readstring(pipeline(`which nvcc`, stderr=DevNull)))
@@ -306,10 +314,11 @@ const ext = joinpath(@__DIR__, "ext.jl")
 
 function main()
     # discover stuff
-    cudapath, libcudart_path = find_cuda()
+    cuda_path = find_cuda()
+    libcudart_path = find_libcudart(cuda_path)
     libcudart_version = version(libcudart_path)
     libnvml_path, nvidiasmi_path = find_nvml_smi()
-    toolchain = find_toolchain(libcudart_version, cudapath)
+    toolchain = find_toolchain(libcudart_version, cuda_path)
 
     # select a compatible architecture and build code for it
     caps = [capability(libcudart_path, i) for i in 0:devcount(libcudart_path)-1]
@@ -321,7 +330,7 @@ function main()
     if isfile(ext)
         info("Checking validity of existing ext.jl.")
         @eval module Previous; include($ext); end
-        if isdefined(Previous, :home) && Previous.cudapath == cudapath &&
+        if isdefined(Previous, :home) && Previous.cuda_path == cuda_path &&
         isdefined(Previous, :libcudart_version) && Previous.libcudart_version == libcudart_version &&
         isdefined(Previous, :libcudart_path)  && Previous.libcudart_path == libcudart_path &&
         isdefined(Previous, :libnvml_path)  && Previous.libnvml_path == libnvml_path
