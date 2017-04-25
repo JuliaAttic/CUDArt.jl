@@ -322,7 +322,7 @@ multiple CUDA devices.  Using [Julia's `@sync` and `@async`
 macros](http://docs.julialang.org/en/latest/manual/parallel-computing/), here is a short
 demonstration that activates processing on multiple devices:
 
-```
+```julia
 measured_sleep_time = CUDArt.devices(dev->true, nmax=2) do devlist
     sleeptime = 0.5
     results = Array{Float64}(3*length(devlist))
