@@ -115,7 +115,7 @@ function find_nvml_smi()
         nvidiasmi = "nvidia-smi"
     end
     try
-        success(`nvidiadssmi`)
+        success(`$nvidiasmi`)
     catch
         nvidiasmi = ""
         warn("nvidia-smi failure")
