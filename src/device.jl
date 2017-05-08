@@ -103,6 +103,14 @@ function filter_free(devlist)
         end
         ccall(("nvmlShutdown", libnvml), UInt32, ())
         return freelist
+    elseif isempty(nvidia_smi)
+        Base.warn_once(
+        """
+        Neither NVML nor nvidia-smi are available.
+        Please check your setup and install either one.
+        `CUDArt.filter_free` will not work.
+        """)
+        return devlist
     else
         smi = readstring(`$nvidia_smi`)
         if contains(smi, "No running")

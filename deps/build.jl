@@ -121,12 +121,16 @@ function find_nvml_smi()
             nvidiasmi = ""
         end
     catch err
-        warn("Encountered $err while executing `nvidia-smi`")
+        warn("Encountered error \"$err\" while executing `nvidia-smi`")
         nvidiasmi = ""
     end
 
     if isempty(nvidiasmi) && isempty(libnvml)
-        error("NVML nor nvidia-smi can be found.")
+        if is_apple()
+            warn("NVML nor nvidia-smi can be found.")
+        else
+            error("NVML nor nvidia-smi can be found.")
+        end
     end
 
     libnvml, nvidiasmi
