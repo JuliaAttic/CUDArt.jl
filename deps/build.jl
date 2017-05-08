@@ -114,11 +114,15 @@ function find_nvml_smi()
     else
         nvidiasmi = "nvidia-smi"
     end
+
     try
-        success(`$nvidiasmi`)
-    catch
+        if !success(`$nvidiasmi`)
+            warn("nvidia-smi failure")
+            nvidiasmi = ""
+        end
+    catch err
+        warn("Encountered $err while executing `nvidia-smi`")
         nvidiasmi = ""
-        warn("nvidia-smi failure")
     end
 
     if isempty(nvidiasmi) && isempty(libnvml)
