@@ -6,7 +6,7 @@
 |:---------:|:---------:|
 | [![](https://ci.maleadt.net/buildbot/julia/png?builder=CUDArt.jl:%20Julia%200.5%20(x86-64))](https://ci.maleadt.net/buildbot/julia/builders/CUDArt.jl%3A%20Julia%200.5%20%28x86-64%29) | [![](https://ci.maleadt.net/buildbot/julia/png?builder=CUDArt.jl:%20Julia%20master%20(x86-64))](https://ci.maleadt.net/buildbot/julia/builders/CUDArt.jl%3A%20Julia%20master%20%28x86-64%29) |
 
-<!-- **Code coverage**: [![Coverage Status](https://codecov.io/gh/JuliaGPU/CUDArt.jl/coverage.svg)](https://codecov.io/gh/JuliaGPU/CUDArt.jl) -->
+**Code coverage**: [![Coverage Status](https://codecov.io/gh/JuliaGPU/CUDArt.jl/coverage.svg)](https://codecov.io/gh/JuliaGPU/CUDArt.jl)
 
 This package wraps the [CUDA runtime API](http://docs.nvidia.com/cuda/cuda-runtime-api/).
 For a wrapper of the lower-level [driver API](http://docs.nvidia.com/cuda/cuda-driver-api/),

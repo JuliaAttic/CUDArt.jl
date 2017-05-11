@@ -11,3 +11,6 @@ before_install:
 script:
   - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("CUDArt"))`); Pkg.pin("CUDArt"); Pkg.resolve()'
   - julia -e 'using CUDArt; @assert isdefined(:CUDArt); @assert typeof(CUDArt) === Module'
+after_success:
+  - julia --color=yes -e 'cd(Pkg.dir("CUDArt")); Pkg.add("Coverage"); using Coverage;
+    Coveralls.submit(Coveralls.process_folder())'
