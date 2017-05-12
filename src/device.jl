@@ -87,7 +87,7 @@ function devices(f::Function, devlist::Union{Integer,AbstractVector})
 end
 
 function filter_free(devlist)
-    if !isempty(libnvml)
+    @static if !isempty(libnvml)
         ccall(("nvmlInit", libnvml), UInt32, ())
         freelist = Int[]
         for i in devlist
@@ -103,15 +103,7 @@ function filter_free(devlist)
         end
         ccall(("nvmlShutdown", libnvml), UInt32, ())
         return freelist
-    elseif isempty(nvidia_smi)
-        Base.warn_once(
-        """
-        Neither NVML nor nvidia-smi are available.
-        Please check your setup and install either one.
-        `CUDArt.filter_free` will not work.
-        """)
-        return devlist
-    else
+    elseif !isempty(nvidia_smi)
         smi = readstring(`$nvidia_smi`)
         if contains(smi, "No running")
             return devlist
@@ -129,6 +121,14 @@ function filter_free(devlist)
             end
         end
         return collect(freeset)
+    else
+        Base.warn_once(
+        """
+        Neither NVML nor nvidia-smi are available.
+        Please check your setup and install either one.
+        `CUDArt.filter_free` will not work.
+        """)
+        return devlist
     end
 end
 
