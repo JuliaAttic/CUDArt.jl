@@ -114,13 +114,23 @@ function find_nvml_smi()
     else
         nvidiasmi = "nvidia-smi"
     end
-    if !success(`$nvidiasmi`)
-        warn("nvidia-smi failure")
+
+    try
+        if !success(`$nvidiasmi`)
+            warn("nvidia-smi failure")
+            nvidiasmi = ""
+        end
+    catch err
+        warn("Encountered error \"$err\" while executing `nvidia-smi`")
         nvidiasmi = ""
     end
 
     if isempty(nvidiasmi) && isempty(libnvml)
-        error("NVML nor nvidia-smi can be found.")
+        if is_apple()
+            warn("NVML nor nvidia-smi can be found.")
+        else
+            error("NVML nor nvidia-smi can be found.")
+        end
     end
 
     libnvml, nvidiasmi
@@ -162,7 +172,7 @@ function find_toolchain(version, cuda_path)
     flags = [ "--compiler-bindir" ]
 
     # find a suitable host compiler
-    if !is_windows()
+    if !(is_windows() || is_apple())
         # Unix-like platforms: find compatible GCC binary
 
         # find the maximally supported version of gcc
@@ -219,7 +229,7 @@ function find_toolchain(version, cuda_path)
         end
         sort!(gcc_possibilities; rev=true, lt=(a, b) -> a[2]<b[2])
         push!(flags, gcc_possibilities[1][1])
-    else
+    elseif is_windows()
         # Windows: just use cl.exe
 
         vc_versions = ["VS140COMNTOOLS", "VS120COMNTOOLS", "VS110COMNTOOLS", "VS100COMNTOOLS"]
@@ -227,6 +237,10 @@ function find_toolchain(version, cuda_path)
         vs_cmd_tools_dir = ENV[vc_versions[first(find(x -> haskey(ENV, x), vc_versions))]]
         hostccbin = joinpath(dirname(dirname(dirname(vs_cmd_tools_dir))), "VC", "bin", Sys.WORD_SIZE == 64 ? "amd64" : "", "cl.exe")
 
+        push!(flags, hostccbin)
+    elseif is_apple()
+        # GCC is no longer supported on mac so let's just use clang
+        hostccbin = chomp(readstring(pipeline(`which clang`, stderr=DevNull)))
         push!(flags, hostccbin)
     end
 
