@@ -23,7 +23,8 @@ export
 import Base: ==, -, +, getindex, setindex!,
     length, size, ndims, eltype, similar, pointer, stride,
     copy, convert, reinterpret, show, summary,
-    copy!, get!, fill!, launch, wait, unsafe_convert, vec
+    copy!, get!, fill!, wait, unsafe_convert, vec
+import CUDAdrv: attribute, capability, device
 
 # Prepare the CUDA runtime API bindings
 include("libcudart-6.5.jl")

@@ -19,19 +19,19 @@ function func41(a, dims)
     Cint[size(b)...]
 end
 
-result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
+result = devices(dev->capability(dev)[1] >= 2, nmax=1) do devlist
     # Copying memory to and from device
     @test length(devlist) == 1
-    CUDArt.device(devlist[1])
+    device(devlist[1])
     # Test CudaArrays and CudaPitchedArrays
-    for AT in (CUDArt.CudaArray, CUDArt.CudaPitchedArray)
+    for AT in (CudaArray, CudaPitchedArray)
         g = AT(Float64, (5,3))
-        if AT == CUDArt.CudaPitchedArray
+        if AT == CudaPitchedArray
             p = pointer(g)
             @test p.xsize == 5
             @test p.ysize == 3
         end
-        h = CUDArt.to_host(g)
+        h = to_host(g)
         @test typeof(h) == Array{Float64,2}
         @test size(h) == (5,3)
         g2 = AT(1:5)
@@ -44,36 +44,36 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         @test eltype(g3) == Int
         @test size(g3) == (7,)
         @test typeof(g3) == AT{Int, 1}
-        h2 = CUDArt.to_host(g2)
+        h2 = to_host(g2)
         @test typeof(h2) == Array{Int,1}
         @test h2 == [1:5;]
-        if AT == CUDArt.CudaPitchedArray
+        if AT == CudaPitchedArray
             p = pointer(g2)
             @test p.xsize == 5
             @test p.ysize == 1
         end
         # fill!
         fill!(g2, 0x00)
-        h2 = CUDArt.to_host(g2)
+        h2 = to_host(g2)
         @test h2 == zeros(Int, 5)
         fill!(g2, 0)
-        h2 = CUDArt.to_host(g2)
+        h2 = to_host(g2)
         @test h2 == zeros(Int, 5)
         fill!(g, 0.0)
-        h = CUDArt.to_host(g)
+        h = to_host(g)
         @test all(h .== 0)
         fill!(g, 0)
-        h = CUDArt.to_host(g)
+        h = to_host(g)
         @test all(h .== 0)
         fill!(g, 8.4)
-        h = CUDArt.to_host(g)
+        h = to_host(g)
         @test all(h .== 8.4)
         fill!(g, NaN)
-        h = CUDArt.to_host(g)
+        h = to_host(g)
         @test isequal(h, fill(NaN, size(g)))
         gbig = AT(Int32, (2000,1000))
         fill!(gbig, -17)
-        hbig = CUDArt.to_host(gbig)
+        hbig = to_host(gbig)
         @test all(hbig .== -17) && size(hbig) == (2000,1000)
         # Element-type conversions
         h32 = rand(Float32, (5,3))
@@ -85,40 +85,40 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     end
     # Getting portions of an array
     h_src = reshape(1.0:15.0, 3, 5)
-    d_src = CUDArt.CudaPitchedArray(h_src)
-    d_dest = CUDArt.CudaPitchedArray(Float64, (1, 2))
+    d_src = CudaPitchedArray(h_src)
+    d_dest = CudaPitchedArray(Float64, (1, 2))
     get!(d_dest, d_src, (2,2:3), NaN)
-    h_dest = CUDArt.to_host(d_dest)
+    h_dest = to_host(d_dest)
     @test h_dest == [5 8]
     get!(d_dest, d_src, (2,0:1), NaN)
-    h_dest = CUDArt.to_host(d_dest)
+    h_dest = to_host(d_dest)
     @test isequal(h_dest, [NaN 2])
     get!(d_dest, d_src, (3,5:6), 7.3)
-    h_dest = CUDArt.to_host(d_dest)
+    h_dest = to_host(d_dest)
     @test isequal(h_dest, [15 7.3])
     # Copies between CudaPitchedArrays and CudaArrays
     A = rand(map(UInt16, 5:11), 7, 2)
-    GA = CUDArt.CudaArray(A)
-    GP = CUDArt.CudaPitchedArray(eltype(A), size(A))
+    GA = CudaArray(A)
+    GP = CudaPitchedArray(eltype(A), size(A))
     copy!(GP, GA)
-    H = CUDArt.to_host(GP)
+    H = to_host(GP)
     @test H == A
     A[3,2] = 0
     copy!(GP, A)
     copy!(GA, GP)
-    H = CUDArt.to_host(GA)
+    H = to_host(GA)
     @test H == A
     # HostArray (pinned memory)
-    A = CUDArt.HostArray(Int32, (6,4))
+    A = HostArray(Int32, (6,4))
     A[2,2] = 7
     @test A[2,2] == 7
-    G = CUDArt.CudaArray(A)
-    CUDArt.device_synchronize()
+    G = CudaArray(A)
+    device_synchronize()
     A[2,2] = 3
     @test A[2,2] == 3
     copy!(A, G)
 #     @test A[2,2] == 3  # asynchronous
-    CUDArt.device_synchronize()
+    device_synchronize()
     @test A[2,2] == 7
     if VERSION < v"0.5.0-dev+4597"
         S = pointer_to_array(pointer(A)+48, (6,2), false)  # a "SubArray"
@@ -126,13 +126,13 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         S = unsafe_wrap(Array, pointer(A)+48, (6,2), false)  # a "SubArray"
     end
     B = rand(map(Int32, 1:15), 6, 2)
-    GB = CUDArt.CudaArray(B)
+    GB = CudaArray(B)
     copy!(S, GB)
-    CUDArt.device_synchronize()
+    device_synchronize()
     @test A[:,3:4] == B
-    GB = CUDArt.CudaPitchedArray(2B)
+    GB = CudaPitchedArray(2B)
     copy!(S, GB)
-    CUDArt.device_synchronize()
+    device_synchronize()
     @test A[:,3:4] == 2B
     # test vec
     let
@@ -140,18 +140,18 @@ result = CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         n = 5
         Am = rand(m, n)
         Av = rand(n)
-        d_Am = CUDArt.CudaArray(Am)
-        d_Av = CUDArt.CudaArray(Av)
+        d_Am = CudaArray(Am)
+        d_Av = CudaArray(Av)
         d_Amvec = vec(d_Am)
         d_Avvec = vec(d_Av)
-        @test CUDArt.to_host(d_Amvec) == vec(Am)
-        @test CUDArt.to_host(d_Avvec) == Av
+        @test to_host(d_Amvec) == vec(Am)
+        @test to_host(d_Avvec) == Av
     end
     # Issue #41
-    a = CUDArt.CudaArray(zeros(2))
+    a = CudaArray(zeros(2))
     @test func41(a, (2,1,1,1)) == Cint[2,1,1,1]
     # Comment in PR #50
-    CUDArt.cudasleep(1)
+    cudasleep(1)
 end
 
 gc()  # check for finalizer errors
@@ -159,13 +159,13 @@ gc()  # check for finalizer errors
 #########################################
 # Multiple devices, streams, and wait() #
 #########################################
-if CUDArt.devcount() > 1
-    CUDArt.devices(dev->true, nmax=2) do devlist
+if devcount() > 1
+    devices(dev->true, nmax=2) do devlist
         sleeptime = 0.5
         results = Array{Any}(ceil(Int, 2.5*length(devlist)))
-        streams = [(CUDArt.device(dev); CUDArt.Stream()) for dev in devlist]
+        streams = [(device(dev); Stream()) for dev in devlist]
         # Force one run to precompile
-        CUDArt.cudasleep(sleeptime; dev=devlist[1], stream=streams[1])
+        cudasleep(sleeptime; dev=devlist[1], stream=streams[1])
         wait(streams[1])
         i = 1
         nextidx() = (idx=i; i+=1; idx)
@@ -181,7 +181,7 @@ if CUDArt.devcount() > 1
                         tstart = time()
                         dev = devlist[idev]
                         stream = streams[idev]
-                        CUDArt.cudasleep(sleeptime; dev=dev, stream=stream)
+                        cudasleep(sleeptime; dev=dev, stream=stream)
                         wait(stream)
                         tstop = time()
                         results[idx] = (tstart, tstop, dev)
