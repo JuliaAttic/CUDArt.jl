@@ -40,6 +40,7 @@ end
 
 gc()
 
+@testset "gc/finalizers" begin
 # Check whether gc/finalizers lead to bad behavior across
 # device resets (the pointer address is reproducible)
 CUDArt.device(0)
@@ -60,5 +61,6 @@ CUDArt.free(g)
 @test isempty(CUDArt.cuda_ptrs)
 @test h_g == a
 CUDArt.device_reset(0)
+end
 
 gc()
