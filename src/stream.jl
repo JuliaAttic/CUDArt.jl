@@ -13,7 +13,8 @@ end
 function Stream()
     p = Ref{Ptr{Void}}()
     rt.cudaStreamCreate(p)
-    hnd = CuStream(p[])
+    ctx = contexts[device()]
+    hnd = CuStream(p[], ctx)
     Stream(hnd, AsyncCondition())
 end
 NullStream() = Stream(CUDAdrv.CuDefaultStream(), AsyncCondition())
