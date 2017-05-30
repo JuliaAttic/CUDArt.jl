@@ -157,15 +157,34 @@ end
 gc()  # check for finalizer errors
 
 #########################################
-# Multiple devices, streams, and wait() #
+# Streams, multiple devices, and wait() #
 #########################################
+devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
+    sleeptime = 0.5
+    dev = first(devlist)
+    device(dev)
+    stream = Stream()
+    # Force one run to precompile
+    cudasleep(sleeptime; dev=dev, stream=stream)
+    wait(stream)
+    # Since the frequency is dynamic, cudasleep can be unreliable (at
+    # least on some GPUs), so do a median-of-3
+    sleeptimes = Float64[0, 0, 0]
+    for i = 1:3
+        tstart = time()
+        cudasleep(sleeptime; dev=dev, stream=stream)
+        wait(stream)
+        tstop = time()
+        sleeptimes[i] = tstop - tstart
+    end
+    @test 0.9*sleeptime <= median(sleeptimes) <= 1.1*sleeptime
+end
+
 if devcount() > 1
     devices(dev->true, nmax=2) do devlist
         sleeptime = 0.5
         results = Array{Any}(ceil(Int, 2.5*length(devlist)))
         streams = [(device(dev); Stream()) for dev in devlist]
-        # Force one run to precompile
-        cudasleep(sleeptime; dev=devlist[1], stream=streams[1])
         wait(streams[1])
         i = 1
         nextidx() = (idx=i; i+=1; idx)
