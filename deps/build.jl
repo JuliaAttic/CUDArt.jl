@@ -151,7 +151,8 @@ const gcc_support = (
     (v"6.5", v"4.8.2"),
     (v"7.0", v"4.9.2"),
     (v"7.5", v"4.9.2"),
-    (v"8.0", v"5.3.1") )
+    (v"8.0", v"5.9")) # Before 8.0.61 only up to 5.3.1 was supported, since then 5.X is supported
+                      # and only the major version is tested.
 
 # find CUDA C toolchain
 function find_toolchain(version, cuda_path)
