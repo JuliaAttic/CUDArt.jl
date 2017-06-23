@@ -1,3 +1,7 @@
+import CUDAdrv: CuArray, DevicePtr
+
+export CuArray
+
 ###############################
 # CUDA Array and memory types #
 ###############################
@@ -35,6 +39,15 @@ else
         end
     end
 end
+
+# Specifically convert existing CUDArt CudaArray to CUDAdrv CuArray
+function (::Type{CuArray{T,N}}){T,N}(rt_array::CudaArray{T, N})
+    local devptr = DevicePtr{T}(rt_array.ptr.ptr, rt_array.ptr.ctx)
+
+    # This should be carefully freed (both CudaArray and CuArray will share the same memory address!)
+    return new{T,N}(devptr, rt_array.dims)
+end
+
 
 # Vector and matrix aliases
 @compat const CudaVector{T} = CudaArray{T,1}
