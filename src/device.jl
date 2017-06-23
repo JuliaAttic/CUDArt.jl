@@ -13,10 +13,10 @@ end
 device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 
 # instantiate the primary contexts
-const contexts = Dict{Int,CuContext}()
+const contexts = Dict{Int,CUDAdrv.CuContext}()
 for dev in 0:devcount()-1
-    pctx = CuPrimaryContext(dev)
-    contexts[dev] = CuContext(pctx)
+    pctx = CUDAdrv.CuPrimaryContext(dev)
+    contexts[dev] = CUDAdrv.CuContext(pctx)
 end
 
 device_reset() = device_reset(device())
@@ -144,8 +144,8 @@ end
 # A cache of useful CUDA kernels that gets loaded and closed
 # by devices(f, devlist)
 immutable PtxUtils
-    mod::CuModule
-    fns::Dict{Any,CuFunction}
+    mod::CUDAdrv.CuModule
+    fns::Dict{Any,CUDAdrv.CuFunction}
 end
 const global ptxdict = Dict{Integer,PtxUtils}()
 
@@ -166,13 +166,13 @@ function init(devlist::Union{Integer,AbstractVector})
         # allocate and destroy memory to force initialization
         free(malloc(UInt8, 1))
         # Load the utility functions.
-        ptx = PtxUtils(CuModuleFile(utilfile), Dict{Any,CuFunction}())
+        ptx = PtxUtils(CUDAdrv.CuModuleFile(utilfile), Dict{Any,CUDAdrv.CuFunction}())
         for func in funcnames
             for (dtype, ext) in zip(datatypes, funcexts)
-                ptx.fns[(func, dtype)] = CuFunction(ptx.mod, func * "_" * ext)
+                ptx.fns[(func, dtype)] = CUDAdrv.CuFunction(ptx.mod, func * "_" * ext)
             end
         end
-        ptx.fns["clock_block"] = CuFunction(ptx.mod, "clock_block")
+        ptx.fns["clock_block"] = CUDAdrv.CuFunction(ptx.mod, "clock_block")
         ptxdict[dev] = ptx
     end
 end

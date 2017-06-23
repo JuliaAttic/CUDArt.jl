@@ -1,4 +1,5 @@
-using CUDArt, CUDAdrv
+using CUDArt
+import CUDAdrv
 using Base.Test
 
 #########################

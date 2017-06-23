@@ -167,8 +167,8 @@ function fill!{T}(X::CudaArray{T}, val; stream=null_stream)
     func = ptxdict[device()].fns["fill_contiguous", T]
     nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
     mul = min(32, ceil(Int, length(X)/(256*nsm)))
-    cudacall(func, mul*nsm, 256, (Ptr{T}, Csize_t, T), X, length(X), valT;
-             stream=convert(CuStream, stream))
+    CUDAdrv.cudacall(func, mul*nsm, 256, (Ptr{T}, Csize_t, T), X, length(X), valT;
+             stream=convert(CUDAdrv.CuStream, stream))
     X
 end
 
@@ -417,9 +417,9 @@ function fill!{T}(X::CudaPitchedArray{T}, val; stream=null_stream)
     nsm = attribute(device(), rt.cudaDevAttrMultiProcessorCount)
     mul = min(32, ceil(Int, length(X)/(256*nsm)))
     blockspergrid, threadsperblock = ndims(X) == 1 ? (mul*nsm, 256) : (mul*nsm, (16,16))
-    cudacall(func, blockspergrid, threadsperblock, (Ptr{T}, Csize_t, Csize_t, Csize_t, Csize_t, T),
+    CUDAdrv.cudacall(func, blockspergrid, threadsperblock, (Ptr{T}, Csize_t, Csize_t, Csize_t, Csize_t, T),
              X, size(X,1), size(X,2), size(X,3), pitchel(X), valT;
-             stream=convert(CuStream, stream))
+             stream=convert(CUDAdrv.CuStream, stream))
     X
 end
 
