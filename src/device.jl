@@ -15,15 +15,14 @@ device(dev::Integer) = (rt.cudaSetDevice(dev); dev)
 # instantiate the primary contexts
 const contexts = Dict{Int,CUDAdrv.CuContext}()
 for dev in 0:devcount()-1
-    pctx = CUDAdrv.CuPrimaryContext(dev)
+    pctx = CUDAdrv.CuPrimaryContext(CUDAdrv.CuDevice(dev))
     contexts[dev] = CUDAdrv.CuContext(pctx)
 end
 
 device_reset() = device_reset(device())
 
 function device_reset(dev::Integer)
-    # Clear all items on this device from cuda_ptrs, so they don't get
-    # freed later
+    # clear all items on this device from `cuda_ptrs`, so they don't get freed later
     todelete = Any[]
     for (p, pdev) in cuda_ptrs
         if pdev == dev
@@ -35,14 +34,13 @@ function device_reset(dev::Integer)
         delete!(cuda_ptrs, p)
     end
 
-    # no need to reset the entire device, just reset the primary context
-    pctx = CuPrimaryContext(dev)
-    let ctx = contexts[dev]
-        CUDAdrv.invalidate!(ctx)
-        CUDAdrv.destroy(ctx)
-    end
-    CUDAdrv.reset(pctx)
-    contexts[dev] = CuContext(pctx)
+    # reset the context, invalidating all derived contexts
+    pctx = CUDAdrv.CuPrimaryContext(CUDAdrv.CuDevice(dev))
+    CUDAdrv.unsafe_reset!(pctx, false)
+
+    # reset the device, and instantiate a new primary context
+    rt.cudaDeviceReset()
+    contexts[dev] = CUDAdrv.CuContext(pctx)
 end
 
 device_synchronize() = rt.cudaDeviceSynchronize()
