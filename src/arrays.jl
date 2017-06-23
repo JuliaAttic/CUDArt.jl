@@ -41,12 +41,8 @@ else
 end
 
 # Specifically convert existing CUDArt CudaArray to CUDAdrv CuArray
-function (::Type{CuArray{T,N}}){T,N}(rt_array::CudaArray{T, N})
-    local devptr = DevicePtr{T}(rt_array.ptr.ptr, rt_array.ptr.ctx)
-
-    # This should be carefully freed (both CudaArray and CuArray will share the same memory address!)
-    return new{T,N}(devptr, rt_array.dims)
-end
+CuArray(ca::CudaArray) = convert(CuArray, ca);
+convert(::Type{CuArray}, ca::CudaArray) = CuArray{eltype(ca), ndims(ca)}(ca.dims, DevicePtr{eltype(ca)}(ca.ptr.ptr, ca.ptr.ctx));
 
 
 # Vector and matrix aliases
