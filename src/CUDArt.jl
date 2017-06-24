@@ -13,7 +13,7 @@ export
     CudaArray, CudaVector, CudaMatrix, CudaVecOrMat,
     CudaPitchedArray, HostArray, to_host,
     # other symbols
-    device, devices, device_reset, attribute, capability,
+    device, devices, devcount, device_reset, attribute, capability,
     driver_version, runtime_version,
     pitchel, pitchbytes,
     device_synchronize, synchronize,
