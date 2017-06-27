@@ -2,7 +2,7 @@ __precompile__()
 
 module CUDArt
 
-using CUDAdrv
+import CUDAdrv
 using Compat
 
 export
@@ -13,7 +13,7 @@ export
     CudaArray, CudaVector, CudaMatrix, CudaVecOrMat,
     CudaPitchedArray, HostArray, to_host,
     # other symbols
-    device, devices, device_reset, attribute, capability,
+    device, devices, devcount, device_reset, attribute, capability,
     driver_version, runtime_version,
     pitchel, pitchbytes,
     device_synchronize, synchronize,
@@ -24,7 +24,6 @@ import Base: ==, -, +, getindex, setindex!,
     length, size, ndims, eltype, similar, pointer, stride,
     copy, convert, reinterpret, show, summary,
     copy!, get!, fill!, wait, unsafe_convert, vec
-import CUDAdrv: attribute, capability, device
 
 # Prepare the CUDA runtime API bindings
 include("libcudart-6.5.jl")

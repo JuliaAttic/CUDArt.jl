@@ -1,4 +1,5 @@
-using CUDArt, CUDAdrv
+using CUDArt
+import CUDAdrv
 using Base.Test
 
 #########################
@@ -177,7 +178,7 @@ devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
         tstop = time()
         sleeptimes[i] = tstop - tstart
     end
-    @test 0.9*sleeptime <= median(sleeptimes) <= 1.1*sleeptime
+    @test 0.75*sleeptime <= median(sleeptimes) <= 1.25*sleeptime
 end
 
 if devcount() > 1

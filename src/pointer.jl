@@ -6,7 +6,7 @@
 # A raw CUDA pointer
 type CudaPtr{T}
     ptr::Ptr{T}
-    ctx::CuContext
+    ctx::CUDAdrv.CuContext
 end
 
 # Type alias for previous name
@@ -16,8 +16,8 @@ const CudaDevicePtr = CudaPtr
 # Low-level memory handling #
 #############################
 
-CudaPtr() = CudaPtr(C_NULL, CuContext(C_NULL))
-CudaPtr(T::Type) = CudaPtr(unsafe_convert(Ptr{T},C_NULL), CuContext(C_NULL))
+CudaPtr() = CudaPtr(C_NULL, CUDAdrv.CuContext(C_NULL))
+CudaPtr(T::Type) = CudaPtr(unsafe_convert(Ptr{T},C_NULL), CUDAdrv.CuContext(C_NULL))
 unsafe_convert{P<:Ptr}(::Type{P}, p::CudaPtr) = unsafe_convert(P, p.ptr)
 convert{P<:Ptr}(::Type{P}, p::CudaPtr) = unsafe_convert(P, p.ptr)
 copy(p::CudaPtr) = CudaPtr(p.ptr, p.ctx)

@@ -7,20 +7,20 @@ import Base: AsyncCondition
 @compat abstract type AbstractStream end
 
 type Stream <: AbstractStream
-    inner::CuStream
+    inner::CUDAdrv.CuStream
     c::AsyncCondition
 end
 function Stream()
     p = Ref{Ptr{Void}}()
     rt.cudaStreamCreate(p)
     ctx = contexts[device()]
-    hnd = CuStream(p[], ctx)
+    hnd = CUDAdrv.CuStream(p[], ctx)
     Stream(hnd, AsyncCondition())
 end
 NullStream() = Stream(CUDAdrv.CuDefaultStream(), AsyncCondition())
 const null_stream = NullStream()
 
-convert(::Type{CuStream}, s::Stream) = s.inner
+convert(::Type{CUDAdrv.CuStream}, s::Stream) = s.inner
 
 unsafe_convert(::Type{Ptr{Void}}, s::Stream) = unsafe_convert(Ptr{Void}, s.inner)
 
