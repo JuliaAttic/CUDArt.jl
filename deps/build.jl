@@ -143,15 +143,19 @@ type Toolchain
 end
 
 
-"""Database of maximally supported version of GCC for each version of CUDA."""
+"""
+Database of maximally supported version of GCC for each version of CUDA.
+
+These checks are based on CUDA's `host_config.h`.
+"""
 const gcc_support = (
     (v"5.0", v"4.6.4"),
     (v"5.5", v"4.7.3"),
     (v"6.0", v"4.8.1"),
     (v"6.5", v"4.8.2"),
     (v"7.0", v"4.9.2"),
-    (v"7.5", v"4.9.2"),
-    (v"8.0", v"5.3.1") )
+    (v"7.5", v"4.10-"), # __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 9)
+    (v"8.0", v"6.0-"))  # __GNUC__ > 5
 
 # find CUDA C toolchain
 function find_toolchain(version, cuda_path)
