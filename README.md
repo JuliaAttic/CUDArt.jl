@@ -242,7 +242,7 @@ the previous section):
 ```julia
 module MyCudaModule
 
-import CUDAdrv: CuModule, CuModuleFile, unload,
+import CUDAdrv: CuModule, CuModuleFile, unsafe_unload!,
                 CuFunction, cudacall
 using CUDArt
 
@@ -266,7 +266,7 @@ function mdinit(devlist)
     end
 end
 
-mdclose() = (for md in mdlist; unload(md); end; empty!(mdlist); empty!(ptxdict))
+mdclose() = (for md in mdlist; unsafe_unload!(md); end; empty!(mdlist); empty!(ptxdict))
 
 function init(f::Function, devlist)
     local ret
