@@ -1,8 +1,16 @@
 # CUDArt
 
-**Build status**: [![](https://ci.maleadt.net/buildbot/julia/badge.svg?builder=CUDArt.jl:%20Julia%200.5%20(x86-64)&badge=Julia%20v0.5)](https://ci.maleadt.net/buildbot/julia/builders/CUDArt.jl%3A%20Julia%200.5%20%28x86-64%29) [![](https://ci.maleadt.net/buildbot/julia/badge.svg?builder=CUDArt.jl:%20Julia%200.6%20(x86-64)&badge=Julia%200.6)](https://ci.maleadt.net/buildbot/julia/builders/CUDArt.jl%3A%20Julia%200.6%20%28x86-64%29)
+**Build status**: [![][buildbot-julia05-img]][buildbot-julia05-url] [![][buildbot-julia06-img]][buildbot-julia06-url]
 
-**Code coverage**: [![Coverage Status](https://codecov.io/gh/JuliaGPU/CUDArt.jl/coverage.svg)](https://codecov.io/gh/JuliaGPU/CUDArt.jl)
+**Code coverage**: [![][coverage-img]][coverage-url]
+
+[buildbot-julia05-img]: http://ci.maleadt.net/shields/build.php?builder=CUDArt-julia05-x86-64bit&name=julia%200.5
+[buildbot-julia05-url]: http://ci.maleadt.net/shields/url.php?builder=CUDArt-julia05-x86-64bit
+[buildbot-julia06-img]: http://ci.maleadt.net/shields/build.php?builder=CUDArt-julia06-x86-64bit&name=julia%200.5
+[buildbot-julia06-url]: http://ci.maleadt.net/shields/url.php?builder=CUDArt-julia06-x86-64bit
+
+[coverage-img]: https://codecov.io/gh/JuliaGPU/CUDArt.jl/coverage.svg
+[coverage-url]: https://codecov.io/gh/JuliaGPU/CUDArt.jl
 
 This package wraps the [CUDA runtime API](http://docs.nvidia.com/cuda/cuda-runtime-api/).
 For a wrapper of the lower-level [driver API](http://docs.nvidia.com/cuda/cuda-driver-api/),
