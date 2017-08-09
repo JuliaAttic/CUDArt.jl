@@ -6,7 +6,7 @@
 
 [buildbot-julia05-img]: http://ci.maleadt.net/shields/build.php?builder=CUDArt-julia05-x86-64bit&name=julia%200.5
 [buildbot-julia05-url]: http://ci.maleadt.net/shields/url.php?builder=CUDArt-julia05-x86-64bit
-[buildbot-julia06-img]: http://ci.maleadt.net/shields/build.php?builder=CUDArt-julia06-x86-64bit&name=julia%200.5
+[buildbot-julia06-img]: http://ci.maleadt.net/shields/build.php?builder=CUDArt-julia06-x86-64bit&name=julia%200.6
 [buildbot-julia06-url]: http://ci.maleadt.net/shields/url.php?builder=CUDArt-julia06-x86-64bit
 
 [coverage-img]: https://codecov.io/gh/JuliaGPU/CUDArt.jl/coverage.svg
