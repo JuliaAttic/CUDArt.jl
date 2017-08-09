@@ -154,8 +154,9 @@ const gcc_support = (
     (v"6.0", v"4.8.1"),
     (v"6.5", v"4.8.2"),
     (v"7.0", v"4.9.2"),
-    (v"7.5", v"4.10-"), # __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 9)
-    (v"8.0", v"6.0-"))  # __GNUC__ > 5
+    (v"7.5", v"4.10-"), # (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 9)) && #error
+    (v"8.0", v"6.0-"),  # (__GNUC__ > 5)                                          && #error
+    (v"9.0", v"7.0-"))  # (__GNUC__ > 6)                                          && #error
 
 # find CUDA C toolchain
 function find_toolchain(version, cuda_path)
