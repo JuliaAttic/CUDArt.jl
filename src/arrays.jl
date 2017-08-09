@@ -1,3 +1,7 @@
+import CUDAdrv: CuArray, DevicePtr
+
+export CuArray
+
 ###############################
 # CUDA Array and memory types #
 ###############################
@@ -35,6 +39,11 @@ else
         end
     end
 end
+
+# Specifically convert existing CUDArt CudaArray to CUDAdrv CuArray
+CuArray(ca::CudaArray) = convert(CuArray, ca);
+convert(::Type{CuArray}, ca::CudaArray) = CuArray{eltype(ca), ndims(ca)}(ca.dims, DevicePtr{eltype(ca)}(ca.ptr.ptr, ca.ptr.ctx));
+
 
 # Vector and matrix aliases
 @compat const CudaVector{T} = CudaArray{T,1}
