@@ -66,4 +66,4 @@ end
 
 
 clean_cache()   # for deterministic testing purposes
-destroy(ctx)
+destroy!(ctx)

@@ -154,8 +154,9 @@ const gcc_support = (
     (v"6.0", v"4.8.1"),
     (v"6.5", v"4.8.2"),
     (v"7.0", v"4.9.2"),
-    (v"7.5", v"4.10-"), # __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 9)
-    (v"8.0", v"6.0-"))  # __GNUC__ > 5
+    (v"7.5", v"4.10-"), # (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 9)) && #error
+    (v"8.0", v"6.0-"),  # (__GNUC__ > 5)                                          && #error
+    (v"9.0", v"7.0-"))  # (__GNUC__ > 6)                                          && #error
 
 # find CUDA C toolchain
 function find_toolchain(version, cuda_path)
@@ -329,8 +330,11 @@ function build(toolchain, arch)
 end
 
 const ext = joinpath(@__DIR__, "ext.jl")
+const ext_bak = ext * ".bak"
 
 function main()
+    ispath(ext) && mv(ext, ext_bak; remove_destination=true)
+
     # discover stuff
     cuda_path = find_cuda()
     libcudart_path = find_libcudart(cuda_path)
@@ -345,41 +349,40 @@ function main()
     build(toolchain, compat_arch)
 
     # check if we need to rebuild
-    if isfile(ext)
+    if isfile(ext_bak)
         info("Checking validity of existing ext.jl.")
-        @eval module Previous; include($ext); end
-        if isdefined(Previous, :home) && Previous.cuda_path == cuda_path &&
-        isdefined(Previous, :libcudart_version) && Previous.libcudart_version == libcudart_version &&
-        isdefined(Previous, :libcudart_path)  && Previous.libcudart_path == libcudart_path &&
-        isdefined(Previous, :libnvml_path)  && Previous.libnvml_path == libnvml_path
-        isdefined(Previous, :nvidiasmi_path)  && Previous.nvidiasmi_path == nvidiasmi_path
+        @eval module Previous; include($ext_bak); end
+        if  isdefined(Previous, :libcudart_path)    && Previous.libcudart_path == libcudart_path &&
+            isdefined(Previous, :libcudart_version) && Previous.libcudart_version == libcudart_version &&
+            isdefined(Previous, :toolchain_version) && Previous.toolchain_version == toolchain.version &&
+            isdefined(Previous, :toolchain_nvcc)    && Previous.toolchain_nvcc == toolchain.nvcc &&
+            isdefined(Previous, :toolchain_flags)   && Previous.toolchain_flags == toolchain.flags &&
+            isdefined(Previous, :architecture)      && Previous.architecture == compat_arch &&
+            isdefined(Previous, :libnvml_path)      && Previous.libnvml_path == libnvml_path
+            isdefined(Previous, :nvidiasmi_path)    && Previous.nvidiasmi_path == nvidiasmi_path
             info("CUDArt.jl has already been built for this CUDA library, no need to rebuild.")
+            mv(ext_bak, ext)
+            return
         end
     end
 
     # write ext.jl
     open(ext, "w") do fh
         write(fh, """
-            const libcudart_path = "$(escape_string(libcudart_path))"
-            const libcudart_version = v"$libcudart_version"
+            const libcudart_path = $(repr(libcudart_path))
+            const libcudart_version = $(repr(libcudart_version))
 
-            const toolchain_version = v"$(toolchain.version)"
-            const toolchain_nvcc = "$(escape_string(toolchain.nvcc))"
-            const toolchain_flags = $(toolchain.flags)
+            const toolchain_version = $(repr(toolchain.version))
+            const toolchain_nvcc = $(repr(toolchain.nvcc))
+            const toolchain_flags = $(repr(toolchain.flags))
 
-            const architecture = "$compat_arch"
+            const architecture = $(repr(compat_arch))
 
-            const libnvml_path = "$(escape_string(libnvml_path))"
-            const nvidiasmi_path =  "$(escape_string(nvidiasmi_path))"
+            const libnvml_path = $(repr(libnvml_path))
+            const nvidiasmi_path =  $(repr(nvidiasmi_path))
             """)
     end
     nothing
 end
 
-try
-    main()
-catch ex
-    # if anything goes wrong, wipe the existing ext.jl to prevent the package from loading
-    rm(ext; force=true)
-    rethrow(ex)
-end
+main()
