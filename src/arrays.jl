@@ -24,7 +24,7 @@ if !debugMemory
         dev::Int
     end
 else
-    @compat type CudaArray{T,N} <: AbstractCudaArray{T,N}
+    type CudaArray{T,N} <: AbstractCudaArray{T,N}
         ptr::CudaPtr{T}
         dims::NTuple{N,Int}
         dev::Int
@@ -49,7 +49,7 @@ if !debugMemory
         dev::Int
     end
 else
-    @compat type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
+    type CudaPitchedArray{T,N} <: AbstractCudaArray{T,N}
         ptr::rt.cudaPitchedPtr
         dims::NTuple{N,Int}
         dev::Int
@@ -432,11 +432,7 @@ function HostArray{T}(::Type{T}, sz::Dims; flags::Integer=rt.cudaHostAllocDefaul
     p = Ptr{Void}[C_NULL]
     rt.cudaHostAlloc(p, prod(sz)*sizeof(T), flags)
     ptr = p[1]
-    if VERSION < v"0.5.0-dev+4597"
-        data = pointer_to_array(unsafe_convert(Ptr{T}, ptr), sz, false)
-    else
-        data = unsafe_wrap(Array, unsafe_convert(Ptr{T}, ptr), sz, false)
-    end
+    data = unsafe_wrap(Array, unsafe_convert(Ptr{T}, ptr), sz, false)
     ha = HostArray(ptr, data)
     finalizer(ha, free)
     cuda_ptrs[WeakRef(ptr)] = device()
