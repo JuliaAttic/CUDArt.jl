@@ -121,11 +121,7 @@ result = devices(dev->capability(dev)[1] >= 2, nmax=1) do devlist
 #     @test A[2,2] == 3  # asynchronous
     device_synchronize()
     @test A[2,2] == 7
-    if VERSION < v"0.5.0-dev+4597"
-        S = pointer_to_array(pointer(A)+48, (6,2), false)  # a "SubArray"
-    else
-        S = unsafe_wrap(Array, pointer(A)+48, (6,2), false)  # a "SubArray"
-    end
+    S = unsafe_wrap(Array, pointer(A)+48, (6,2), false)  # a "SubArray"
     B = rand(map(Int32, 1:15), 6, 2)
     GB = CudaArray(B)
     copy!(S, GB)
