@@ -84,6 +84,8 @@ $code
 end
 
 function clean_cache()
-    @assert isdir(builddir)
-    rm(builddir; force=true, recursive=true)
+    if ispath(builddir)
+        @assert isdir(builddir)
+        rm(builddir; recursive=true)
+    end
 end
