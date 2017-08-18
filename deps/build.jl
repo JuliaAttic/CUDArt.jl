@@ -1,5 +1,7 @@
 using Compat
 
+using CUDAapi
+
 
 ## API routines
 
@@ -45,87 +47,40 @@ end
 
 ## discovery routines
 
-# find CUDA toolkit
-function find_cuda()
-    cuda_envvars = ["CUDA_PATH", "CUDA_HOME", "CUDA_ROOT"]
-    cuda_envvars_set = filter(var -> haskey(ENV, var), cuda_envvars)
-    if length(cuda_envvars_set) > 0
-        cuda_paths = unique(map(var->ENV[var], cuda_envvars_set))
-        if length(unique(cuda_paths)) > 1
-            warn("Multiple CUDA path environment variables set: $(join(cuda_envvars_set, ", ", " and ")). ",
-                 "Arbitrarily selecting CUDA at $(first(cuda_paths)). ",
-                 "To ensure a consistent path, ensure only a single unique CUDA path is set.")
-        end
-        cuda_path = Nullable(first(cuda_paths))
-    else
-        cuda_path = Nullable{String}()
-    end
-
-    return cuda_path
-end
-
-# database of CUDA versions
-const cuda_db = [v"4.0", v"4.2", v"5.0", v"6.0", v"6.5", v"7.0", v"7.5", v"8.0"]
-
-# find CUDA runtime library
-function find_libcudart(cuda_path)
-    libcudart_names = ["libcudart", "cudart"]
-    libcudart = Libdl.find_library(libcudart_names, isnull(cuda_path) ? [] : [get(cuda_path)])
-    if isempty(libcudart)
-        # take a guess at where CUDA is installed
-        if is_windows()
-            # location of cudart64_xx.dll or cudart32_xx.dll has to be in PATH env var
-            # eg. C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin
-            # (by default, it is set by CUDA toolkit installer)
-            postfix = Sys.WORD_SIZE == 64 ? "64" : "32"
-            dllnames = map(ver->"cudart$(postfix)_$(ver.major)$(ver.minor)", cuda_db)
-            libcudart = Libdl.find_library(dllnames)
-        else # linux or mac
-            libdir = Sys.WORD_SIZE == 64 ? "lib64" : "lib"
-            libcudart = Libdl.find_library(libcudart_names,
-                                           ["/opt/cuda/$libdir", "/usr/local/cuda/$libdir"])
-        end
-    end
-    isempty(libcudart) && error("CUDA runtime library cannot be found.")
-
-    # find the full path of the library
-    # NOTE: we could just as well use the result of `find_library,
-    # but the user might have run this script with eg. LD_LIBRARY_PATH set
-    # so we save the full path in order to always be able to load the correct library
-    libcudart_path = Libdl.dlpath(libcudart)
-
-    return libcudart_path
-end
-
 # find NVML library and SMI executable
-function find_nvml_smi()
-    nvml_libdir = is_windows() ? joinpath(ENV["ProgramFiles"], "NVIDIA Corporation", "NVSMI") : ""
-    if is_windows() && !isdir(nvml_libdir)
-        error("Could not determine NVIDIA driver installation location.")
+function find_nvml(driver_path)
+    if is_windows()
+        nvml_dir = joinpath(ENV["ProgramFiles"], "NVIDIA Corporation", "NVSMI")
+        if !isdir(nvml_libdir)
+            error("Could not determine NVIDIA driver installation location.")
+        end
+    else
+        nvml_dir = driver_path
     end
-    libnvml = Libdl.find_library(["libnvidia-ml", "nvml"], [nvml_libdir])
 
-    if isempty(libnvml)
+    # find NVML library
+    libnvml_path = nothing
+    try
+        libnvml_path = find_library(CUDAapi.libnvml, nvml_dir)
+    catch ex
+        isa(ex, ErrorException) || rethrow(ex)
         warn("NVML not found, resorting to nvidia-smi")
     end
 
-    if is_windows()
-        nvidiasmi = joinpath(nvml_libdir, "nvidia-smi.exe")
-    else
-        nvidiasmi = "nvidia-smi"
-    end
-
+    # find SMI binary
+    nvidiasmi_path = nothing
     try
-        if !success(`$nvidiasmi`)
+        nvidiasmi_path = find_binary("nvidia-smi", nvml_dir)
+        if !success(`$nvidiasmi_path`)
             warn("nvidia-smi failure")
-            nvidiasmi = ""
+            nvidiasmi_path = nothing
         end
-    catch err
-        warn("Encountered error \"$err\" while executing `nvidia-smi`")
-        nvidiasmi = ""
+    catch ex
+        isa(ex, ErrorException) || rethrow(ex)
+        warn("nvidia-smi not found")
     end
 
-    if isempty(nvidiasmi) && isempty(libnvml)
+    if nvidiasmi_path == nothing && libnvml_path == nothing
         if is_apple()
             warn("NVML nor nvidia-smi can be found.")
         else
@@ -133,46 +88,17 @@ function find_nvml_smi()
         end
     end
 
-    libnvml, nvidiasmi
+    return libnvml_path, nvidiasmi_path
 end
 
+# find CUDA C toolchain
 type Toolchain
     version::VersionNumber
     nvcc::String
     flags::Vector{String}
 end
-
-
-"""
-Database of maximally supported version of GCC for each version of CUDA.
-
-These checks are based on CUDA's `host_config.h`.
-"""
-const gcc_support = (
-    (v"5.0", v"4.6.4"),
-    (v"5.5", v"4.7.3"),
-    (v"6.0", v"4.8.1"),
-    (v"6.5", v"4.8.2"),
-    (v"7.0", v"4.9.2"),
-    (v"7.5", v"4.10-"), # (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 9)) && #error
-    (v"8.0", v"6.0-"),  # (__GNUC__ > 5)                                          && #error
-    (v"9.0", v"7.0-"))  # (__GNUC__ > 6)                                          && #error
-
-# find CUDA C toolchain
-function find_toolchain(version, cuda_path)
-    # check availability NVCC
-    if !isnull(cuda_path)
-        nvcc = joinpath(get(cuda_path), "bin", "nvcc") * (is_windows() ? ".exe" : "")
-    elseif !is_windows()
-        try
-            nvcc = chomp(readstring(pipeline(`which nvcc`, stderr=DevNull)))
-        catch ex
-            isa(ex, ErrorException) || rethrow(ex)
-            error("Could not find NVIDIA CUDA compiler (nvcc); consider setting the CUDA_PATH environment variable.")
-        end
-    else
-        error("Could not find NVIDIA CUDA compiler (nvcc); consider setting the CUDA_PATH environment variable.")
-    end
+function find_toolchain(version, toolkit_path)
+    nvcc = find_binary("nvcc", toolkit_path)
 
     flags = [ "--compiler-bindir" ]
 
@@ -181,17 +107,7 @@ function find_toolchain(version, cuda_path)
         # Unix-like platforms: find compatible GCC binary
 
         # find the maximally supported version of gcc
-        if version < gcc_support[1][1]
-            error("no support for CUDA < $(gcc_support[1][1])")
-        end
-        gcc_maxver = Nullable{VersionNumber}()
-        for versions in gcc_support
-            if version == versions[1]
-                gcc_maxver = Nullable(versions[2])
-                break
-            end
-        end
-        isnull(gcc_maxver) && error("Unsupported CUDA version $version.")
+        gcc_range = CUDAapi.gcc_for_cuda(version)
 
         # enumerate possible names for the gcc binary
         # NOTE: this is coarse, and might list invalid, non-existing versions
@@ -224,7 +140,7 @@ function find_toolchain(version, cuda_path)
             end
             gcc_ver = VersionNumber(m.captures[1])
 
-            if gcc_ver <= get(gcc_maxver)
+            if in(gcc_ver, gcc_range)
                 push!(gcc_possibilities, (gcc_path, gcc_ver))
             end
         end
@@ -269,43 +185,6 @@ end
 
 ## main
 
-"Database of compute capabilities with matching shader model, and initial version of the
-CUDA toolkit supporting this architecture."
-const architectures = [
-    # cap       SM          CUDA
-    # NOTE: CUDA versions only checked starting with v4.0
-    (v"1.0",    "sm_10",    v"4.0"),
-    (v"1.1",    "sm_11",    v"4.0"),
-    (v"1.2",    "sm_12",    v"4.0"),
-    (v"1.3",    "sm_13",    v"4.0"),
-    (v"2.0",    "sm_20",    v"4.0"),
-    (v"2.1",    "sm_21",    v"4.0"),
-    (v"3.0",    "sm_30",    v"4.2"),
-    (v"3.2",    "sm_32",    v"6.0"),
-    (v"3.5",    "sm_35",    v"5.0"),
-    (v"3.7",    "sm_37",    v"6.5"),
-    (v"5.0",    "sm_50",    v"6.0"),
-    (v"5.2",    "sm_52",    v"7.0"),
-    (v"5.3",    "sm_53",    v"7.5"),
-    (v"6.0",    "sm_60",    v"8.0"),
-    (v"6.1",    "sm_61",    v"8.0"),
-    (v"6.2",    "sm_62",    v"8.0") ]
-
-
-"Return the most recent supported architecture for a CUDA device's capability."
-function select_architecture(cap::VersionNumber; cuda=nothing)
-    # devices are compatible with code generated for lower compute models
-    compat_architectures = filter(x -> x[1] <= cap, architectures)
-    if cuda !== nothing
-        compat_architectures = filter(x -> cuda >= x[3], compat_architectures)
-    end
-    if length(compat_architectures) == 0
-        error("No support for requested device or software (compute model <= $cap" *
-              cuda === nothing ? "" : ", CUDA >= $cuda).")
-    end
-    return compat_architectures[length(compat_architectures)][2]
-end
-
 const utilsfile = "utils"
 const libfile = "libwrapcuda"
 
@@ -317,13 +196,13 @@ function build(toolchain, arch)
         is_windows() && rm("$(libfile).exp", force=true)
         rm("$(utilsfile).ptx", force=true)
 
-        run(pipeline(`$(toolchain.nvcc) $(compile_flags) --shared wrapcuda.c -o $(libfile).$(Libdl.dlext)`; stdout=DevNull, stderr=STDERR))
-        run(pipeline(`$(toolchain.nvcc) $(compile_flags) -ptx $(utilsfile).cu`; stdout=DevNull, stderr=STDERR))
+        logging_run(`$(toolchain.nvcc) $(compile_flags) --shared wrapcuda.c -o $(libfile).$(Libdl.dlext)`)
+        logging_run(`$(toolchain.nvcc) $(compile_flags) -ptx $(utilsfile).cu`)
     end
 
     cd(joinpath(@__DIR__, "..", "test")) do
         rm("vadd.ptx", force=true)
-        run(pipeline(`$(toolchain.nvcc) $(compile_flags) -ptx vadd.cu`; stdout=DevNull, stderr=STDERR))
+        logging_run(`$(toolchain.nvcc) $(compile_flags) -ptx vadd.cu`)
     end
 
     nothing
@@ -336,28 +215,36 @@ function main()
     ispath(ext) && mv(ext, ext_bak; remove_destination=true)
 
     # discover stuff
-    cuda_path = find_cuda()
-    libcudart_path = find_libcudart(cuda_path)
+    toolkit_path = find_toolkit()
+    libcudart_path = find_library("cudart", toolkit_path)
     libcudart_version = version(libcudart_path)
-    libnvml_path, nvidiasmi_path = find_nvml_smi()
-    toolchain = find_toolchain(libcudart_version, cuda_path)
+    driver_path = find_driver()
+    libnvml_path, nvidiasmi_path = find_nvml(driver_path)
 
-    # select a compatible architecture and build code for it
-    caps = [capability(libcudart_path, i) for i in 0:devcount(libcudart_path)-1]
-    compat_cap = reduce((a,b)->a<b?a:b, caps)
-    compat_arch = select_architecture(compat_cap; cuda=toolchain.version)
-    build(toolchain, compat_arch)
+    # select the maximal capability compatible with all devices & the toolchain
+    device_caps = [capability(libcudart_path, i) for i in 0:devcount(libcudart_path)-1]
+    device_cap = reduce((a,b)->a<b?a:b, device_caps)
+    toolchain_caps = CUDAapi.devices_for_cuda(libcudart_version)
+    isempty(toolchain_caps) && error("No support for CUDA $(libcudart_version)")
+    filter!(cap -> cap<=device_cap, toolchain_caps)
+    isempty(toolchain_caps) && error("None of your devices supported by CUDA $(libcudart_version)")
+    cap = maximum(toolchain_caps)
+
+    # find a toolchain and build code
+    toolchain = find_toolchain(libcudart_version, toolkit_path)
+    arch = CUDAapi.shader(cap)
+    build(toolchain, arch)
 
     # check if we need to rebuild
     if isfile(ext_bak)
-        info("Checking validity of existing ext.jl.")
+        @debug("Checking validity of existing ext.jl.")
         @eval module Previous; include($ext_bak); end
         if  isdefined(Previous, :libcudart_path)    && Previous.libcudart_path == libcudart_path &&
             isdefined(Previous, :libcudart_version) && Previous.libcudart_version == libcudart_version &&
             isdefined(Previous, :toolchain_version) && Previous.toolchain_version == toolchain.version &&
             isdefined(Previous, :toolchain_nvcc)    && Previous.toolchain_nvcc == toolchain.nvcc &&
             isdefined(Previous, :toolchain_flags)   && Previous.toolchain_flags == toolchain.flags &&
-            isdefined(Previous, :architecture)      && Previous.architecture == compat_arch &&
+            isdefined(Previous, :architecture)      && Previous.architecture == arch &&
             isdefined(Previous, :libnvml_path)      && Previous.libnvml_path == libnvml_path
             isdefined(Previous, :nvidiasmi_path)    && Previous.nvidiasmi_path == nvidiasmi_path
             info("CUDArt.jl has already been built for this CUDA library, no need to rebuild.")
@@ -376,7 +263,7 @@ function main()
             const toolchain_nvcc = $(repr(toolchain.nvcc))
             const toolchain_flags = $(repr(toolchain.flags))
 
-            const architecture = $(repr(compat_arch))
+            const architecture = $(repr(arch))
 
             const libnvml_path = $(repr(libnvml_path))
             const nvidiasmi_path =  $(repr(nvidiasmi_path))
