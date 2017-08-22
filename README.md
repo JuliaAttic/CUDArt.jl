@@ -1,3 +1,7 @@
+### Note: This package is being phased out.
+
+Please use [CUDAdrv](https://github.com/JuliaGPU/CUDAdrv.jl) to interact with CUDA from Julia.
+
 # CUDArt
 
 **Build status**: [![][buildbot-julia05-img]][buildbot-julia05-url] [![][buildbot-julia06-img]][buildbot-julia06-url]
