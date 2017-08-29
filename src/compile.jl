@@ -1,7 +1,4 @@
-# EXCLUDE FROM TESTING
-
-using CUDArt
-using Compat
+export CompileError
 
 # Generate a temporary file with specific suffix
 # NOTE: mkstemps is glibc 2.19+, so emulate its behavior
@@ -28,9 +25,8 @@ macro compile(dev, kernel, code)
         :($(esc(kernel)) = _compile($(esc(dev)), $kernel_name, $code, $containing_file)))
 end
 
-type CompileError <: Base.WrappedException
+immutable CompileError <: Exception
     message::String
-    error
 end
 
 const builddir = joinpath(@__DIR__, ".cache")
@@ -43,7 +39,7 @@ function _compile(dev, kernel, code, containing_file)
         mkpath(builddir)
     end
 
-    # Check if we need to compile
+    # check if we need to compile
     codehash = hex(hash(code))
     output = "$builddir/$(kernel)_$(codehash)-$(arch).ptx"
     if isfile(output)
@@ -52,9 +48,9 @@ function _compile(dev, kernel, code, containing_file)
         need_compile = true
     end
 
-    # Compile the source, if necessary
+    # compile the source, if necessary
     if need_compile
-        # Write the source into a compilable file
+        # write the source to a compilable file
         (source, io) = mkstemps(".cu")
         write(io, """
 extern "C"
@@ -62,17 +58,20 @@ extern "C"
 $code
 }
 """)
-        close(io)
+        Base.close(io)
 
         compile_flags = vcat(CUDArt.toolchain_flags, ["--gpu-architecture", arch])
-        try
-            # TODO: capture STDERR
-            run(pipeline(`$(CUDArt.toolchain_nvcc) $(compile_flags) -ptx -o $output $source`, stderr=DevNull))
-        catch ex
-            isa(ex, ErrorException) || rethrow(ex)
-            rethrow(CompileError("compilation of kernel $kernel failed (typo in C++ source?)", ex))
-        finally
-            rm(source)
+        err = Pipe()
+        cmd = `$(CUDArt.toolchain_nvcc) $(compile_flags) -ptx -o $output $source`
+        result = success(pipeline(cmd; stdout=DevNull, stderr=err))
+        Base.close(err.in)
+        rm(source)
+
+        errors = readstring(err)
+        if !result
+            throw(CompileError("compilation of kernel $kernel failed\n$errors"))
+        elseif !isempty(errors)
+            warn("during compilation of kernel $kernel:\n$errors")
         end
 
         if !isfile(output)
@@ -80,23 +79,13 @@ $code
         end
     end
 
-    # Pass the module to the CUDA driver
-    mod = try
-        CuModuleFile(output)
-    catch ex
-        rethrow(CompileError("loading of kernel $kernel failed (invalid CUDA code?)", ex))
-    end
-
-    # Load the function pointer
-    func = try
-        CuFunction(mod, kernel)
-    catch ex
-        rethrow(CompileError("could not find kernel $kernel in the compiled binary (wrong function name?)", ex))
-    end
-
-    return func
+    mod = CUDAdrv.CuModuleFile(output)
+    return CUDAdrv.CuFunction(mod, kernel)
 end
 
 function clean_cache()
-    rm(builddir; recursive=true)
+    if ispath(builddir)
+        @assert isdir(builddir)
+        rm(builddir; recursive=true)
+    end
 end

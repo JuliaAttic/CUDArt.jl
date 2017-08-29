@@ -46,6 +46,7 @@ include("device.jl")
 include("stream.jl")
 include("pointer.jl")
 include("arrays.jl")
+include("compile.jl")
 include("execute.jl")
 
 include("precompile.jl")
