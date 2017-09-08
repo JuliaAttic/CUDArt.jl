@@ -85,7 +85,7 @@ function devices(f::Function, devlist::Union{Integer,AbstractVector})
 end
 
 function filter_free(devlist)
-    @static if !isempty(libnvml)
+    @static if libnvml != nothing
         ccall(("nvmlInit", libnvml), UInt32, ())
         freelist = Int[]
         for i in devlist
