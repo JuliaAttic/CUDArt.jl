@@ -60,9 +60,11 @@ $code
 """)
         Base.close(io)
 
-        compile_flags = vcat(CUDArt.toolchain_flags, ["--gpu-architecture", arch])
+        compiler = CUDArt.cuda_compiler
+        flags = ["--compiler-bindir", CUDArt.host_compiler, "--gpu-architecture", arch]
+
         err = Pipe()
-        cmd = `$(CUDArt.toolchain_nvcc) $(compile_flags) -ptx -o $output $source`
+        cmd = `$compiler $flags -ptx -o $output $source`
         result = success(pipeline(cmd; stdout=DevNull, stderr=err))
         Base.close(err.in)
         rm(source)

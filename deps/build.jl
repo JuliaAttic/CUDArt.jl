@@ -57,7 +57,7 @@ const libfile = "libwrapcuda"
 
 function build(toolchain, arch)
     compiler = toolchain.cuda_compiler
-    flags = vcat(toolchain.cuda_flags, ["--gpu-architecture", arch])
+    flags = ["--compiler-bindir", toolchain.host_compiler, "--gpu-architecture", arch]
 
     cd(@__DIR__) do
         rm("$(libfile).$(Libdl.dlext)", force=true)
@@ -110,8 +110,10 @@ function main()
 
     # discover a toolchain and build code
     toolchain = find_toolchain(config[:toolkit_path], config[:toolkit_version])
-    arch = CUDAapi.shader(cap)
-    build(toolchain, arch)
+    config[:cuda_compiler] = toolchain.cuda_compiler
+    config[:host_compiler] = toolchain.host_compiler
+    config[:architecture] = CUDAapi.shader(cap)
+    build(toolchain, config[:architecture])
 
 
     ## (re)generate ext.jl
