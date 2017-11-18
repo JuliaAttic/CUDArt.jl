@@ -31,10 +31,14 @@ import .CUDArt_gen
 const rt = CUDArt_gen
 
 const ext = joinpath(dirname(@__DIR__), "deps", "ext.jl")
-if isfile(ext)
-    include(ext)
-else
-    error("Unable to load dependency file $ext.\nPlease run Pkg.build(\"CUDArt\") and restart Julia.")
+isfile(ext) || error("CUDArt.jl has not been built, please run Pkg.build(\"CUDArt\").")
+include(ext)
+if !configured
+    # default (non-functional) values for critical variables,
+    # making it possible to _load_ the package at all times.
+    const libcuda_path = nothing
+    const libnvml_path = nothing
+    const nvidiasmi_path = nothing
 end
 const libcudart = libcudart_path
 const libnvml = libnvml_path
@@ -52,6 +56,12 @@ include("execute.jl")
 include("precompile.jl")
 
 function __init__()
+    if !configured
+        warn("CUDArt.jl has not been successfully built, and will not work properly.")
+        warn("Please run Pkg.build(\"CUDArt\") and restart Julia.")
+        return
+    end
+
     c_async_send_cudastream[] = cfunction(async_send_cudastream, Void, (rt.cudaStream_t, rt.cudaError_t, Ptr{Void}))
 end
 
