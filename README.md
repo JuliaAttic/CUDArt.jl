@@ -1,8 +1,6 @@
-### Note: This package is being phased out.
-
-Please use [CUDAdrv](https://github.com/JuliaGPU/CUDAdrv.jl) to interact with CUDA from Julia.
-
 # CUDArt
+
+**IMPORTANT NOTE**: this package is not actively developed, please use [CUDAdrv](https://github.com/JuliaGPU/CUDAdrv.jl) instead!
 
 **Build status**: [![][buildbot-julia05-img]][buildbot-julia05-url] [![][buildbot-julia06-img]][buildbot-julia06-url]
 
@@ -17,8 +15,10 @@ Please use [CUDAdrv](https://github.com/JuliaGPU/CUDAdrv.jl) to interact with CU
 [coverage-url]: https://codecov.io/gh/JuliaGPU/CUDArt.jl
 
 This package wraps the [CUDA runtime API](http://docs.nvidia.com/cuda/cuda-runtime-api/).
-For a wrapper of the lower-level [driver API](http://docs.nvidia.com/cuda/cuda-driver-api/),
-see [CUDAdrv](https://github.com/JuliaGPU/CUDAdrv.jl).
+For a wrapper of the [driver API](http://docs.nvidia.com/cuda/cuda-driver-api/), see
+[CUDAdrv](https://github.com/JuliaGPU/CUDAdrv.jl).
+
+CUDAdrv.jl is the preferred way to program a GPU from Julia; Only use CUDArt.jl if you _really_ require the runtime API.
 
 
 
